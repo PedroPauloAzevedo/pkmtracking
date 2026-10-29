@@ -1,0 +1,1424 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coletor de Partidas TCG Live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra lateral de navegação + área de conteúdo; vira barra superior no celular. */
+:root {
+  --bg: #EEF1F5; --surface: #FFFFFF; --sunken: #F5F7FA; --ink: #172033; --muted: #5B6578; --line: #D5DBE5;
+  --accent: #E8B321; --on-accent: #1A1404; --p1: #2B63D9; --p2: #D2432F; --good: #1E8A5A; --bad: #C2382B;
+  --c1: #2B63D9; --c2: #D2432F; --c3: #1E8A5A; --c4: #B7791F; --c5: #7B4BC4; --c6: #0F8B99; --c7: #C2477F; --c8: #5B6578;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F1420; --surface: #171E2C; --sunken: #121826; --ink: #E6EBF3; --muted: #95A0B5; --line: #2A3447;
+    --accent: #F2C443; --p1: #6E9BFF; --p2: #FF7A66; --good: #4CC28A; --bad: #FF6B5C;
+    --c1: #6E9BFF; --c2: #FF7A66; --c3: #4CC28A; --c4: #E6B54A; --c5: #A78BFA; --c6: #3CC6D6; --c7: #F27BB0; --c8: #95A0B5;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+p { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); }
+.app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; background: linear-gradient(to right, var(--surface) 220px, transparent 220px); }
+nav { background: var(--surface); border-right: 1px solid var(--line); padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+nav .marca { font: 800 1.1rem var(--f-display); padding: 0 10px 14px; line-height: 1.2; }
+nav .marca small { display: block; font: 500 0.72rem var(--f-body); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+nav a { color: var(--muted); text-decoration: none; padding: 7px 10px; border-radius: 7px; font-weight: 500; }
+nav a:hover { color: var(--ink); background: var(--sunken); }
+nav a.ativo { color: var(--ink); background: var(--sunken); box-shadow: inset 3px 0 0 var(--accent); }
+nav .grupo { font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); padding: 12px 10px 4px; font-weight: 600; }
+nav .estado { margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; font-size: 0.8rem; color: var(--muted); }
+.luz { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+.luz.on { background: var(--good); } .luz.off { background: var(--bad); } .luz.warn { background: var(--accent); }
+main { padding: 24px 28px 64px; min-width: 0; display: flex; flex-direction: column; gap: 18px; max-width: 1240px; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h1 { font-size: 1.6rem; font-weight: 800; } h2 { font-size: 1.15rem; font-weight: 600; } h3 { font-size: 0.98rem; font-weight: 600; }
+.sub { color: var(--muted); margin: 2px 0 0; max-width: 70ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grow { flex: 1 1 200px; }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.num, td.n { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-size: 0.82rem; }
+button, .btn { font: 500 0.88rem var(--f-body); color: var(--ink); background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; cursor: pointer; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+button:hover, .btn:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+button.perigo { color: var(--bad); }
+button:disabled { opacity: 0.5; cursor: default; }
+:focus-visible { outline: 2px solid var(--p1); outline-offset: 2px; }
+input, select, textarea { font: 400 0.9rem var(--f-body); color: var(--ink); background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; min-width: 0; }
+textarea { font-family: var(--f-mono); font-size: 0.8rem; width: 100%; resize: vertical; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.kpi .v { font: 800 1.7rem var(--f-display); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi .d { font-size: 0.8rem; color: var(--muted); }
+.tabela { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.tabela.alta { max-height: 520px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+th { position: sticky; top: 0; background: var(--sunken); text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; z-index: 1; }
+td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+td.n, th.n { text-align: right; }
+tr.clicavel { cursor: pointer; } tr.clicavel:hover td { background: var(--sunken); }
+.pill { display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.v { color: #fff; background: var(--good); border-color: var(--good); } .pill.d { color: #fff; background: var(--bad); border-color: var(--bad); } .pill.n { color: var(--muted); }
+tr.res-v td:first-child { box-shadow: inset 4px 0 0 var(--good); } tr.res-d td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
+tr.res-v td { background: color-mix(in srgb, var(--good) 7%, var(--surface)); } tr.res-d td { background: color-mix(in srgb, var(--bad) 7%, var(--surface)); }
+tr.res-v.clicavel:hover td { background: color-mix(in srgb, var(--good) 14%, var(--surface)); } tr.res-d.clicavel:hover td { background: color-mix(in srgb, var(--bad) 14%, var(--surface)); }
+nav details.programa { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 6px; display: flex; flex-direction: column; }
+nav details.programa summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px; color: var(--muted); font-weight: 600; font-size: 0.86rem; }
+nav details.programa summary::-webkit-details-marker { display: none; }
+nav details.programa summary:hover { color: var(--ink); background: var(--sunken); }
+nav details.programa summary .seta { margin-left: auto; transition: transform .2s; } nav details.programa[open] summary .seta { transform: rotate(90deg); }
+nav details.programa a { display: block; padding-left: 34px; }
+.badge { display: inline-block; min-width: 18px; padding: 0 6px; border-radius: 999px; background: var(--bad); color: #fff; font: 700 .7rem/18px var(--f-body); text-align: center; margin-left: 6px; }
+.toast a { color: var(--accent); margin-left: 8px; font-weight: 600; }
+.modelo { font-family: var(--f-mono); font-size: .86rem; background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; overflow-wrap: anywhere; }
+.modelo b { color: var(--p1); font-weight: 600; }
+.tag-sug { font-size: .74rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.tag-sug.ignorar { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); } .tag-sug.regra { background: var(--accent); color: var(--on-accent); }
+.chips-periodo { display: inline-flex; gap: 4px; }
+.chips-periodo button { padding: 5px 10px; font-size: .8rem; }
+.chips-periodo button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+.kpi2 { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.kpi2 .ico-kpi { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-size: 1.1rem; font-weight: 800; }
+.kpi2 .ico-kpi.bom { background: color-mix(in srgb, var(--good) 18%, var(--surface)); color: var(--good); }
+.kpi2 .ico-kpi.ruim { background: color-mix(in srgb, var(--bad) 18%, var(--surface)); color: var(--bad); }
+.kpi2 .ico-kpi.neutro { background: var(--sunken); color: var(--muted); }
+.kpi2 .v { font: 800 1.7rem var(--f-display); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi2 .d { font-size: .8rem; color: var(--muted); }
+.mu-lista { display: flex; flex-direction: column; }
+.mu-linha { display: grid; grid-template-columns: minmax(160px, 220px) 1fr 70px 44px; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
+.mu-linha:last-child { border-bottom: none; }
+.mu-barra { height: 22px; background: var(--sunken); border-radius: 4px; position: relative; overflow: hidden; }
+.mu-barra span { position: absolute; inset: 0 auto 0 0; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font: 700 .76rem var(--f-mono); color: #fff; min-width: 42px; }
+.mu-barra span.bom { background: var(--good); } .mu-barra span.ruim { background: var(--bad); }
+.mu-linha .wl { font: .78rem var(--f-mono); color: var(--muted); text-align: right; } .mu-linha .nn { font: .72rem var(--f-mono); color: var(--muted); }
+.grade-decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.deck-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; text-decoration: none; color: var(--ink); position: relative; }
+.deck-card:hover { border-color: var(--muted); }
+.deck-card.arquivado { opacity: .55; }
+.deck-capa { height: 130px; position: relative; display: grid; place-items: center; overflow: hidden; background: #1d2433; }
+.deck-capa .fundo { position: absolute; inset: -20px; background-size: cover; background-position: center 30%; filter: blur(6px) brightness(.55); }
+.deck-capa .icones-grandes { position: relative; display: flex; gap: 4px; }
+.deck-capa .icones-grandes img { width: 76px; height: 64px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.deck-capa .selo { position: absolute; top: 10px; left: 10px; font-size: .72rem; background: rgba(0,0,0,.55); color: #fff; padding: 2px 8px; border-radius: 999px; }
+.deck-capa .estrela { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 1.2rem; color: rgba(255,255,255,.7); padding: 2px 4px; }
+.deck-capa .estrela.on { color: #F2C443; }
+.deck-corpo { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+.deck-corpo b { font: 700 1rem var(--f-display); }
+.deck-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.deck-nums > div { background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.deck-nums .v { font: 700 1.15rem var(--f-mono); }
+.deck-novo { border: 2px dashed var(--line); border-radius: 12px; display: grid; place-items: center; text-align: center; min-height: 250px; cursor: pointer; background: transparent; color: var(--muted); }
+.deck-novo:hover { border-color: var(--muted); color: var(--ink); }
+@media (max-width: 600px) { .mu-linha { grid-template-columns: 1fr 1fr; } .mu-linha .wl, .mu-linha .nn { text-align: left; } }
+.aviso-versao { background: var(--accent); color: var(--on-accent); border-radius: 8px; padding: 8px 10px; font-size: .8rem; display: flex; flex-direction: column; gap: 6px; }
+.aviso-versao button { background: var(--on-accent); color: var(--accent); border: none; font-size: .78rem; padding: 4px 8px; align-self: flex-start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; background: var(--sunken); border: 1px solid var(--line); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.barra { position: relative; height: 10px; background: var(--sunken); border-radius: 5px; overflow: hidden; min-width: 80px; }
+.barra > span { position: absolute; top: 0; bottom: 0; left: 0; background: var(--p1); border-radius: 5px; }
+.div-barra { position: relative; height: 12px; background: var(--sunken); border-radius: 3px; min-width: 120px; }
+.div-barra::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--muted); }
+.div-barra > span { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.wr { font-variant-numeric: tabular-nums; font-weight: 600; }
+.ic { color: var(--muted); font-size: 0.76rem; font-weight: 400; white-space: nowrap; }
+.matriz td { text-align: center; padding: 6px 4px; min-width: 64px; border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.matriz td.cab { text-align: left; font-weight: 600; white-space: nowrap; background: var(--surface); position: sticky; left: 0; z-index: 1; }
+.matriz th { text-align: center; white-space: normal; min-width: 64px; font-size: 0.66rem; }
+.matriz td small { display: block; font-size: 0.68rem; color: var(--muted); }
+.matriz td.pouco { opacity: 0.45; }
+.matriz td.espelho { background: var(--sunken); color: var(--muted); }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font: 11px var(--f-body); }
+.chart .grade { stroke: var(--line); stroke-width: 1; }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8rem; color: var(--muted); }
+.legenda i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.resultado { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.lado { display: flex; flex-direction: column; min-width: 0; }
+.lado.dir { text-align: right; align-items: flex-end; }
+.nome { font: 800 1.3rem var(--f-display); overflow-wrap: anywhere; }
+.p1 { color: var(--p1); } .p2 { color: var(--p2); }
+.placar { font: 800 2.3rem var(--f-display); font-variant-numeric: tabular-nums; text-align: center; line-height: 1; }
+.placar small { display: block; font: 600 0.68rem var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.tipo { font: 500 0.72rem var(--f-mono); padding: 1px 6px; border-radius: 4px; background: var(--sunken); border: 1px solid var(--line); white-space: nowrap; }
+.tipo.premio { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.dots { display: inline-flex; gap: 3px; } .dots span { width: 8px; height: 11px; border-radius: 2px; background: var(--accent); }
+.progresso { height: 8px; background: var(--sunken); border-radius: 4px; overflow: hidden; } .progresso span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+.aviso { border-left: 3px solid var(--accent); padding: 8px 12px; background: var(--sunken); border-radius: 0 7px 7px 0; font-size: 0.88rem; }
+.aviso.erro { border-left-color: var(--bad); }
+.vazio { color: var(--muted); padding: 28px 0; text-align: center; }
+.toast { position: fixed; right: 16px; bottom: 16px; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; z-index: 20; }
+.teste { background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-family: var(--f-mono); font-size: 0.78rem; white-space: pre-wrap; min-height: 40px; }
+.regras input[type=text] { width: 100%; font-family: var(--f-mono); font-size: 0.76rem; }
+/* áreas da navegação */
+.areas { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--sunken); padding: 4px; border-radius: 9px; margin: 0 2px 10px; }
+.areas button { border: none; background: transparent; padding: 7px 6px; font-size: 0.82rem; color: var(--muted); }
+.areas button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.trilha { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+img.ico { width: 34px; height: 28px; object-fit: contain; vertical-align: middle; margin-right: 2px; flex: none; }
+.deck-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.deck-cards figure { margin: 0; position: relative; } .deck-cards img { width: 100%; border-radius: 6px; aspect-ratio: 245/337; background: var(--sunken); }
+.deck-cards figcaption { font-size: .72rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deck-cards .qtd { position: absolute; top: 4px; left: 4px; background: var(--ink); color: var(--bg); font: 700 .78rem var(--f-body); padding: 1px 7px; border-radius: 999px; }
+.lista-decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.cartao-deck { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); }
+.cartao-deck:hover { border-color: var(--muted); }
+.cartao-deck.arquivado { opacity: .6; }
+img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; border-radius: 3px; vertical-align: middle; margin-right: 8px; background: var(--sunken); }
+.cel-carta { display: inline-flex; align-items: center; }
+/* replay */
+.replay { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.mesa { background: var(--mesa); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; color: #E6EBF3; }
+.lado-mesa { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: center; }
+.lado-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; min-width: 0; }
+.rp-nome { font: 700 0.95rem var(--f-display); overflow-wrap: anywhere; }
+.rp-nome.p1 { color: #8FB4FF; } .rp-nome.p2 { color: #FF9C8A; }
+.rp-vez { display: inline-block; font: 600 0.62rem var(--f-body); letter-spacing: .08em; text-transform: uppercase; background: var(--accent); color: var(--on-accent); padding: 1px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+.premios { display: grid; grid-template-columns: repeat(3, 18px); gap: 3px; }
+.premios span { width: 18px; height: 25px; border-radius: 3px; border: 1px dashed rgba(255,255,255,.35); }
+.premios span.cheio { border: 1px solid #0b1a3a; background: linear-gradient(135deg, #2B63D9 0 45%, #f2f2f2 45% 55%, #D2432F 55%); }
+.campo { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.banco { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; min-height: 112px; align-items: center; }
+.carta { position: relative; border-radius: 7px; transition: transform .2s, box-shadow .2s; }
+.carta img { display: block; width: 100%; aspect-ratio: 245 / 337; border-radius: 7px; background: #2a3447; }
+.carta.grande { width: 118px; } .carta.peq { width: 78px; }
+.carta.vazia { width: 118px; aspect-ratio: 245/337; border: 2px dashed rgba(255,255,255,.25); }
+.carta.foco { box-shadow: 0 0 0 3px var(--accent); transform: translateY(-3px); }
+.carta.alvo { box-shadow: 0 0 0 3px #ff5a4a; animation: tremer .35s; }
+@keyframes tremer { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.carta .dano { position: absolute; top: 4px; right: 4px; background: #d8352a; color: #fff; font: 700 0.72rem var(--f-body); padding: 1px 6px; border-radius: 999px; border: 2px solid #fff; font-variant-numeric: tabular-nums; }
+.anexos { position: absolute; left: 3px; bottom: -8px; display: flex; gap: 2px; flex-wrap: wrap; max-width: 100%; }
+.anexos .en { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; color: #222; font-style: normal; }
+.anexos img.fer { width: 18px; height: 25px; border-radius: 2px; border: 1px solid #fff; aspect-ratio: auto; }
+.centro-mesa { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(255,255,255,.12); padding: 8px 0; font-size: 0.82rem; flex-wrap: wrap; }
+.estadio { display: flex; align-items: center; gap: 8px; } .estadio img { width: 34px; border-radius: 3px; }
+.ko-lista { color: rgba(230,235,243,.7); font-size: 0.74rem; }
+.rp-lateral { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 12px; }
+.rp-destaque { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: start; }
+.rp-destaque img { width: 110px; border-radius: 7px; aspect-ratio: 245/337; background: var(--sunken); }
+.rp-log { max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; font-size: 0.8rem; }
+.rp-log div { padding: 4px 10px; cursor: pointer; border-bottom: 1px solid var(--line); }
+.rp-log div.turno { background: var(--sunken); font-weight: 600; }
+.rp-log div.atual { background: color-mix(in srgb, var(--accent) 30%, var(--surface)); }
+.controles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controles input[type=range] { flex: 1 1 200px; }
+:root { --mesa: #1d3b2f; }
+@media (prefers-color-scheme: dark) { :root { --mesa: #15291f; } }
+@media (max-width: 1100px) { .replay { grid-template-columns: 1fr; } .rp-lateral { position: static; } }
+@media (max-width: 600px) { .lado-mesa { grid-template-columns: 1fr; } .carta.grande, .carta.vazia { width: 92px; } .carta.peq { width: 58px; } .banco { min-height: 84px; } }
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; background: none; }
+  nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; }
+  nav .grupo, nav .estado { display: none; }
+  .areas { width: 100%; }
+  main { padding: 18px 16px 48px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="marca">Coletor TCG Live<small>Partidas e campeonatos</small></div>
+    <div class="areas">
+      <button data-ir="meu" aria-pressed="true">Minhas partidas</button>
+      <button data-ir="geral" aria-pressed="false">Geral</button>
+    </div>
+    <a href="#painel" data-area="meu">Painel</a>
+    <a href="#partidas" data-area="meu">Partidas</a>
+    <a href="#desempenho" data-area="meu">Desempenho</a>
+    <a href="#decks" data-area="meu">Meus decks</a>
+    <a href="#meta" data-area="geral">Meta</a>
+    <a href="#matchups" data-area="geral">Matchups</a>
+    <a href="#deck" data-area="geral">Perfil de deck</a>
+    <a href="#cartas" data-area="geral">Uso de cartas</a>
+    <a href="#cartas-mu" data-area="geral">Cartas x matchups</a>
+    <a href="#torneios" data-area="geral">Torneios</a>
+    <details class="programa" id="nav-programa">
+      <summary><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Programa<span class="seta">›</span></summary>
+      <a href="#ajustes">Ajustes e captura</a>
+      <a href="#biblioteca">Biblioteca de cartas</a>
+      <a href="#revisao">Linhas não lidas<span class="badge" id="badge-revisao" hidden></span></a>
+      <a href="#regras">Regras de leitura</a>
+    </details>
+    <div class="estado" id="estado"></div>
+  </nav>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =====================================================================
+   Painel do Coletor. Conversa com o app.py pelos endereços /api/...
+   Cada aba tem uma função render<Nome>() que busca os dados e desenha.
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const main = $('#main');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (x, d = 1) => x == null ? '–' : Number(x).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = x => x == null ? '–' : fmt(x) + '%';
+const CORES = ['--c1','--c2','--c3','--c4','--c5','--c6','--c7','--c8'].map(v => `var(${v})`);
+
+const AJUDA_CONEXAO = 'Não consegui falar com o programa. Confira: 1) a janela preta do Coletor está aberta (abra pelo iniciar_windows.bat); 2) o endereço no navegador é http://127.0.0.1:8765, e não um arquivo aberto com dois cliques; 3) se você clicou dentro da janela preta, aperte Esc nela. Depois recarregue esta página (F5).';
+async function api(url, opts = {}) {
+  if (location.protocol === 'file:') throw new Error('Esta página foi aberta como arquivo. Ela só funciona pelo programa: rode o iniciar_windows.bat e use o endereço http://127.0.0.1:8765.');
+  let r;
+  try { r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts }); }
+  catch (e) { throw new Error(AJUDA_CONEXAO); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.erro || (j.erros ? Object.values(j.erros).join('; ') : `Erro ${r.status}`));
+  return j;
+}
+let toastT;
+function toast(msg, link, rotulo) {
+  const t = $('#toast'); t.textContent = msg;
+  if (link) { const a = document.createElement('a'); a.href = '#' + link; a.textContent = rotulo || 'Ver'; t.appendChild(a); }
+  t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, link ? 7000 : 2600);
+}
+
+const S = { status: null, ultimaVista: null, selTorneios: [], top: 0, corte: 32, deck: '', partida: null, importando: false };
+
+/* ---------------- componentes reutilizáveis ---------------- */
+function taxaHtml(g) {
+  if (!g || g.taxa == null) return '<span class="muted">–</span>';
+  return `<span class="wr">${pct(g.taxa)}</span> <span class="ic">${g.ic_baixo != null ? `${fmt(g.ic_baixo, 0)}–${fmt(g.ic_alto, 0)}%` : ''}</span>`;
+}
+function barraDivergente(taxa) {
+  if (taxa == null) return '<div class="div-barra"></div>';
+  const d = Math.max(-50, Math.min(50, taxa - 50));
+  const cor = d >= 0 ? 'var(--good)' : 'var(--bad)';
+  const esq = d >= 0 ? 50 : 50 + d;
+  return `<div class="div-barra" title="${pct(taxa)}"><span style="left:${esq}%;width:${Math.abs(d)}%;background:${cor}"></span></div>`;
+}
+function corTaxa(taxa) {
+  if (taxa == null) return '';
+  const d = Math.max(-30, Math.min(30, taxa - 50)) / 30;
+  const base = d >= 0 ? 'var(--good)' : 'var(--bad)';
+  return `background: color-mix(in srgb, ${base} ${Math.round(Math.abs(d) * 55)}%, var(--surface));`;
+}
+function tabelaGrupos(lista, titulo, extra, formato) {
+  if (!lista.length) return `<p class="muted">Sem dados ainda.</p>`;
+  return `<div class="tabela"><table><thead><tr><th>${titulo}</th><th class="n">Partidas</th><th class="n">V–D</th><th>Taxa de vitória</th><th></th>${extra ? '<th>Nos campeonatos</th>' : ''}</tr></thead><tbody>
+    ${lista.map(g => `<tr><td>${formato ? formato(g.grupo) : esc(g.grupo)}</td><td class="n">${g.n}</td><td class="n">${g.v}–${g.d}</td><td>${taxaHtml(g)}</td><td style="width:30%">${barraDivergente(g.taxa)}</td>
+      ${extra ? `<td>${g.meta_taxa != null ? `${pct(g.meta_taxa)} <span class="ic">${g.meta_n} partidas</span>` : '<span class="muted">–</span>'}</td>` : ''}</tr>`).join('')}
+  </tbody></table></div>`;
+}
+function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', altura = 240 } = {}) {
+  const W = 640, H = altura, m = { l: 40, r: 14, t: 12, b: 34 };
+  const n = Math.max(rotulosX.length - 1, 1);
+  const x = i => m.l + (rotulosX.length === 1 ? (W - m.l - m.r) / 2 : (i / n) * (W - m.l - m.r));
+  const y = v => H - m.b - ((v - min) / (max - min || 1)) * (H - m.t - m.b);
+  let g = '';
+  const passoY = (max - min) / 4;
+  for (let k = 0; k <= 4; k++) { const v = min + k * passoY; g += `<line class="grade" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v, 0)}${sufixo}</text>`; }
+  const pulo = Math.ceil(rotulosX.length / 8);
+  rotulosX.forEach((r, i) => { if (i % pulo === 0 || i === rotulosX.length - 1) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle">${esc(r)}</text>`; });
+  const linhas = series.map((s, k) => {
+    const pts = s.valores.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
+    if (!pts.length) return '';
+    const cor = s.cor || CORES[k % CORES.length];
+    const ultimo = pts[pts.length - 1];
+    return `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="${ultimo[0]}" cy="${ultimo[1]}" r="3.5" fill="${cor}"/>`;
+  }).join('');
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${g}${linhas}</svg></div>
+    <div class="legenda">${series.map((s, k) => `<span><i style="background:${s.cor || CORES[k % CORES.length]}"></i>${esc(s.nome)}</span>`).join('')}</div>`;
+}
+function seletorTorneios() {
+  if (!S.torneios || !S.torneios.length) return `<div class="aviso">Nenhum torneio importado ainda. Vá em <a href="#torneios">Importar torneios</a>.</div>`;
+  return `<div class="row"><span class="label">Torneios</span>
+    <div class="chips">${S.torneios.map(t => `<button class="chip ch-torneio" data-id="${t.id}" aria-pressed="${!S.selTorneios.length || S.selTorneios.includes(t.id)}">${esc(t.nome)}</button>`).join('')}</div></div>`;
+}
+function ligarSeletor(recarregar) {
+  document.querySelectorAll('.ch-torneio').forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    let sel = S.selTorneios.length ? [...S.selTorneios] : S.torneios.map(t => t.id);
+    sel = sel.includes(id) ? sel.filter(x => x !== id) : [...sel, id];
+    S.selTorneios = sel.length === S.torneios.length ? [] : sel;
+    recarregar();
+  });
+}
+const qsTorneios = () => S.selTorneios.length ? `torneios=${S.selTorneios.join(',')}` : '';
+async function carregarTorneios() { S.torneios = await api('/api/torneios'); }
+
+/* ---------------- status (canto da navegação) ---------------- */
+async function atualizarStatus() {
+  try {
+    const st = await api('/api/status');
+    const anterior = S.status;
+    S.status = st;
+    const c = st.coletor, a = st.automatico;
+    $('#estado').innerHTML = `
+      <span><span class="luz ${c.ativo ? 'on' : 'off'}"></span>Captura ${c.ativo ? 'ligada' : 'desligada'}</span>
+      <span><span class="luz ${a.ligado ? (a.erro ? 'warn' : 'on') : ''}"></span>Modo automático ${a.ligado ? esc(a.status) : 'desligado'}</span>
+      <span><span class="luz ${st.sincronizacao.ligado ? 'on' : ''}"></span>Torneios: ${st.sincronizacao.rodando ? 'verificando…' : st.sincronizacao.ligado ? 'atualização automática' : 'atualização manual'}</span>
+      ${c.ultima ? `<span>Última captura: ${esc(c.ultima.quando)}</span>` : ''}
+      <span class="muted">Versão ${esc(st.versao || '?')}</span>
+      ${st.atualizacao?.disponivel ? `<div class="aviso-versao">Nova versão ${esc(st.atualizacao.remota)} disponível<button onclick="location.hash='ajustes'">Ver atualização</button></div>` : ''}
+      ${st.importacao.ativo ? `<span><span class="luz warn"></span>Importando ${esc(st.importacao.torneio)}: ${st.importacao.pct}%</span>` : ''}`;
+    if (c.ultima && S.ultimaVista !== null && c.ultima.id !== S.ultimaVista) {
+      if (c.ultima.nao_lidas) toast(`Nova partida registrada (#${c.ultima.id}) com ${c.ultima.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
+      else toast(`Nova partida registrada (#${c.ultima.id})`);
+      if (['painel', 'partidas', 'desempenho'].includes(aba())) render();
+    }
+    S.ultimaVista = c.ultima ? c.ultima.id : S.ultimaVista ?? 0;
+    if (aba() === 'torneios') { atualizarProgresso(st.importacao); atualizarSync(st.sincronizacao); }
+    const bd = $('#badge-revisao'); bd.hidden = !st.linhas_pendentes; bd.textContent = st.linhas_pendentes || '';
+    if (anterior && anterior.importacao.ativo && !st.importacao.ativo) {
+      await carregarTorneios();
+      toast(st.importacao.erro && !st.importacao.resumo ? 'Importação falhou' : 'Importação concluída');
+      if (aba() === 'torneios') render();
+    }
+  } catch (e) { $('#estado').innerHTML = `<span><span class="luz off"></span>Programa fechado</span>`; }
+}
+
+/* ---------------- roteamento ---------------- */
+const ROTAS = { painel: renderPainel, partidas: renderPartidas, desempenho: renderDesempenho, meta: renderMeta,
+  matchups: renderMatchups, deck: renderDeck, cartas: renderCartas, torneios: renderTorneios, ajustes: renderAjustes,
+  regras: renderRegras, biblioteca: renderBiblioteca,
+  decks: renderMeusDecks, partida: () => renderDetalhe(rota().id), replay: () => renderReplay(rota().id),
+  meudeck: () => renderMeuDeck(rota().id), 'cartas-mu': renderCartasMatchups, revisao: renderRevisao };
+// Cada aba pertence a uma área: "meu" (suas partidas) ou "geral" (campeonatos e meta).
+const AREA = { painel: 'meu', partidas: 'meu', desempenho: 'meu', partida: 'meu', replay: 'meu', decks: 'meu', meudeck: 'meu',
+  meta: 'geral', matchups: 'geral', deck: 'geral', cartas: 'geral', 'cartas-mu': 'geral', torneios: 'geral' };
+const INICIO_AREA = { meu: 'painel', geral: 'meta' };
+S.area = 'meu';
+function rota() {
+  const h = location.hash.slice(1);
+  const m = h.match(/^(partida|replay|meudeck)-(\d+)$/);
+  if (m) return { nome: m[1], id: Number(m[2]) };
+  return { nome: (h in ROTAS && !['partida', 'replay', 'meudeck'].includes(h)) ? h : 'painel' };
+}
+const aba = () => rota().nome;
+async function render() {
+  const r = aba();
+  S.area = AREA[r] || S.area;
+  document.querySelectorAll('.areas button').forEach(b => b.setAttribute('aria-pressed', b.dataset.ir === S.area));
+  document.querySelectorAll('nav a[data-area]').forEach(a => a.hidden = a.dataset.area !== S.area);
+  const marcar = ['partida', 'replay'].includes(r) ? 'partidas' : r === 'meudeck' ? 'decks' : r;
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('ativo', a.getAttribute('href') === '#' + marcar));
+  if (['ajustes', 'biblioteca', 'regras', 'revisao'].includes(r)) $('#nav-programa').open = true;
+  if (S.rp?.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
+  try { await ROTAS[r](); }
+  catch (e) { main.innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; }
+}
+window.addEventListener('hashchange', render);
+document.querySelectorAll('.areas button').forEach(b => b.onclick = () => { S.area = b.dataset.ir; location.hash = INICIO_AREA[b.dataset.ir]; });
+const imgNome = (nome, alta) => `/cartas/imagem?nome=${encodeURIComponent(nome || '')}${alta ? '&q=high' : ''}`;
+const imgId = (id, nome) => id ? `/cartas/imagem?id=${encodeURIComponent(id)}` : imgNome(nome);
+// ---- decks: nome do Limitless + ícone do Pokémon (PokémonDB)
+S.arq = {}; S.arqLista = [];
+async function carregarArquetipos() {
+  try { S.arqLista = await api('/api/arquetipos'); S.arq = Object.fromEntries(S.arqLista.map(a => [a.slug, a])); } catch (e) {}
+}
+function pokeId(nome) {
+  let s = (nome || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/\u2019/g, "'").toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  s = s.replace(/-(ex|v|vstar|vmax|gx)$/, '').replace(/^(team-rocket-s|[a-z]+-s|n)-/, '');
+  const mega = s.startsWith('mega-'); if (mega) s = s.slice(5);
+  return s + (mega ? '-mega' : '');
+}
+const nomeDeck = v => (S.arq[v] && S.arq[v].nome) || v || '';
+function icones(v) {
+  if (!v) return '';
+  const ics = S.arq[v] ? S.arq[v].icones : [pokeId(v)];
+  return ics.map(i => `<img class="ico" src="/icone/${encodeURIComponent(i)}" alt="" loading="lazy">`).join('');
+}
+const deckHtml = v => v ? `<span class="cel-carta">${icones(v)}${esc(nomeDeck(v))}</span>` : '<span class="muted">—</span>';
+function seletorDeck(id, valor, palpite) {
+  const conhecido = !valor || S.arq[valor];
+  return `<div class="row" style="flex-wrap:nowrap;gap:6px;min-width:0"><span id="${id}-ico" class="cel-carta">${icones(valor || palpite)}</span>
+    <select id="${id}" class="grow" style="min-width:0">
+      <option value="">Automático${palpite ? ` (${esc(nomeDeck(palpite))})` : ''}</option>
+      ${S.arqLista.map(a => `<option value="${esc(a.slug)}" ${a.slug === valor ? 'selected' : ''}>${esc(a.nome)}</option>`).join('')}
+      ${!conhecido ? `<option value="${esc(valor)}" selected>${esc(valor)}</option>` : ''}
+      <option value="__outro">Outro (digitar)…</option>
+    </select><input id="${id}-outro" placeholder="Nome do deck" hidden></div>`;
+}
+function ligarSeletorDeck(id, palpite) {
+  const sel = $('#' + id), outro = $('#' + id + '-outro');
+  sel.onchange = () => { outro.hidden = sel.value !== '__outro'; $('#' + id + '-ico').innerHTML = icones(sel.value === '__outro' ? '' : (sel.value || palpite)); };
+  return () => sel.value === '__outro' ? outro.value.trim() : sel.value;
+}
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+function fmtData(iso, hora) {
+  if (!iso) return '';
+  const [d, tm] = iso.split('T'); const [a, m, dd] = d.split('-');
+  return `${dd}/${MESES[Number(m) - 1]}/${a.slice(2)}` + (hora && tm ? ` <span class="muted">${tm.slice(0, 5)}</span>` : '');
+}
+const mini = (nome, id) => nome ? `<img class="mini" src="${imgId(id, nome)}" alt="" loading="lazy">` : '';
+
+/* =====================================================================
+   SUAS PARTIDAS
+   ===================================================================== */
+function trilha() { return `<span class="trilha">${S.area === 'geral' ? 'Geral' : 'Minhas partidas'}</span>`; }
+async function renderPainel() {
+  const d = await api('/api/partidas');
+  const pend = S.status?.linhas_pendentes || 0;
+  const t = d.total, ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
+  const ult = d.partidas.slice(0, 8);
+  main.innerHTML = `
+    ${trilha()}<header><h1>Painel</h1><p class="sub">${d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${pend ? `<div class="aviso">${pend} partida(s) com linhas que o leitor não reconheceu. <a href="#revisao">Revisar agora</a></div>` : ''}
+    <div class="kpis">
+      <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${d.sem_resultado ? `${d.sem_resultado} sem resultado identificado` : 'com resultado'}</span></div>
+      <div class="kpi"><span class="label">Taxa de vitória</span><span class="v">${pct(t.taxa)}</span><span class="d">${t.ic_baixo != null ? `provável entre ${fmt(t.ic_baixo, 0)}% e ${fmt(t.ic_alto, 0)}%` : '–'}</span></div>
+      <div class="kpi"><span class="label">Começando</span><span class="v">${pct(ordem['Começando']?.taxa)}</span><span class="d">${ordem['Começando']?.n ?? 0} partidas</span></div>
+      <div class="kpi"><span class="label">Indo em segundo</span><span class="v">${pct(ordem['Indo em segundo']?.taxa)}</span><span class="d">${ordem['Indo em segundo']?.n ?? 0} partidas</span></div>
+    </div>
+    <section class="panel">
+      <div class="row"><h2 class="grow">Últimas partidas</h2><a class="btn" href="#partidas">Ver todas</a></div>
+      ${ult.length ? tabelaPartidas(ult) : '<p class="vazio">Nenhuma partida ainda. Jogue uma partida e exporte o Battle Log, ou cole um log abaixo.</p>'}
+    </section>
+    <section class="panel">
+      <h2>Adicionar log manualmente</h2>
+      <p class="sub">Para logs antigos ou copiados no celular. Logs repetidos são ignorados.</p>
+      <textarea id="manual" rows="5" placeholder="Cole aqui o log (Setup, Turn # 1 - ...)"></textarea>
+      <div class="row"><button class="primary" id="btn-manual">Registrar partida</button></div>
+    </section>`;
+  ligarLinhasPartidas();
+  $('#btn-manual').onclick = async () => {
+    try { const r = await api('/api/partidas', { method: 'POST', body: JSON.stringify({ texto: $('#manual').value }) });
+      if (r.nova && r.nao_lidas) toast(`Partida #${r.id} registrada com ${r.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
+      else toast(r.nova ? `Partida #${r.id} registrada` : 'Esse log já estava registrado');
+      render(); }
+    catch (e) { toast(e.message); }
+  };
+}
+
+function tabelaPartidas(lista) {
+  return `<div class="tabela alta"><table><thead><tr><th>Data</th><th>Resultado</th><th>Adversário</th><th>Seu deck</th><th>Deck dele</th><th class="n">Prêmios</th><th class="n">Turnos</th><th>Ordem</th><th>Motivo</th></tr></thead><tbody>
+    ${lista.map(l => `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
+      <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>
+      <td>${l.resultado === 'V' ? '<span class="pill v">Vitória</span>' : l.resultado === 'D' ? '<span class="pill d">Derrota</span>' : '<span class="pill n">?</span>'}</td>
+      <td>${esc(l.adversario)}</td><td>${deckHtml(l.meu_deck)}${l.lista_nome ? `<div class="muted" style="font-size:.74rem">lista: ${esc(l.lista_nome)}</div>` : ''}</td><td>${deckHtml(l.deck_adv)}</td>
+      <td class="n">${l.premios_eu}–${l.premios_adv}</td><td class="n">${l.turnos}</td>
+      <td>${l.comecei == null ? '' : l.comecei ? '1º' : '2º'}</td><td class="muted">${esc(l.motivo)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function ligarLinhasPartidas() {
+  document.querySelectorAll('tr.clicavel[data-id]').forEach(tr => tr.onclick = () => { location.hash = 'partida-' + tr.dataset.id; });
+}
+
+async function renderPartidas() {
+  const f = S.filtroPartidas || (S.filtroPartidas = { deck: '', tag: '', de: '', ate: '' });
+  const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString();
+  const d = await api('/api/partidas?' + qs);
+  const decks = [...new Set(d.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
+  const lista = d.partidas.filter(l => (!f.deck || l.meu_deck === f.deck) && (!f.tag || (l.tags || '').toLowerCase().includes(f.tag.toLowerCase()))
+    && (!f.de || l.data.slice(0, 10) >= f.de) && (!f.ate || l.data.slice(0, 10) <= f.ate));
+  main.innerHTML = `
+    ${trilha()}<header><h1>Partidas</h1><p class="sub">Clique numa partida para ver o detalhe, corrigir o nome dos decks e anotar.</p></header>
+    <div class="row">
+      <select id="f-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
+      <input id="f-tag" placeholder="Tag (ex.: liga)" value="${esc(f.tag)}">
+      <label class="label" for="f-de">De</label><input type="date" id="f-de" value="${f.de}">
+      <label class="label" for="f-ate">Até</label><input type="date" id="f-ate" value="${f.ate}">
+      <span class="grow"></span>
+      <a class="btn" href="/exportar/minhas_partidas.csv">Baixar para Excel</a>
+      <a class="btn" href="/exportar/eventos.csv">Baixar eventos</a>
+    </div>
+    <p class="muted num">${lista.length} partidas</p>
+    ${lista.length ? tabelaPartidas(lista) : '<p class="vazio">Nenhuma partida com esses filtros.</p>'}`;
+  ['deck', 'tag', 'de', 'ate'].forEach(k => $('#f-' + k).onchange = e => { f[k] = e.target.value; renderPartidas(); });
+  ligarLinhasPartidas();
+}
+
+function graficoPremios(r, a, b) {
+  const W = 520, H = 220, m = { l: 30, r: 12, t: 12, b: 28 };
+  const n = Math.max(r.turnos, 1);
+  const x = t => m.l + (t / n) * (W - m.l - m.r), y = v => H - m.b - (v / 6) * (H - m.t - m.b);
+  const deg = s => { if (!s) return ''; let d = `M${x(0)},${y(s[0])}`; for (let t = 1; t < s.length; t++) d += ` H${x(t)} V${y(s[t])}`; return d; };
+  let g = '';
+  for (let v = 0; v <= 6; v += 2) g += `<line class="grade" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  const passo = n > 12 ? 2 : 1;
+  for (let t = 0; t <= n; t += passo) g += `<text x="${x(t)}" y="${H - 8}" text-anchor="middle">${t === 0 ? 'Setup' : 'T' + t}</text>`;
+  const fim = (s, cor) => s ? `<circle cx="${x(s.length - 1)}" cy="${y(s[s.length - 1])}" r="4" fill="${cor}"/>` : '';
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${g}
+    <path d="${deg(r.serie[a])}" fill="none" stroke="var(--p1)" stroke-width="2.5"/><path d="${deg(r.serie[b])}" fill="none" stroke="var(--p2)" stroke-width="2.5"/>
+    ${fim(r.serie[a], 'var(--p1)')}${fim(r.serie[b], 'var(--p2)')}</svg></div>
+    <div class="legenda"><span><i style="background:var(--p1)"></i>${esc(a)}</span><span><i style="background:var(--p2)"></i>${esc(b)}</span></div>`;
+}
+
+async function renderDetalhe(id) {
+  const [p, listas] = await Promise.all([api('/api/partidas/' + id), api('/api/decks').catch(() => [])]);
+  const v = p.visao, r = p.resumo;
+  const a = v.eu, b = v.adversario;
+  const pa = r.por_jogador[a] || {}, pb = r.por_jogador[b] || {};
+  const pill = j => r.vencedor ? (r.vencedor === j ? '<span class="pill v">Venceu</span>' : '<span class="pill n">Perdeu</span>') : '';
+  const linhas = [['Prêmios pegos','premios'],['Nocautes causados','nocautes'],['Dano total','dano'],['Ataques','ataques'],['Cartas jogadas','jogadas'],['Energias ligadas','energias'],['Evoluções','evolucoes'],['Mulligans','mulligans']];
+  main.innerHTML = `
+    <div class="row"><button id="voltar">← Partidas</button><a class="btn primary" href="#replay-${p.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">▶ Ver replay</a><span class="grow"></span><span class="muted num">#${p.id} · ${fmtData(p.capturada_em, true)} · origem: ${esc(p.origem)}</span></div>
+    <section class="panel">
+      <div class="resultado">
+        <div class="lado"><span class="label">${a === r.primeiro ? 'Começou' : 'Segundo'}</span><span class="nome p1">${esc(a)}</span>${pill(a)}</div>
+        <div class="placar">${pa.premios ?? 0}–${pb.premios ?? 0}<small>prêmios · ${r.turnos} turnos</small></div>
+        <div class="lado dir"><span class="label">${b === r.primeiro ? 'Começou' : 'Segundo'}</span><span class="nome p2">${esc(b)}</span>${pill(b)}</div>
+      </div>
+      <p class="muted">${fmtData(p.capturada_em, true)} · Motivo: <b>${esc(r.motivo)}</b>${r.motivo === 'Não identificado' && r.linha_final ? ` <span class="mono">("${esc(r.linha_final)}")</span>` : ''}${p.qtd_nao_lidas ? ` · <a href="#revisao">${p.qtd_nao_lidas} linha(s) não lida(s): revisar</a>` : ''}</p>
+    </section>
+    <section class="panel">
+      <h2>Classificar esta partida</h2>
+      <div class="grid2">
+        <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Seu deck</span>${seletorDeck('e-meu', p.meu_deck, p.meu_deck ? '' : v.meu_deck)}</div>
+        <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Deck dele</span>${seletorDeck('e-adv', p.deck_adv, p.deck_adv ? '' : v.deck_adv)}</div>
+        <label class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Lista usada</span>
+          <select id="e-lista" class="grow"><option value="">Nenhuma</option>${listas.map(d => `<option value="${d.id}" ${d.id === p.deck_id ? 'selected' : ''}>${esc(d.nome)}${d.ativo ? '' : ' (arquivada)'}</option>`).join('')}</select></label>
+        <label class="row"><span class="label" style="width:110px">Tags</span><input class="grow" id="e-tags" value="${esc(p.tags)}" placeholder="ex.: liga, teste-lista-2"></label>
+        <label class="row"><span class="label" style="width:110px">Notas</span><input class="grow" id="e-notas" value="${esc(p.notas)}"></label>
+      </div>
+      <div class="row"><button class="primary" id="salvar">Salvar</button><span class="grow"></span><button class="perigo" id="apagar">Apagar partida</button></div>
+      <p class="muted">"Automático" usa o deck identificado pelas cartas reveladas, comparadas com os decks do Limitless. A lista usada vem de <a href="#decks">Meus decks</a> e é ligada sozinha quando as cartas batem.</p>
+    </section>
+    <div class="grid2">
+      <section class="panel"><h2>Corrida de prêmios</h2>${graficoPremios(r, a, b)}</section>
+      <section class="panel"><h2>Comparativo</h2>
+        <table><thead><tr><th></th><th class="n p1">${esc(a)}</th><th class="n p2">${esc(b)}</th></tr></thead>
+        <tbody>${linhas.map(([n, k]) => `<tr><td>${n}</td><td class="n">${pa[k] ?? 0}</td><td class="n">${pb[k] ?? 0}</td></tr>`).join('')}</tbody></table></section>
+    </div>
+    <section class="panel"><h2>Nocautes</h2>
+      ${r.nocautes.length ? `<table><tbody>${r.nocautes.map(k => `<tr><td class="mono" style="width:60px">T${k.turno}</td><td><span class="${k.autor === a ? 'p1' : 'p2'}">${esc(k.autor)}</span> nocauteou ${esc(k.carta)}</td><td class="n"><span class="dots">${'<span></span>'.repeat(k.premios)}</span></td></tr>`).join('')}</tbody></table>` : '<p class="muted">Nenhum nocaute.</p>'}
+    </section>
+    <section class="panel"><h2>Eventos</h2>
+      <div class="tabela alta"><table><thead><tr><th class="n">Linha</th><th class="n">Turno</th><th>Tipo</th><th>Jogador</th><th>Carta</th><th>Alvo</th><th class="n">Valor</th><th>Texto</th></tr></thead><tbody>
+      ${p.eventos.map(e => `<tr><td class="n">${e.linha}</td><td class="n">${e.turno}</td><td><span class="tipo ${e.tipo}">${esc(e.tipo)}</span></td><td>${esc(e.jogador)}</td><td>${esc(e.carta)}</td><td>${esc(e.alvo)}</td><td class="n">${e.valor ?? ''}</td><td class="mono">${esc(e.texto)}</td></tr>`).join('')}
+      </tbody></table></div></section>`;
+  $('#voltar').onclick = () => { location.hash = 'partidas'; };
+  const valorMeu = ligarSeletorDeck('e-meu', v.meu_deck), valorAdv = ligarSeletorDeck('e-adv', v.deck_adv);
+  $('#salvar').onclick = async () => {
+    const lista = $('#e-lista').value;
+    await api('/api/partidas/' + id, { method: 'PATCH', body: JSON.stringify({ meu_deck: valorMeu(), deck_adv: valorAdv(),
+      deck_id: lista ? Number(lista) : null, tags: $('#e-tags').value.trim(), notas: $('#e-notas').value.trim() }) });
+    toast('Partida atualizada'); renderDetalhe(id);
+  };
+  $('#apagar').onclick = async () => {
+    if (!confirm('Apagar esta partida do banco? A cópia em dados/logs continua guardada.')) return;
+    await api('/api/partidas/' + id, { method: 'DELETE' }); toast('Partida apagada'); location.hash = 'partidas';
+  };
+}
+
+function barrasMatchup(lista, extra) {
+  if (!lista.length) return '<p class="muted">Sem partidas ainda.</p>';
+  return `<div class="mu-lista">${lista.map(g => `<div class="mu-linha" title="${g.ic_baixo != null ? `Provável entre ${fmt(g.ic_baixo, 0)}% e ${fmt(g.ic_alto, 0)}%` : ''}${extra && g.meta_taxa != null ? ` · nos campeonatos: ${pct(g.meta_taxa)}` : ''}">
+      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${deckHtml(g.grupo)}</span>
+      <div class="mu-barra"><span class="${g.taxa >= 50 ? 'bom' : 'ruim'}" style="width:${Math.max(g.taxa || 0, 1)}%">${fmt(g.taxa, 0)}%</span></div>
+      <span class="wl">${g.v}V-${g.d}D</span><span class="nn">n=${g.n}</span></div>`).join('')}</div>`;
+}
+const PERIODOS = [[1, '1D'], [7, '7D'], [30, '30D'], [90, '90D'], [0, 'Tudo']];
+async function renderDesempenho() {
+  const f = S.filtroDes || (S.filtroDes = { de: '', ate: '', deck: '', adv: '', periodo: 0 });
+  if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
+  const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, adv: f.adv }).filter(([, v]) => v)).toString();
+  const d = await api('/api/partidas?' + qs);
+  const todos = await api('/api/partidas');
+  const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
+  const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
+  const ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
+  const kpi = (ico, cls, rotulo, v, det) => `<div class="kpi2"><span class="ico-kpi ${cls}">${ico}</span><div><span class="label">${rotulo}</span><div class="v">${v}</div><span class="d">${det}</span></div></div>`;
+  const classe = g => g && g.taxa != null ? (g.taxa >= 50 ? 'bom' : 'ruim') : 'neutro';
+  main.innerHTML = `
+    ${trilha()}<header><h1>Desempenho</h1><p class="sub">Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
+    <div class="row">
+      <div class="chips-periodo">${PERIODOS.map(([v, r]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${r}</button>`).join('')}</div>
+      <label class="label" for="d-de">De</label><input type="date" id="d-de" value="${f.de}">
+      <label class="label" for="d-ate">Até</label><input type="date" id="d-ate" value="${f.ate}">
+      <span class="grow"></span>
+      <select id="d-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
+      <select id="d-adv"><option value="">Todos os adversários</option>${advs.map(x => `<option value="${esc(x)}" ${f.adv === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
+    </div>
+    <div class="kpis">
+      ${kpi('◎', classe(d.total), 'Geral', pct(d.total.taxa), `${d.total.v}V - ${d.total.d}D - ${d.total.e}E`)}
+      ${kpi('↗', classe(ordem['Começando']), 'Começando', pct(ordem['Começando']?.taxa), `${ordem['Começando']?.v ?? 0}V / ${ordem['Começando']?.n ?? 0} partidas`)}
+      ${kpi('↘', classe(ordem['Indo em segundo']), 'Indo em segundo', pct(ordem['Indo em segundo']?.taxa), `${ordem['Indo em segundo']?.v ?? 0}V / ${ordem['Indo em segundo']?.n ?? 0} partidas`)}
+      ${kpi('#', 'neutro', 'Total de partidas', d.total.n, `turnos médios: ${fmt(d.turnos_medios.vitorias)} nas vitórias, ${fmt(d.turnos_medios.derrotas)} nas derrotas`)}
+    </div>
+    <section class="panel"><span class="label">Matchups pessoais</span>${barrasMatchup(d.por_adversario, true)}</section>
+    <section class="panel"><span class="label">Com cada deck seu</span>${barrasMatchup(d.por_meu_deck)}</section>
+    ${d.por_lista.length ? `<section class="panel"><h2>Com cada lista (Meus decks)</h2>${tabelaGrupos(d.por_lista, 'Lista')}</section>` : ''}
+    <div class="grid2">
+      <section class="panel"><h2>Ordem de jogo</h2>${tabelaGrupos(d.ordem, 'Ordem')}</section>
+      <section class="panel"><h2>Primeiro nocaute</h2>${tabelaGrupos(d.primeiro_nocaute, 'Quem nocauteou primeiro')}</section>
+      <section class="panel"><h2>Mulligan</h2>${tabelaGrupos(d.mulligan, 'Mão inicial')}</section>
+      <section class="panel"><h2>Como as partidas terminam</h2>${tabelaGrupos(d.motivos, 'Motivo')}</section>
+    </div>
+    <section class="panel"><h2>Evolução da taxa de vitória</h2>
+      ${d.tendencia.length > 1 ? graficoLinhas([{ nome: 'Taxa acumulada', valores: d.tendencia.map(t => t.taxa_acumulada), cor: 'var(--p1)' }], d.tendencia.map(t => t.dia.slice(5).split('-').reverse().join('/'))) : '<p class="muted">Precisa de partidas em pelo menos dois dias.</p>'}
+    </section>`;
+  $('#d-deck').onchange = e => { f.deck = e.target.value; renderDesempenho(); };
+  $('#d-adv').onchange = e => { f.adv = e.target.value; renderDesempenho(); };
+  $('#d-de').onchange = e => { f.de = e.target.value; f.periodo = 0; renderDesempenho(); };
+  $('#d-ate').onchange = e => { f.ate = e.target.value; f.periodo = 0; renderDesempenho(); };
+  document.querySelectorAll('[data-periodo]').forEach(b => b.onclick = () => { f.periodo = Number(b.dataset.periodo); if (!f.periodo) { f.de = ''; f.ate = ''; } renderDesempenho(); });
+}
+
+/* =====================================================================
+   CAMPEONATOS
+   ===================================================================== */
+async function renderMeta() {
+  await carregarTorneios();
+  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Meta</h1></header>${seletorTorneios()}`; return; }
+  const m = await api(`/api/meta?${qsTorneios()}&top=${S.top}&corte=${S.corte}`);
+  const tend = await api('/api/tendencia?k=8');
+  const maxPct = Math.max(...m.divisao.map(d => d.pct), 1);
+  main.innerHTML = `
+    ${trilha()}<header><h1>Meta</h1><p class="sub">Quanto cada deck aparece, quanto vence (sem contar mirrors) e quanto converte para o topo.</p></header>
+    ${seletorTorneios()}
+    <div class="row">
+      <label class="label" for="m-top">Considerar</label>
+      <select id="m-top">${[[0,'Todos os jogadores'],[512,'Top 512'],[256,'Top 256'],[128,'Top 128'],[64,'Top 64'],[32,'Top 32'],[16,'Top 16'],[8,'Top 8']].map(([v, t]) => `<option value="${v}" ${S.top == v ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      <label class="label" for="m-corte">Conversão para o</label>
+      <select id="m-corte">${[8,16,32,64,128].map(v => `<option value="${v}" ${S.corte == v ? 'selected' : ''}>Top ${v}</option>`).join('')}</select>
+      <span class="grow"></span><a class="btn" href="/exportar/meta.csv?${qsTorneios()}&top=${S.top}">Baixar para Excel</a>
+    </div>
+    <section class="panel">
+      <p class="muted num">${m.jogadores_considerados} jogadores com deck conhecido${m.sem_deck ? `, ${m.sem_deck} sem deck informado` : ''}.</p>
+      <div class="tabela alta"><table><thead><tr><th>Deck</th><th class="n">Jogadores</th><th>% do campo</th><th>Taxa de vitória</th><th class="n">V–D–E</th><th class="n">No Top ${m.corte}</th><th class="n">Conversão</th><th class="n" title="Participação no corte dividida pela participação no campo. Acima de 1 = converte melhor que a média.">Fator</th></tr></thead><tbody>
+      ${m.divisao.map(d => `<tr class="clicavel" data-arq="${esc(d.arquetipo)}"><td><span class="cel-carta">${icones(d.arquetipo)}<b>${esc(d.nome)}</b></span></td><td class="n">${d.jogadores}</td>
+        <td><div class="row" style="flex-wrap:nowrap"><div class="barra grow"><span style="width:${100 * d.pct / maxPct}%"></span></div><span class="num" style="width:52px;text-align:right">${pct(d.pct)}</span></div></td>
+        <td>${taxaHtml(d)}</td><td class="n">${d.v}–${d.d}–${d.e}</td><td class="n">${d.no_corte}</td><td class="n">${pct(d.conversao)}</td>
+        <td class="n" style="${d.fator_conversao != null ? corTaxa(50 + (d.fator_conversao - 1) * 30) : ''}">${d.fator_conversao != null ? fmt(d.fator_conversao, 2) : '–'}</td></tr>`).join('')}
+      </tbody></table></div>
+    </section>
+    <section class="panel"><h2>Tendência do meta</h2><p class="sub">Participação dos 8 decks mais jogados em cada torneio importado, em ordem de data.</p>
+      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5) }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
+    </section>`;
+  ligarSeletor(renderMeta);
+  $('#m-top').onchange = e => { S.top = Number(e.target.value); renderMeta(); };
+  $('#m-corte').onchange = e => { S.corte = Number(e.target.value); renderMeta(); };
+  document.querySelectorAll('tr[data-arq]').forEach(tr => tr.onclick = () => { S.deck = tr.dataset.arq; location.hash = 'deck'; });
+}
+
+async function renderMatchups() {
+  await carregarTorneios();
+  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Matchups</h1></header>${seletorTorneios()}`; return; }
+  S.k = S.k || 12; S.minMu = S.minMu ?? 10;
+  const m = await api(`/api/meta?${qsTorneios()}&top=${S.top}&k=${S.k}&min=${S.minMu}`);
+  main.innerHTML = `
+    ${trilha()}<header><h1>Matchups</h1><p class="sub">Leia pela linha: taxa de vitória do deck da linha contra o deck da coluna. Células apagadas têm menos de ${S.minMu} partidas.</p></header>
+    ${seletorTorneios()}
+    <div class="row">
+      <label class="label" for="mu-k">Decks na tabela</label><select id="mu-k">${[6,8,10,12,15,20].map(v => `<option ${S.k == v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <label class="label" for="mu-min">Mínimo de partidas</label><select id="mu-min">${[0,5,10,20,50].map(v => `<option ${S.minMu == v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <span class="grow"></span><a class="btn" href="/exportar/torneios.csv">Baixar partidas dos torneios</a>
+    </div>
+    <section class="panel"><div class="tabela"><table class="matriz">
+      <thead><tr><th></th>${m.colunas.map(c => `<th>${icones(c.arquetipo)}<br>${esc(c.nome)}</th>`).join('')}</tr></thead>
+      <tbody>${m.matriz.map(l => `<tr><td class="cab"><span class="cel-carta">${icones(l.arquetipo)}${esc(l.nome)}</span></td>${l.celulas.map((c, i) => c.espelho ? '<td class="espelho">mirror</td>'
+        : `<td class="${c.pouco ? 'pouco' : ''}" style="${c.n ? corTaxa(c.taxa) : ''}" title="${esc(l.nome)} contra ${esc(m.colunas[i].nome)}: ${c.v}-${c.d}-${c.e} (${c.n} partidas)">${c.n ? pct(c.taxa) : '–'}<small>${c.n || ''}</small></td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div></section>`;
+  ligarSeletor(renderMatchups);
+  $('#mu-k').onchange = e => { S.k = Number(e.target.value); renderMatchups(); };
+  $('#mu-min').onchange = e => { S.minMu = Number(e.target.value); renderMatchups(); };
+}
+
+async function renderDeck() {
+  await carregarTorneios();
+  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Perfil de deck</h1></header>${seletorTorneios()}`; return; }
+  const m = await api(`/api/meta?${qsTorneios()}`);
+  if (!S.deck || !m.divisao.some(d => d.arquetipo === S.deck)) S.deck = m.divisao[0]?.arquetipo || '';
+  const p = S.deck ? await api(`/api/deck/${encodeURIComponent(S.deck)}?${qsTorneios()}`) : null;
+  main.innerHTML = `
+    ${trilha()}<header><h1>Perfil de deck</h1><p class="sub">Participação, matchups contra o campo, colocações e esqueleto da lista.</p></header>
+    ${seletorTorneios()}
+    <div class="row"><label class="label" for="p-deck">Deck</label>
+      <select id="p-deck">${m.divisao.map(d => `<option value="${esc(d.arquetipo)}" ${d.arquetipo === S.deck ? 'selected' : ''}>${esc(d.nome)} (${pct(d.pct)})</option>`).join('')}</select></div>
+    ${p ? `
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:nowrap">
+    <img src="${imgNome(p.nome, true)}" alt="${esc(p.nome)}" style="width:150px;border-radius:9px;flex:none" onerror="this.hidden=true">
+    <div class="kpis grow" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="kpi"><span class="label">Jogadores</span><span class="v">${p.jogadores}</span><span class="d">${pct(p.pct)} do campo</span></div>
+      <div class="kpi"><span class="label">Taxa esperada contra o campo</span><span class="v">${pct(p.taxa_esperada)}</span><span class="d">matchups ponderados pela presença de cada deck</span></div>
+      <div class="kpi"><span class="label">No Top 8</span><span class="v">${p.colocacoes['Top 8']}</span><span class="d">${p.colocacoes['Top 32']} no Top 32</span></div>
+      <div class="kpi"><span class="label">Listas analisadas</span><span class="v">${p.listas}</span><span class="d">importadas do Labs</span></div>
+    </div></div>
+    <section class="panel"><h2>Matchups contra o campo</h2>
+      <div class="tabela alta"><table><thead><tr><th>Contra</th><th class="n">% do campo</th><th>Taxa de vitória</th><th></th><th class="n">V–D–E</th></tr></thead><tbody>
+      ${p.spread.filter(s => s.n).map(s => `<tr><td><span class="cel-carta">${icones(s.arquetipo)}${esc(s.nome)}</span>${s.arquetipo === p.arquetipo ? ' <span class="muted">(mirror)</span>' : ''}</td><td class="n">${pct(s.pct_campo)}</td><td>${taxaHtml(s)}</td><td style="width:28%">${barraDivergente(s.taxa)}</td><td class="n">${s.v}–${s.d}–${s.e}</td></tr>`).join('')}
+      </tbody></table></div></section>
+    <div class="grid2">
+      <section class="panel"><h2>Melhores colocações</h2>
+        <table><thead><tr><th class="n">Pos.</th><th>Jogador</th><th>Torneio</th><th class="n">V–D–E</th></tr></thead><tbody>
+        ${p.melhores.map(j => `<tr><td class="n">${j.posicao}</td><td>${esc(j.nome)}</td><td class="muted">${esc((S.torneios.find(t => t.id === j.torneio) || {}).nome || j.torneio)}</td><td class="n">${j.v}–${j.d}–${j.e}</td></tr>`).join('')}
+        </tbody></table></section>
+      <section class="panel"><h2>Presença por torneio</h2>
+        ${p.por_torneio.length > 1 ? graficoLinhas([{ nome: p.nome, valores: p.por_torneio.map(t => t.pct), cor: 'var(--p1)' }], p.por_torneio.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...p.por_torneio.map(t => t.pct)) / 5) * 5) }) : '<p class="muted">Importe mais torneios para ver a evolução.</p>'}
+        <table><tbody>${Object.entries(p.colocacoes).map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('')}</tbody></table>
+      </section>
+    </div>
+    <section class="panel"><h2>Esqueleto da lista</h2>
+      ${p.esqueleto.length ? tabelaCartas(p.esqueleto) : '<p class="muted">Nenhuma lista importada para este deck. Ao importar um torneio, escolha quantas listas do topo baixar.</p>'}
+    </section>` : ''}`;
+  ligarSeletor(renderDeck);
+  $('#p-deck').onchange = e => { S.deck = e.target.value; renderDeck(); };
+}
+
+function tabelaCartas(cartas) {
+  return `<div class="tabela alta"><table><thead><tr><th>Carta</th><th class="n">% das listas</th><th class="n">Média de cópias</th><th title="Para cada número de cópias: quantas listas e a taxa de vitória delas (0× = listas sem a carta)">Cópias: listas (vitória)</th><th class="n">Vitória com</th><th class="n">Vitória sem</th></tr></thead><tbody>
+    ${cartas.map(c => `<tr><td><span class="cel-carta">${mini(c.carta, c.carta_id)}${esc(c.carta)}</span></td><td class="n">${pct(c.pct)}</td><td class="n">${fmt(c.media_copias, 2)}</td>
+      <td class="num" style="font-size:.8rem">${Object.entries(c.por_copias || {}).map(([q, x]) => `<span title="${x.listas} listas com ${q} cópia(s)" style="white-space:nowrap"><b>${q}×</b> ${x.listas} <span style="${x.taxa != null ? 'color:' + (x.taxa >= 50 ? 'var(--good)' : 'var(--bad)') : ''}">(${pct(x.taxa)})</span></span>`).join(' · ')}</td>
+      <td class="n">${pct(c.taxa_com)}</td><td class="n">${pct(c.taxa_sem)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+async function renderCartas() {
+  await carregarTorneios();
+  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Cartas</h1></header>${seletorTorneios()}`; return; }
+  const m = await api(`/api/meta?${qsTorneios()}`);
+  const c = await api(`/api/cartas?${qsTorneios()}&arq=${encodeURIComponent(S.deckCartas || '')}`);
+  const com = S.torneios.filter(t => t.qtd_listas);
+  main.innerHTML = `
+    ${trilha()}<header><h1>Cartas</h1><p class="sub">Quanto cada carta é usada e o desempenho de quem a usa ("Vitória com") contra quem não usa ("Vitória sem"). Diferença grande pode ser sinal, mas não prova causa.</p></header>
+    ${seletorTorneios()}
+    <div class="row"><label class="label" for="c-deck">Deck</label>
+      <select id="c-deck"><option value="">Todos os decks</option>${m.divisao.map(d => `<option value="${esc(d.arquetipo)}" ${d.arquetipo === S.deckCartas ? 'selected' : ''}>${esc(d.nome)}</option>`).join('')}</select>
+      <span class="muted num">${c.listas} listas</span></div>
+    <section class="panel">${c.cartas.length ? tabelaCartas(c.cartas) : '<p class="muted">Nenhuma lista importada. Ao importar um torneio, deixe "listas do topo" maior que zero.</p>'}</section>
+    <section class="panel"><h2>Comparar duas listas</h2>
+      ${com.length ? `<div class="grid2">
+        <div class="row"><select id="cmp-ta">${com.map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select><select id="cmp-ia" class="grow"></select></div>
+        <div class="row"><select id="cmp-tb">${com.map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select><select id="cmp-ib" class="grow"></select></div>
+      </div><div class="row"><button class="primary" id="cmp-ir">Comparar</button></div><div id="cmp-out"></div>` : '<p class="muted">Importe listas para comparar.</p>'}
+    </section>`;
+  ligarSeletor(renderCartas);
+  $('#c-deck').onchange = e => { S.deckCartas = e.target.value; renderCartas(); };
+  if (com.length) {
+    const preencher = async lado => {
+      const js = (await api('/api/jogadores?torneio=' + $('#cmp-t' + lado).value)).filter(j => j.cartas);
+      $('#cmp-i' + lado).innerHTML = js.map(j => `<option value="${esc(j.labs_id)}">${j.posicao}º ${esc(j.nome)} (${esc(j.arquetipo)})</option>`).join('');
+    };
+    $('#cmp-ta').onchange = () => preencher('a'); $('#cmp-tb').onchange = () => preencher('b');
+    await preencher('a'); await preencher('b');
+    $('#cmp-ir').onclick = async () => {
+      const dif = await api(`/api/comparar?ta=${$('#cmp-ta').value}&ia=${$('#cmp-ia').value}&tb=${$('#cmp-tb').value}&ib=${$('#cmp-ib').value}`);
+      $('#cmp-out').innerHTML = `<div class="tabela alta"><table><thead><tr><th>Carta</th><th class="n">Lista A</th><th class="n">Lista B</th><th class="n">Diferença</th></tr></thead><tbody>
+        ${dif.map(l => `<tr><td>${esc(l.carta)}</td><td class="n">${l.a}</td><td class="n">${l.b}</td><td class="n" style="color:${l.dif > 0 ? 'var(--good)' : l.dif < 0 ? 'var(--bad)' : 'var(--muted)'}">${l.dif > 0 ? '+' : ''}${l.dif}</td></tr>`).join('')}</tbody></table></div>`;
+    };
+  }
+}
+
+async function renderCartasMatchups() {
+  await carregarTorneios();
+  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Cartas x matchups</h1></header>${seletorTorneios()}`; return; }
+  const m = await api(`/api/meta?${qsTorneios()}`);
+  S.cmuDeck = S.cmuDeck && m.divisao.some(d => d.arquetipo === S.cmuDeck) ? S.cmuDeck : (m.divisao[0]?.arquetipo || '');
+  const uso = S.cmuDeck ? await api(`/api/cartas?${qsTorneios()}&arq=${encodeURIComponent(S.cmuDeck)}`) : { cartas: [] };
+  // cartas que variam de quantidade entre as listas (as que todo mundo joga 4 não dizem nada)
+  const candidatas = uso.cartas.filter(c => Object.keys(c.por_copias || {}).length > 1);
+  if (!S.cmuCarta || !candidatas.some(c => c.chave === S.cmuCarta)) S.cmuCarta = candidatas[0]?.chave || '';
+  const r = S.cmuCarta ? await api(`/api/cartas/matchups?${qsTorneios()}&arq=${encodeURIComponent(S.cmuDeck)}&carta=${encodeURIComponent(S.cmuCarta)}&min=${S.minMu ?? 5}`).catch(() => null) : null;
+  const carta = candidatas.find(c => c.chave === S.cmuCarta);
+  main.innerHTML = `
+    ${trilha()}<header><h1>Cartas x matchups</h1><p class="sub">Para um deck, compara a taxa de vitória contra cada adversário conforme quantas cópias de uma carta a lista tinha. Ajuda a decidir se uma carta de tech ou uma cópia a mais vale o espaço. Mirrors não contam.</p></header>
+    ${seletorTorneios()}
+    <div class="row">
+      <span class="cel-carta">${icones(S.cmuDeck)}</span>
+      <select id="cmu-deck">${m.divisao.map(d => `<option value="${esc(d.arquetipo)}" ${d.arquetipo === S.cmuDeck ? 'selected' : ''}>${esc(d.nome)}</option>`).join('')}</select>
+      <select id="cmu-carta" class="grow">${candidatas.map(c => `<option value="${esc(c.chave)}" ${c.chave === S.cmuCarta ? 'selected' : ''}>${esc(c.carta)} · em ${pct(c.pct)} das listas</option>`).join('') || '<option>Nenhuma carta com quantidade variável</option>'}</select>
+      <label class="label" for="cmu-min">Mínimo de partidas</label><select id="cmu-min">${[0, 3, 5, 10, 20].map(v => `<option ${(S.minMu ?? 5) == v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+    </div>
+    ${carta ? `<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:16px"><img src="${imgId(carta.carta_id, carta.carta)}" alt="" style="width:110px;border-radius:7px;flex:none">
+      <section class="panel grow" style="min-width:0">
+      ${r && r.linhas.length ? `<p class="muted">${r.listas} listas de ${esc(r.nome)} com resultado. Células apagadas têm menos de ${S.minMu ?? 5} partidas.</p>
+      <div class="tabela"><table class="matriz"><thead><tr><th>Cópias</th><th>Listas</th><th>Geral</th>${r.colunas.map(c => `<th>${icones(c.arquetipo)}<br>${esc(c.nome)}</th>`).join('')}</tr></thead>
+      <tbody>${r.linhas.map(l => `<tr><td class="cab">${l.copias}×</td><td>${l.listas}</td><td style="${l.geral.n ? corTaxa(l.geral.taxa) : ''}">${l.geral.n ? pct(l.geral.taxa) : '–'}<small>${l.geral.n || ''}</small></td>
+        ${l.celulas.map((c, i) => `<td class="${c.pouco ? 'pouco' : ''}" style="${c.n ? corTaxa(c.taxa) : ''}" title="${l.copias}× contra ${esc(r.colunas[i].nome)}: ${c.v}-${c.d}-${c.e}">${c.n ? pct(c.taxa) : '–'}<small>${c.n || ''}</small></td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+      : '<p class="muted">Sem partidas suficientes para esta combinação.</p>'}
+      </section></div>` : '<p class="muted">Importe torneios com listas (Listas do topo maior que zero) para usar esta análise.</p>'}`;
+  ligarSeletor(renderCartasMatchups);
+  $('#cmu-deck').onchange = e => { S.cmuDeck = e.target.value; S.cmuCarta = ''; renderCartasMatchups(); };
+  $('#cmu-carta').onchange = e => { S.cmuCarta = e.target.value; renderCartasMatchups(); };
+  $('#cmu-min').onchange = e => { S.minMu = Number(e.target.value); renderCartasMatchups(); };
+}
+
+async function renderTorneios() {
+  await carregarTorneios();
+  const st = await api('/api/status');
+  S.status = st;
+  const imp = st.importacao, cfg = st.config;
+  main.innerHTML = `
+    ${trilha()}<header><h1>Importar torneios</h1><p class="sub">Classificação, decks e listas vêm do Limitless Labs; o resultado de cada mesa vem do RK9, a fonte oficial que o Labs também usa. Um Regional grande leva alguns minutos.</p></header>
+    <section class="panel"><h2>Atualização automática</h2>
+      <p class="sub">O RK9 e o Limitless Labs não avisam quando sai um torneio novo. Por isso o programa verifica sozinho enquanto estiver aberto, importa os torneios que faltam e atualiza os que foram importados antes do resultado final.</p>
+      <div class="row">
+        <button id="s-toggle" class="${cfg.sincronizar_auto ? '' : 'primary'}">${cfg.sincronizar_auto ? 'Desligar' : 'Ligar'} atualização automática</button>
+        <label class="label" for="s-horas">Verificar a cada</label>
+        <select id="s-horas">${[1, 3, 6, 12, 24].map(v => `<option value="${v}" ${cfg.sincronizar_horas == v ? 'selected' : ''}>${v} h</option>`).join('')}</select>
+        <label class="label" for="s-dias">Torneios dos últimos</label>
+        <select id="s-dias">${[15, 30, 45, 90, 180, 365].map(v => `<option value="${v}" ${cfg.sincronizar_dias == v ? 'selected' : ''}>${v} dias</option>`).join('')}</select>
+        <span class="grow"></span><button id="s-agora">Verificar agora</button>
+      </div>
+      <p class="muted" id="s-info"></p>
+    </section>
+    <section class="panel"><h2>Importar um torneio específico</h2>
+      <div class="row">
+        <button class="primary" id="t-buscar">Buscar torneios no Limitless Labs</button>
+        <span class="grow"></span>
+        <label class="label" for="t-listas">Listas do topo</label>
+        <input id="t-listas" type="number" min="0" max="512" value="${cfg.listas_top ?? 64}" style="width:80px" title="Quantas listas de cartas baixar (0 = nenhuma)">
+        <input id="t-id" placeholder="Nº do torneio (ex.: 0078)" style="width:200px">
+        <button id="t-importar-id">Importar</button>
+      </div>
+      <div id="t-prog" ${imp.ativo || imp.erro || imp.resumo ? '' : 'hidden'}>
+        <div class="row"><span class="grow" id="t-etapa">${esc(imp.etapa || '')}</span><span class="num" id="t-pct">${imp.pct || 0}%</span></div>
+        <div class="progresso"><span id="t-barra" style="width:${imp.pct || 0}%"></span></div>
+        <p id="t-msg" class="muted">${esc(imp.resumo || '')}</p>
+        <p id="t-erro" class="aviso erro" ${imp.erro ? '' : 'hidden'}>${esc(imp.erro || '')}</p>
+      </div>
+      <div id="t-lista"></div>
+    </section>
+    <section class="panel"><h2>Torneios importados</h2>
+      ${S.torneios.length ? `<div class="tabela"><table><thead><tr><th>Torneio</th><th>Data</th><th class="n">Jogadores</th><th class="n">Partidas</th><th class="n">Listas</th><th>Importado em</th><th></th></tr></thead><tbody>
+        ${S.torneios.map(t => `<tr><td><b>${esc(t.nome)}</b> <span class="muted mono">${t.id}</span></td><td class="num">${fmtData(t.data)}</td><td class="n">${t.jogadores ?? ''}</td><td class="n">${t.qtd_partidas}</td><td class="n">${t.qtd_listas}</td><td class="muted num">${esc((t.importado_em || '').replace('T', ' ').slice(0, 16))}</td>
+          <td class="row" style="flex-wrap:nowrap"><button data-reimp="${t.id}">Atualizar</button><button class="perigo" data-del="${t.id}">Apagar</button></td></tr>`).join('')}
+      </tbody></table></div>` : '<p class="vazio">Nenhum torneio importado ainda.</p>'}
+    </section>`;
+  const salvarCfg = obj => api('/api/config', { method: 'POST', body: JSON.stringify(obj) }).then(() => setTimeout(renderTorneios, 300));
+  $('#s-toggle').onclick = () => salvarCfg({ sincronizar_auto: !cfg.sincronizar_auto });
+  $('#s-horas').onchange = e => salvarCfg({ sincronizar_horas: Number(e.target.value) });
+  $('#s-dias').onchange = e => salvarCfg({ sincronizar_dias: Number(e.target.value) });
+  $('#t-listas').onchange = e => api('/api/config', { method: 'POST', body: JSON.stringify({ listas_top: Number(e.target.value) || 0 }) });
+  $('#s-agora').onclick = async () => {
+    try { await api('/api/sincronizar', { method: 'POST' }); toast('Verificando torneios novos…'); setTimeout(atualizarStatus, 800); }
+    catch (e) { toast(e.message); }
+  };
+  atualizarSync(st.sincronizacao);
+  const importar = async id => {
+    S.listasTop = Number($('#t-listas').value) || 0;
+    try { await api('/api/limitless/importar', { method: 'POST', body: JSON.stringify({ id, listas_top: S.listasTop }) });
+      $('#t-prog').hidden = false; toast(`Importando ${id}…`); setTimeout(atualizarStatus, 500); }
+    catch (e) { toast(e.message); }
+  };
+  $('#t-importar-id').onclick = () => importar($('#t-id').value.trim());
+  document.querySelectorAll('[data-reimp]').forEach(b => b.onclick = () => importar(b.dataset.reimp));
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('Apagar este torneio do banco local?')) return;
+    await api('/api/torneios/' + b.dataset.del, { method: 'DELETE' }); toast('Torneio apagado'); renderTorneios();
+  });
+  $('#t-buscar').onclick = async () => {
+    $('#t-lista').innerHTML = '<p class="muted">Buscando…</p>';
+    try {
+      const evs = await api('/api/limitless/eventos');
+      const ja = new Set(S.torneios.map(t => t.id));
+      $('#t-lista').innerHTML = `<div class="tabela alta"><table><thead><tr><th>Nº</th><th>Torneio</th><th></th></tr></thead><tbody>
+        ${evs.map(e => `<tr><td class="mono">${e.id}</td><td>${esc(e.titulo)}</td><td>${ja.has(e.id) ? '<span class="pill v">importado</span>' : `<button data-imp="${e.id}">Importar</button>`}</td></tr>`).join('')}</tbody></table></div>`;
+      document.querySelectorAll('[data-imp]').forEach(b => b.onclick = () => importar(b.dataset.imp));
+    } catch (e) { $('#t-lista').innerHTML = `<p class="aviso erro">${esc(e.message)}</p>`; }
+  };
+}
+function atualizarSync(s) {
+  const el = $('#s-info'); if (!el) return;
+  el.textContent = [s.rodando ? 'Verificando agora…' : '', s.ultima ? `Última verificação: ${s.ultima}` : 'Ainda não verificou nesta sessão',
+    s.proxima && s.ligado ? `próxima: ${s.proxima}` : '', s.mensagem && !s.rodando ? s.mensagem : ''].filter(Boolean).join(' · ');
+}
+function atualizarProgresso(imp) {
+  if (!$('#t-prog')) return;
+  if (imp.ativo || imp.erro || imp.resumo) $('#t-prog').hidden = false;
+  $('#t-etapa').textContent = imp.etapa || ''; $('#t-pct').textContent = (imp.pct || 0) + '%';
+  $('#t-barra').style.width = (imp.pct || 0) + '%'; $('#t-msg').textContent = imp.resumo || '';
+  $('#t-erro').hidden = !imp.erro; $('#t-erro').textContent = imp.erro || '';
+}
+
+/* =====================================================================
+   PROGRAMA
+   ===================================================================== */
+async function renderAjustes() {
+  const st = await api('/api/status');
+  const cfg = st.config, a = st.automatico;
+  main.innerHTML = `
+    ${trilha()}<header><h1>Ajustes e captura</h1></header>
+    <section class="panel"><h2>Quem é você</h2>
+      <div class="row"><label class="label" for="a-nick">Seu nick no TCG Live</label><input id="a-nick" value="${esc(cfg.nick)}" placeholder="exatamente como aparece no log"><button class="primary" id="a-salvar-nick">Salvar</button></div>
+      <p class="muted">Sem o nick, o programa assume que você é o jogador que mais aparece nos logs.</p>
+    </section>
+    <section class="panel"><h2>Captura pela área de transferência</h2>
+      <p>Com o programa aberto, ao fim da partida clique em <b>Battle Log</b> e no botão de exportar (canto superior direito). O log é gravado na hora.</p>
+      <div class="row"><span><span class="luz ${st.coletor.ativo ? 'on' : 'off'}"></span>${st.coletor.ativo ? 'Ligada' : 'Desligada'}</span>
+        <button id="a-coletor">${cfg.coletor_ativo ? 'Desligar' : 'Ligar'}</button>
+        <span class="muted">${st.coletor.capturadas} capturadas nesta sessão</span></div>
+      ${st.coletor.erro ? `<p class="aviso erro">${esc(st.coletor.erro)}</p>` : ''}
+    </section>
+    <section class="panel"><h2>Modo automático <span class="pill n">experimental</span></h2>
+      <p>O programa reconhece a tela de resultado e clica em <b>Battle Log</b> e em <b>exportar</b> por você. Ele não lê a memória do jogo nem joga por você, mas é automação de cliques no cliente do jogo: use por sua conta e risco.</p>
+      <ol class="sub" style="margin:0;padding-left:20px">
+        <li>Instale o extra: <span class="mono">pip install -r requirements-auto.txt</span> (o instalador pergunta).</li>
+        <li>Na tela de resultado, recorte só o botão "Battle Log" (Windows: Win+Shift+S) e salve como <span class="mono">modelos/botao_battle_log.png</span>.</li>
+        <li>Abra o Battle Log, recorte o botão de exportar e salve como <span class="mono">modelos/botao_exportar.png</span>.</li>
+        <li>Opcional: o botão de fechar o log, como <span class="mono">modelos/botao_fechar.png</span>.</li>
+      </ol>
+      <div class="row">
+        <button class="${cfg.modo_automatico ? '' : 'primary'}" id="a-auto">${cfg.modo_automatico ? 'Desligar modo automático' : 'Ligar modo automático'}</button>
+        <label class="label" for="a-conf">Precisão</label>
+        <select id="a-conf">${[0.75, 0.8, 0.85, 0.9, 0.95].map(v => `<option value="${v}" ${cfg.confianca_imagem == v ? 'selected' : ''}>${Math.round(v * 100)}%</option>`).join('')}</select>
+        <span class="muted">Status: ${esc(a.status)} · ${a.cliques} exportações automáticas</span>
+      </div>
+      <div class="grid3">${[['battle_log', 'Botão "Battle Log" (obrigatório)'], ['exportar', 'Botão de exportar (obrigatório)'], ['fechar', 'Botão de fechar (opcional)']].map(([k, rot]) => `
+        <div class="panel" style="padding:12px;gap:8px"><span class="label">${rot}</span>
+          <img src="/modelos/${k}?t=${Date.now()}" alt="" style="max-height:60px;max-width:100%;object-fit:contain;align-self:flex-start" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'muted',textContent:'Ainda não enviada'}))">
+          <label class="btn" style="position:relative;overflow:hidden;align-self:flex-start">Enviar PNG<input type="file" accept="image/png" data-modelo="${k}" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label></div>`).join('')}</div>
+      ${a.faltando.length ? `<p class="aviso">Faltam as imagens: ${a.faltando.map(esc).join(', ')}</p>` : ''}
+      ${a.erro ? `<p class="aviso erro">${esc(a.erro)}</p>` : ''}
+    </section>
+    <section class="panel"><h2>Procurar o log nos arquivos do jogo</h2>
+      <p class="sub">Verifica se o TCG Live também grava o log em algum arquivo do computador. Só lê, não altera nada.</p>
+      <div class="row"><button id="a-diag">Procurar</button></div><div id="a-diag-out"></div>
+    </section>
+    <section class="panel"><h2>Exportar para o Excel</h2>
+      <div class="row"><a class="btn" href="/exportar/minhas_partidas.csv">Minhas partidas</a><a class="btn" href="/exportar/eventos.csv">Todos os eventos dos logs</a><a class="btn" href="/exportar/torneios.csv">Partidas dos torneios</a><a class="btn" href="/exportar/meta.csv">Meta</a></div>
+      <p class="muted">Arquivos .csv com ponto e vírgula, que abrem direto no Excel em português. O banco completo fica em <span class="mono">dados/tracker.db</span>.</p>
+    </section>
+    <section class="panel"><h2>Atualizações</h2>
+      <p class="sub">O programa confere no GitHub se há versão nova e se atualiza com um clique, sem mexer nas suas partidas e decks.</p>
+      <div class="grid2">
+        <label class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Repositório</span><input id="u-repo" class="grow" value="${esc(cfg.github_repo || '')}" placeholder="usuario/tcg-tracker"></label>
+        <label class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Token</span><input id="u-token" type="password" class="grow" value="${esc(cfg.github_token || '')}" placeholder="só se o repositório for privado"></label>
+      </div>
+      <div class="row"><button id="u-salvar">Salvar</button><button id="u-verificar">Verificar agora</button>
+        ${st.atualizacao?.disponivel ? `<button class="primary" id="u-instalar">Atualizar para ${esc(st.atualizacao.remota)}</button>` : ''}
+        <span class="muted">Instalada: ${esc(st.versao)}${st.atualizacao?.remota ? ` · No GitHub: ${esc(st.atualizacao.remota)}` : ''}${st.atualizacao?.verificado_em ? ` · verificado ${esc(st.atualizacao.verificado_em)}` : ''}</span></div>
+      ${st.atualizacao?.erro ? `<p class="aviso erro">${esc(st.atualizacao.erro)}</p>` : ''}
+      ${st.atualizacao?.mensagem ? `<p class="aviso">${esc(st.atualizacao.mensagem)}</p>` : ''}
+    </section>
+    <section class="panel"><h2>Abrir junto com o Windows</h2>
+      <p class="sub">Rode <span class="mono">iniciar_com_o_windows.bat</span> uma vez: o coletor passa a abrir sozinho, sem janela, quando o computador liga. Capturas e torneios seguem automáticos; o painel continua em <span class="mono">http://127.0.0.1:8765</span>. Para desfazer, <span class="mono">nao_iniciar_com_o_windows.bat</span>.</p>
+      <div class="row"><button class="perigo" id="a-encerrar">Encerrar o programa</button></div>
+    </section>`;
+  const salvar = async obj => { await api('/api/config', { method: 'POST', body: JSON.stringify(obj) }); setTimeout(() => { atualizarStatus(); renderAjustes(); }, 400); };
+  $('#u-salvar').onclick = () => salvar({ github_repo: $('#u-repo').value.trim(), github_token: $('#u-token').value.trim() }).then(() => toast('Salvo'));
+  $('#u-verificar').onclick = async () => { const r = await api('/api/atualizacao/verificar', { method: 'POST' }); toast(r.erro || (r.disponivel ? `Versão ${r.remota} disponível` : 'Você já está na versão mais nova')); renderAjustes(); };
+  if ($('#u-instalar')) $('#u-instalar').onclick = async () => {
+    if (!confirm('Atualizar agora? O programa vai se reiniciar sozinho; esta página volta a funcionar em alguns segundos.')) return;
+    await api('/api/atualizacao/instalar', { method: 'POST' });
+    toast('Atualizando… a página recarrega sozinha');
+    const espera = setInterval(async () => { try { const s = await api('/api/status'); if (s.versao === st.atualizacao.remota) { clearInterval(espera); location.reload(); } } catch (e) {} }, 3000);
+  };
+  $('#a-salvar-nick').onclick = () => salvar({ nick: $('#a-nick').value.trim() }).then(() => toast('Nick salvo'));
+  $('#a-coletor').onclick = () => salvar({ coletor_ativo: !cfg.coletor_ativo });
+  $('#a-auto').onclick = () => salvar({ modo_automatico: !cfg.modo_automatico });
+  $('#a-conf').onchange = e => salvar({ confianca_imagem: Number(e.target.value) });
+  document.querySelectorAll('[data-modelo]').forEach(inp => inp.onchange = async () => {
+    const fd = new FormData(); fd.append('arquivo', inp.files[0]);
+    const r = await fetch('/api/modelos/' + inp.dataset.modelo, { method: 'POST', body: fd });
+    const j = await r.json().catch(() => ({}));
+    toast(r.ok ? 'Imagem salva em modelos/' + j.arquivo : (j.erro || 'Não consegui salvar a imagem'));
+    renderAjustes();
+  });
+  $('#a-encerrar').onclick = async () => {
+    if (!confirm('Encerrar o coletor? As partidas deixam de ser capturadas até você abrir o programa de novo.')) return;
+    await api('/api/encerrar', { method: 'POST' }).catch(() => {});
+    main.innerHTML = '<p class="vazio">Programa encerrado. Abra pelo iniciar_windows.bat quando quiser.</p>';
+  };
+  $('#a-diag').onclick = async () => {
+    $('#a-diag-out').innerHTML = '<p class="muted">Procurando… pode levar um minuto.</p>';
+    const r = await api('/api/diagnostico');
+    $('#a-diag-out').innerHTML = `<p class="muted">${r.arquivos_olhados} arquivos verificados em ${r.pastas.length} pastas do jogo.</p>
+      ${r.encontrados.length ? `<p class="aviso">Arquivos que parecem conter o log:</p><ul class="mono">${r.encontrados.map(x => `<li>${esc(x.arquivo)} (${x.tamanho_kb} KB)</li>`).join('')}</ul>`
+        : '<p>Nenhum arquivo com o log. A captura pela área de transferência continua sendo o caminho.</p>'}`;
+  };
+}
+
+async function renderRegras() {
+  const d = await api('/api/regras');
+  S.regras = S.regras || d.regras;
+  main.innerHTML = `
+    ${trilha()}<header><h1>Regras de leitura</h1><p class="sub">Cada linha do log é comparada com estas expressões regulares. Grupos nomeados viram colunas: <span class="mono">(?P&lt;player&gt;…)</span>, <span class="mono">(?P&lt;card&gt;…)</span>, <span class="mono">(?P&lt;target&gt;…)</span>, <span class="mono">(?P&lt;dano&gt;\\d+)</span>. Ao salvar, todas as partidas são relidas.</p></header>
+    <section class="panel">
+      <div class="tabela"><table class="regras"><thead><tr><th>Ativa</th><th>Nome</th><th>Tipo</th><th style="width:60%">Expressão regular</th><th></th></tr></thead><tbody>
+      ${S.regras.map((r, i) => `<tr><td><input type="checkbox" data-i="${i}" class="r-ativa" ${r.ativa ? 'checked' : ''}></td>
+        <td><input type="text" data-i="${i}" class="r-id" value="${esc(r.id)}" style="width:120px"></td>
+        <td><select data-i="${i}" class="r-tipo">${Object.entries(d.tipos).map(([k, t]) => `<option value="${k}" ${r.tipo === k ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+        <td><input type="text" data-i="${i}" class="r-re" value="${esc(r.re)}" spellcheck="false">${d.erros[r.id] ? `<div class="aviso erro">${esc(d.erros[r.id])}</div>` : ''}</td>
+        <td><button class="perigo r-del" data-i="${i}">Remover</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="row"><button class="primary" id="r-salvar">Salvar e reler partidas</button><button id="r-nova">Nova regra</button><button id="r-padrao">Restaurar padrão</button></div>
+    </section>
+    <section class="panel"><h2>Testar uma linha</h2>
+      <input id="r-teste" placeholder="Cole uma linha do log" spellcheck="false"><div class="teste" id="r-out">Nenhuma linha testada.</div>
+    </section>`;
+  const set = (cls, campo, conv = x => x) => document.querySelectorAll(cls).forEach(el => el.oninput = el.onchange = () => { S.regras[el.dataset.i][campo] = conv(el); });
+  set('.r-ativa', 'ativa', el => el.checked); set('.r-id', 'id', el => el.value); set('.r-tipo', 'tipo', el => el.value); set('.r-re', 're', el => el.value);
+  document.querySelectorAll('.r-del').forEach(b => b.onclick = () => { S.regras.splice(Number(b.dataset.i), 1); renderRegras(); });
+  $('#r-nova').onclick = () => { S.regras.push({ id: 'regra_' + (S.regras.length + 1), tipo: 'outro', ativa: true, re: '^(?P<player>.+?) ' }); renderRegras(); };
+  $('#r-salvar').onclick = async () => {
+    try { const r = await api('/api/regras', { method: 'POST', body: JSON.stringify({ regras: S.regras }) }); toast(`Regras salvas. ${r.reprocessadas} partidas relidas.`); S.regras = null; renderRegras(); }
+    catch (e) { toast(e.message); }
+  };
+  $('#r-padrao').onclick = async () => { if (!confirm('Voltar às regras originais?')) return; await api('/api/regras', { method: 'POST', body: JSON.stringify({ restaurar: true }) }); S.regras = null; toast('Regras padrão restauradas'); renderRegras(); };
+  $('#r-teste').oninput = async e => {
+    const r = await api('/api/regras/testar', { method: 'POST', body: JSON.stringify({ linha: e.target.value, regras: S.regras }) }).catch(err => ({ erro: err.message }));
+    $('#r-out').textContent = r.erro ? r.erro : r.length ? r.map(x => `✓ ${x.id} (${x.tipo})\n` + Object.entries(x.grupos).map(([k, v]) => `    ${k} = "${v}"`).join('\n')).join('\n\n') : 'Nenhuma regra leu esta linha.';
+  };
+}
+
+/* =====================================================================
+   REPLAY
+   ===================================================================== */
+const COR_ENERGIA = { Grass: '#3f9b4b', Fire: '#e2552b', Water: '#2f86d6', Lightning: '#f0c419', Psychic: '#9a55c4', Fighting: '#b8692c',
+  Darkness: '#2f3540', Metal: '#9aa5b1', Fairy: '#e07bb5', Dragon: '#b0912a', Colorless: '#e9ecef', Special: '#ffffff' };
+const ROTULO = { ataque: 'Ataque', habilidade: 'Habilidade', jogada: 'Carta jogada', evolucao: 'Evolução', anexo: 'Ligou à mesa',
+  nocaute: 'Nocaute', premio: 'Prêmio', entrou: 'Entrou em jogo', recuo: 'Recuo', troca: 'Novo Pokémon Ativo', compra: 'Comprou',
+  turno: 'Novo turno', fim: 'Fim de partida', banco: 'Para o Banco', dano: 'Dano', descarte: 'Descarte', info: '' };
+
+function anexoHtml(a) {
+  if (a.tipo === 'energia' && a.energia !== 'Special') return `<i class="en" style="background:${COR_ENERGIA[a.energia] || '#fff'}" title="${esc(a.nome)}"></i>`;
+  return `<img class="fer" src="${imgNome(a.nome)}" title="${esc(a.nome)}" alt="${esc(a.nome)}">`;
+}
+function imgMesa(j, nome) {
+  const id = S.rp?.r?.versoes?.[j]?.[nome];
+  return id ? imgId(id) : imgNome(nome);
+}
+function cartaMesa(p, tam, d, j) {
+  if (!p) return `<div class="carta vazia" title="Sem Pokémon Ativo"></div>`;
+  const cls = ['carta', tam, d.uid === p.uid ? 'foco' : '', d.alvo_uid === p.uid ? 'alvo' : ''].join(' ');
+  return `<div class="${cls}" title="${esc(p.nome)}${p.dano ? ` · ${p.dano} de dano` : ''}"><img src="${imgMesa(j, p.nome)}" alt="${esc(p.nome)}">
+    ${p.dano ? `<span class="dano">${p.dano}</span>` : ''}<div class="anexos">${p.anexos.map(anexoHtml).join('')}</div></div>`;
+}
+function ladoMesa(j, m, q, cima, cor) {
+  const d = q.destaque;
+  const info = `<div class="lado-info"><span class="rp-nome ${cor}">${esc(j)}${q.vez === j ? '<span class="rp-vez">vez</span>' : ''}</span>
+    <div class="premios" title="${m.premios} prêmios restantes">${Array.from({ length: 6 }, (_, i) => `<span class="${i < m.premios ? 'cheio' : ''}"></span>`).join('')}</div>
+    <span>${m.premios} prêmio${m.premios === 1 ? '' : 's'} restante${m.premios === 1 ? '' : 's'}</span>
+    ${m.nocauteados.length ? `<span class="ko-lista">Nocauteados: ${m.nocauteados.map(esc).join(', ')}</span>` : ''}</div>`;
+  const banco = `<div class="banco">${m.banco.map(p => cartaMesa(p, 'peq', d, j)).join('') || '<span style="opacity:.6;font-size:.8rem">Banco vazio</span>'}</div>`;
+  const ativo = cartaMesa(m.ativo, 'grande', d, j);
+  return `<div class="lado-mesa">${info}<div class="campo">${cima ? banco + ativo : ativo + banco}</div></div>`;
+}
+
+async function renderReplay(id) {
+  main.innerHTML = '<p class="vazio">Montando o replay…</p>';
+  const r = await api(`/api/partidas/${id}/replay`);
+  if (!r.quadros.length) { main.innerHTML = '<div class="aviso erro">Não consegui montar o replay desta partida.</div>'; return; }
+  const eu = r.jogadores.includes(r.eu) ? r.eu : r.jogadores[0];
+  const adv = r.jogadores.find(j => j !== eu) || '';
+  S.rp = { r, i: 0, eu, adv, timer: null, vel: S.rp?.vel || 900 };
+  const turnos = r.quadros.map((q, i) => ({ q, i })).filter(x => x.q.destaque.tipo === 'turno' && x.q.vez);
+  main.innerHTML = `
+    <div class="row"><a class="btn" href="#partida-${id}">← Detalhes da partida</a></div>
+    ${trilha()}<header><h1>Replay: ${esc(eu)} x ${esc(adv)}</h1><p class="sub">${r.vencedor ? `Vitória de <b>${esc(r.vencedor)}</b>. ` : ''}${r.turnos} turnos. Use as setas do teclado ou os botões para avançar.</p></header>
+    <div class="controles">
+      <button id="rp-ini" title="Início">⏮</button><button id="rp-ant" title="Anterior (←)">◀</button>
+      <button id="rp-play" class="primary" title="Reproduzir (espaço)">▶ Reproduzir</button>
+      <button id="rp-prox" title="Próximo (→)">▶</button><button id="rp-fim" title="Fim">⏭</button>
+      <input type="range" id="rp-barra" min="0" max="${r.quadros.length - 1}" value="0" aria-label="Posição no replay">
+      <select id="rp-turno" aria-label="Ir para o turno"><option value="">Ir para o turno…</option>${turnos.map((t, k) => `<option value="${t.i}">Turno ${k + 1} · ${esc(t.q.vez)}</option>`).join('')}</select>
+      <select id="rp-vel" aria-label="Velocidade">${[[1600, 'Lento'], [900, 'Normal'], [450, 'Rápido']].map(([v, t]) => `<option value="${v}" ${S.rp.vel == v ? 'selected' : ''}>${t}</option>`).join('')}</select>
+    </div>
+    <div class="replay">
+      <div class="mesa" id="rp-mesa"></div>
+      <aside class="rp-lateral">
+        <section class="panel" id="rp-destaque"></section>
+        <div class="rp-log" id="rp-log">${r.quadros.map((q, i) => `<div data-i="${i}" class="${q.destaque.tipo === 'turno' ? 'turno' : ''}">${q.destaque.tipo === 'turno' && q.vez ? `Turno ${turnos.findIndex(t => t.i === i) + 1} · ` : ''}${esc(q.texto)}</div>`).join('')}</div>
+      </aside>
+    </div>`;
+  const ir = i => { S.rp.i = Math.max(0, Math.min(r.quadros.length - 1, i)); desenharQuadro(); };
+  $('#rp-ini').onclick = () => ir(0); $('#rp-fim').onclick = () => ir(r.quadros.length - 1);
+  $('#rp-ant').onclick = () => ir(S.rp.i - 1); $('#rp-prox').onclick = () => ir(S.rp.i + 1);
+  $('#rp-barra').oninput = e => ir(Number(e.target.value));
+  $('#rp-turno').onchange = e => { if (e.target.value !== '') ir(Number(e.target.value)); e.target.value = ''; };
+  $('#rp-vel').onchange = e => { S.rp.vel = Number(e.target.value); if (S.rp.timer) { alternarPlay(); alternarPlay(); } };
+  $('#rp-play').onclick = alternarPlay;
+  $('#rp-log').onclick = e => { const d = e.target.closest('[data-i]'); if (d) ir(Number(d.dataset.i)); };
+  desenharQuadro();
+}
+function alternarPlay() {
+  if (!S.rp) return;
+  if (S.rp.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
+  else {
+    if (S.rp.i >= S.rp.r.quadros.length - 1) S.rp.i = 0;
+    S.rp.timer = setInterval(() => {
+      if (S.rp.i >= S.rp.r.quadros.length - 1) { alternarPlay(); return; }
+      S.rp.i++; desenharQuadro();
+    }, S.rp.vel);
+  }
+  const b = $('#rp-play'); if (b) b.textContent = S.rp.timer ? '⏸ Pausar' : '▶ Reproduzir';
+}
+function desenharQuadro() {
+  const { r, i, eu, adv } = S.rp;
+  const q = r.quadros[i], e = q.estado, d = q.destaque;
+  const est = e.estadio;
+  $('#rp-mesa').innerHTML = `
+    ${adv ? ladoMesa(adv, e.mesa[adv], q, true, 'p2') : ''}
+    <div class="centro-mesa">
+      <span>Turno ${Math.max(q.turno, 0)}${q.vez ? ` · vez de <b>${esc(q.vez)}</b>` : ''}</span>
+      <span class="estadio">${est ? `<img src="${imgNome(est.nome)}" alt="">Estádio: <b>${esc(est.nome)}</b>` : 'Sem Estádio'}</span>
+      ${e.resultado ? `<span class="rp-vez">${esc(e.resultado)} venceu</span>` : ''}
+    </div>
+    ${ladoMesa(eu, e.mesa[eu], q, false, 'p1')}`;
+  const carta = d.carta || (d.tipo === 'turno' ? null : null);
+  $('#rp-destaque').innerHTML = `<div class="rp-destaque">
+      ${carta ? `<img src="${imgNome(carta, true)}" alt="${esc(carta)}">` : '<div></div>'}
+      <div style="min-width:0"><span class="label">${esc(ROTULO[d.tipo] || '')}${d.dano ? ` · ${d.dano} de dano` : ''}</span>
+        <p style="margin-top:4px">${esc(q.texto)}</p>
+        ${q.detalhes ? `<p class="muted" style="margin-top:6px;font-size:.8rem">${q.detalhes.map(esc).join('<br>')}</p>` : ''}
+        <p class="muted num" style="margin-top:6px;font-size:.75rem">Passo ${i + 1} de ${r.quadros.length} · linha ${q.linha} do log</p></div></div>`;
+  $('#rp-barra').value = i;
+  document.querySelectorAll('#rp-log div').forEach(el => el.classList.toggle('atual', Number(el.dataset.i) === i));
+  const atual = document.querySelector('#rp-log div.atual');
+  if (atual) atual.scrollIntoView({ block: 'nearest' });
+}
+document.addEventListener('keydown', e => {
+  if (aba() !== 'replay' || !S.rp || ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+  if (e.key === 'ArrowRight') { S.rp.i = Math.min(S.rp.i + 1, S.rp.r.quadros.length - 1); desenharQuadro(); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { S.rp.i = Math.max(S.rp.i - 1, 0); desenharQuadro(); e.preventDefault(); }
+  if (e.key === ' ') { alternarPlay(); e.preventDefault(); }
+});
+
+/* =====================================================================
+   REVISÃO DE LINHAS NÃO LIDAS
+   ===================================================================== */
+async function renderRevisao() {
+  const [lista, regs] = await Promise.all([api('/api/revisao'), api('/api/regras')]);
+  const realce = m => esc(m).replace(/\{([JCN])\}/g, (_, k) => `<b title="${{ J: 'nome de jogador', C: 'nome de carta', N: 'número' }[k]}">{${k}}</b>`);
+  main.innerHTML = `
+    <header><h1>Linhas não lidas</h1><p class="sub">Frases do log que nenhuma regra reconhece, agrupadas por modelo: <b>{J}</b> é um jogador, <b>{C}</b> uma carta e <b>{N}</b> um número. Para cada uma, diga se ela pode ser ignorada (não muda nenhum resultado) ou crie uma regra para lê-la. Depois de salvar, todas as partidas são relidas.</p></header>
+    ${lista.length ? lista.map((g, i) => `
+      <section class="panel" data-i="${i}">
+        <div class="row"><span class="tag-sug ${g.sugestao.acao}">${g.sugestao.acao === 'ignorar' ? 'Sugestão: ignorar' : 'Sugestão: criar regra'}</span>
+          <span class="muted">${g.vezes} vez(es) em ${g.partidas.length} partida(s) · ${esc(g.sugestao.motivo)}</span></div>
+        <div class="modelo">${realce(g.modelo)}</div>
+        <details><summary class="muted" style="cursor:pointer">Exemplos</summary>
+          <ul class="mono" style="margin:6px 0 0;padding-left:18px">${g.exemplos.map(x => `<li><a href="#partida-${x.partida}">#${x.partida}</a> linha ${x.linha}: ${esc(x.texto)}</li>`).join('')}</ul></details>
+        <div class="row">
+          <button class="${g.sugestao.acao === 'ignorar' ? 'primary' : ''}" data-ignorar="${i}">Ignorar: não impacta</button>
+          <button class="${g.sugestao.acao === 'regra' ? 'primary' : ''}" data-regra="${i}">Criar regra de leitura…</button>
+        </div>
+        <div class="form-regra" hidden style="display:flex;flex-direction:column;gap:8px">
+          <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:130px;flex:none">Tipo de evento</span>
+            <select class="r-tipo grow">${Object.entries(regs.tipos).filter(([k]) => k !== 'ignorar').map(([k, n]) => `<option value="${k}" ${k === 'outro' ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
+          <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:130px;flex:none">Expressão regular</span><input class="r-re grow mono" value="${esc(g.regex)}" spellcheck="false"></div>
+          <p class="muted" style="font-size:.8rem">Montada a partir do modelo: o 1º jogador vira <span class="mono">player</span>, a 1ª carta <span class="mono">card</span>, a 2ª <span class="mono">target</span> e o 1º número <span class="mono">qtd</span>. Você pode editar.</p>
+          <div class="teste r-teste">Testando…</div>
+          <div class="row"><button class="primary r-salvar">Salvar regra e reler partidas</button></div>
+        </div>
+      </section>`).join('') : '<p class="vazio">Nenhuma linha não lida. Todas as frases dos seus logs são reconhecidas.</p>'}`;
+  const testar = async (sec, g) => {
+    const re = sec.querySelector('.r-re').value, tipo = sec.querySelector('.r-tipo').value;
+    const regras = [{ id: 'teste', tipo, ativa: true, re }];
+    const res = await Promise.all(g.exemplos.map(x => api('/api/regras/testar', { method: 'POST', body: JSON.stringify({ linha: x.texto, regras }) }).catch(e => ({ erro: e.message }))));
+    sec.querySelector('.r-teste').textContent = res.map((r, k) => r.erro ? `✗ ${r.erro}` : r.length ? `✓ ${g.exemplos[k].texto}\n` + Object.entries(r[0].grupos).map(([a, b]) => `    ${a} = "${b}"`).join('\n') : `✗ não leu: ${g.exemplos[k].texto}`).join('\n\n');
+  };
+  const salvar = async (g, tipo, re) => {
+    try {
+      const r = await api('/api/revisao/regra', { method: 'POST', body: JSON.stringify({ tipo, re, id: tipo === 'ignorar' ? 'ign_usuario' : tipo + '_usuario', exemplos: g.exemplos.map(x => x.texto) }) });
+      toast(`Regra "${r.id}" salva. ${r.relidas} partida(s) relida(s).`); renderRevisao(); atualizarStatus();
+    } catch (e) { toast(e.message); }
+  };
+  document.querySelectorAll('[data-ignorar]').forEach(b => b.onclick = () => { const g = lista[b.dataset.ignorar]; salvar(g, 'ignorar', g.regex.replace(/\(\?P<[a-z]+>/g, '(?:')); });
+  document.querySelectorAll('[data-regra]').forEach(b => b.onclick = () => {
+    const sec = b.closest('section'), g = lista[b.dataset.regra], form = sec.querySelector('.form-regra');
+    form.hidden = !form.hidden;
+    if (!form.hidden) {
+      testar(sec, g);
+      sec.querySelector('.r-re').oninput = () => testar(sec, g);
+      sec.querySelector('.r-tipo').onchange = () => testar(sec, g);
+      sec.querySelector('.r-salvar').onclick = () => salvar(g, sec.querySelector('.r-tipo').value, sec.querySelector('.r-re').value);
+    }
+  });
+}
+
+/* =====================================================================
+   MEUS DECKS
+   ===================================================================== */
+const EXEMPLO_LISTA = `Pokémon: 3
+4 Dreepy TWM 128
+4 Drakloak TWM 129
+3 Dragapult ex TWM 130
+
+Trainer: 2
+4 Arven SVI 166
+4 Buddy-Buddy Poffin TEF 144
+
+Energy: 2
+3 Basic {R} Energy SVE 2
+3 Basic {P} Energy SVE 5
+
+Total Cards: ...`;
+
+function formularioDeck(d) {
+  d = d || {};
+  return `<section class="panel" id="form-deck">
+    <h2>${d.id ? 'Editar deck' : d.versao_de ? 'Nova versão do deck' : 'Adicionar deck'}</h2>
+    <p class="sub">No TCG Live, abra o deck e use <b>Exportar</b>: a lista vai para a área de transferência. Cole aqui. A lista do Limitless também funciona.</p>
+    <div class="grid2">
+      <label class="row" style="flex-wrap:nowrap"><span class="label" style="width:90px;flex:none">Nome</span><input id="d-nome" class="grow" value="${esc(d.nome || '')}" placeholder="ex.: Lopunny v2 (2 Hilda)"></label>
+      <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:90px;flex:none">Deck</span>${seletorDeck('d-arq', d.arquetipo || '', '')}</div>
+    </div>
+    <textarea id="d-lista" rows="12" placeholder="${esc(EXEMPLO_LISTA)}">${esc(d.lista || '')}</textarea>
+    <input id="d-notas" placeholder="Notas (opcional)" value="${esc(d.notas || '')}">
+    <div class="row"><button class="primary" id="d-salvar">Salvar deck</button><button id="d-cancelar">Cancelar</button>
+      <span class="muted">Deixe o Deck em "Automático" para identificar pelo conteúdo da lista.</span></div>
+  </section>`;
+}
+function ligarFormularioDeck(d, depois) {
+  const valorArq = ligarSeletorDeck('d-arq', '');
+  $('#d-cancelar').onclick = () => { $('#form-deck').remove(); };
+  $('#d-salvar').onclick = async () => {
+    const corpo = { nome: $('#d-nome').value, arquetipo: valorArq(), lista: $('#d-lista').value, notas: $('#d-notas').value, versao_de: d?.versao_de || null };
+    try {
+      const r = d?.id ? await api('/api/decks/' + d.id, { method: 'PUT', body: JSON.stringify(corpo) })
+                      : await api('/api/decks', { method: 'POST', body: JSON.stringify(corpo) });
+      toast([d?.id ? 'Deck atualizado' : 'Deck salvo', ...(r.avisos || []), r.vinculadas ? `${r.vinculadas} partida(s) ligada(s) a ele` : ''].filter(Boolean).join(' · '));
+      depois(r.id || d.id);
+    } catch (e) { toast(e.message); }
+  };
+}
+
+async function renderMeusDecks() {
+  const lista = await api('/api/decks');
+  main.innerHTML = `
+    ${trilha()}<header><h1>Meus decks</h1><p class="sub">Cadastre as listas que você joga. Cada partida capturada é ligada sozinha à lista que contém todas as cartas que você revelou, e o histórico de cada lista fica separado. Para testar mudanças, crie uma nova versão.</p></header>
+    <div class="row"><input id="busca-deck" placeholder="Buscar decks…" style="width:260px"><button id="vincular">Ligar partidas antigas</button></div>
+    <div id="area-form"></div>
+    <div class="grade-decks">
+      <button class="deck-novo" id="novo"><span><span style="font-size:1.8rem">⇪</span><br><b style="color:var(--ink)">Importar deck</b><br><span style="font-size:.85rem">Cole a lista exportada do TCG Live</span></span></button>
+      ${lista.map(d => {
+        const p = d.placar, ics = d.icones && d.icones.length ? d.icones : (d.capa ? [pokeId(d.capa.nome)] : []);
+        const dias = Math.max(0, Math.round((Date.now() - new Date(d.criado_em)) / 864e5));
+        return `<a class="deck-card ${d.ativo ? '' : 'arquivado'}" href="#meudeck-${d.id}" data-nome="${esc((d.nome + ' ' + (d.nome_arquetipo || '')).toLowerCase())}">
+          <div class="deck-capa">${d.capa ? `<div class="fundo" style="background-image:url('${imgId(d.capa.id, d.capa.nome)}')"></div>` : ''}
+            <span class="selo">${d.ativo ? 'Standard' : 'Arquivado'}</span>
+            <button class="estrela ${d.favorito ? 'on' : ''}" data-fav="${d.id}" title="${d.favorito ? 'Tirar dos favoritos' : 'Favoritar'}">${d.favorito ? '★' : '☆'}</button>
+            <div class="icones-grandes">${ics.map(i => `<img src="/icone/${encodeURIComponent(i)}" alt="">`).join('')}</div></div>
+          <div class="deck-corpo"><b>${esc(d.nome)}</b><span class="muted" style="font-size:.8rem">${esc(d.nome_arquetipo || 'Deck não identificado')} · criado ${dias === 0 ? 'hoje' : `há ${dias} dia${dias === 1 ? '' : 's'}`}</span>
+            <div class="deck-nums"><div><span class="label">Taxa de vitória</span><div class="v" style="color:${p.taxa == null ? 'var(--muted)' : p.taxa >= 50 ? 'var(--good)' : 'var(--bad)'}">${p.taxa == null ? '–' : fmt(p.taxa, 0) + '%'}</div></div>
+              <div><span class="label">Partidas</span><div class="v">${p.n}</div></div></div></div></a>`; }).join('')}
+    </div>`;
+  $('#busca-deck').oninput = e => { const q = e.target.value.toLowerCase(); document.querySelectorAll('.deck-card').forEach(c => c.hidden = q && !c.dataset.nome.includes(q)); };
+  document.querySelectorAll('[data-fav]').forEach(b => b.onclick = async ev => { ev.preventDefault(); ev.stopPropagation();
+    const atual = b.classList.contains('on'); await api('/api/decks/' + b.dataset.fav, { method: 'PUT', body: JSON.stringify({ favorito: !atual }) }); renderMeusDecks(); });
+  $('#novo').onclick = () => { $('#area-form').innerHTML = formularioDeck(); ligarFormularioDeck(null, id => { location.hash = 'meudeck-' + id; }); $('#area-form').scrollIntoView({ behavior: 'smooth' }); };
+  $('#vincular').onclick = async () => { const r = await api('/api/decks/vincular', { method: 'POST' }); toast(`${r.vinculadas} partida(s) ligada(s)`); renderMeusDecks(); };
+}
+
+async function renderMeuDeck(id) {
+  const d = await api('/api/decks/' + id);
+  const a = d.analise, t = a.total;
+  const ordem = Object.fromEntries(a.ordem.map(g => [g.grupo, g]));
+  const minhas = a.partidas.filter(l => l.deck_id === id);
+  const secoes = ['Pokémon', 'Trainer', 'Energy'].map(s => [s, d.cartas.filter(c => c.secao === s)]).filter(([, cs]) => cs.length);
+  main.innerHTML = `
+    <div class="row"><a class="btn" href="#decks">← Meus decks</a></div>
+    ${trilha()}<header class="row" style="gap:10px"><span class="cel-carta">${icones(d.arquetipo)}</span><div><h1>${esc(d.nome)}</h1>
+      <p class="sub">${esc(d.nome_arquetipo || 'Deck não identificado')} · criado em ${fmtData(d.criado_em)}${d.ativo ? '' : ' · arquivado'}${d.notas ? ` · ${esc(d.notas)}` : ''}</p></div></header>
+    <div class="row"><button id="editar">Editar</button><button id="versao">Criar nova versão</button><button id="arquivar">${d.ativo ? 'Arquivar' : 'Reativar'}</button><span class="grow"></span><button class="perigo" id="apagar-deck">Apagar</button></div>
+    <div id="area-form"></div>
+    <div class="kpis">
+      <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${t.v} vitórias</span></div>
+      <div class="kpi"><span class="label">Taxa de vitória</span><span class="v">${pct(t.taxa)}</span><span class="d">${t.ic_baixo != null ? `provável entre ${fmt(t.ic_baixo, 0)}% e ${fmt(t.ic_alto, 0)}%` : '–'}</span></div>
+      <div class="kpi"><span class="label">Começando</span><span class="v">${pct(ordem['Começando']?.taxa)}</span><span class="d">${ordem['Começando']?.n ?? 0} partidas</span></div>
+      <div class="kpi"><span class="label">Indo em segundo</span><span class="v">${pct(ordem['Indo em segundo']?.taxa)}</span><span class="d">${ordem['Indo em segundo']?.n ?? 0} partidas</span></div>
+    </div>
+    <section class="panel"><h2>Contra cada deck</h2>${tabelaGrupos(a.por_adversario, 'Deck do adversário', true, deckHtml)}</section>
+    <section class="panel"><h2>Lista (${d.cartas.reduce((s, c) => s + c.qtd, 0)} cartas)</h2>
+      ${secoes.map(([s, cs]) => `<h3>${s} (${cs.reduce((x, c) => x + c.qtd, 0)})</h3><div class="deck-cards">${cs.map(c => `<figure title="${esc(c.nome)} ${esc(c.set_code)} ${esc(c.numero)}"><img src="${imgId(c.carta_id, c.nome)}" alt="${esc(c.nome)}" loading="lazy"><span class="qtd">${c.qtd}</span><figcaption>${esc(c.nome)}</figcaption></figure>`).join('')}</div>`).join('')}
+    </section>
+    <section class="panel"><h2>Partidas com esta lista</h2>${minhas.length ? tabelaPartidas(minhas) : '<p class="muted">Nenhuma partida ligada ainda. Elas são ligadas sozinhas quando as cartas reveladas batem com a lista, ou escolha a lista na tela da partida.</p>'}</section>`;
+  ligarLinhasPartidas();
+  $('#editar').onclick = () => { $('#area-form').innerHTML = formularioDeck(d); ligarFormularioDeck(d, () => renderMeuDeck(id)); };
+  $('#versao').onclick = () => { $('#area-form').innerHTML = formularioDeck({ ...d, id: null, nome: d.nome + ' (nova versão)', versao_de: d.id }); ligarFormularioDeck({ versao_de: d.id }, nid => { location.hash = 'meudeck-' + nid; }); };
+  $('#arquivar').onclick = async () => { await api('/api/decks/' + id, { method: 'PUT', body: JSON.stringify({ ativo: !d.ativo }) }); renderMeuDeck(id); };
+  $('#apagar-deck').onclick = async () => { if (!confirm('Apagar este deck? As partidas continuam, só perdem o vínculo com a lista.')) return; await api('/api/decks/' + id, { method: 'DELETE' }); location.hash = 'decks'; };
+}
+
+/* =====================================================================
+   BIBLIOTECA DE CARTAS
+   ===================================================================== */
+async function renderBiblioteca() {
+  const b = await api('/api/cartas/status');
+  const pr = b.progresso;
+  main.innerHTML = `
+    ${trilha()}<header><h1>Biblioteca de cartas</h1><p class="sub">Dados e imagens das cartas vêm do TCGdex, uma base aberta. Guardamos só a arte básica de cada carta; artes alternativas são convertidas para ela no replay, nas listas e nas análises.</p></header>
+    <div class="kpis">
+      <div class="kpi"><span class="label">Coleções</span><span class="v">${b.colecoes}</span><span class="d">Escarlate e Violeta e Mega Evolução</span></div>
+      <div class="kpi"><span class="label">Impressões conhecidas</span><span class="v">${b.cartas}</span><span class="d">todas as artes</span></div>
+      <div class="kpi"><span class="label">Cartas (arte básica)</span><span class="v">${b.artes_basicas}</span><span class="d">depois do conversor</span></div>
+      <div class="kpi"><span class="label">Imagens no computador</span><span class="v">${b.imagens}</span><span class="d">baixadas ao usar</span></div>
+    </div>
+    <section class="panel"><h2>Atualização</h2>
+      <p class="sub">Nenhuma fonte gratuita de cartas avisa quando sai coleção nova (não há webhook). O programa confere sozinho uma vez por dia e baixa só o que mudou. Última verificação: <b>${b.ultima_verificacao ? esc(b.ultima_verificacao.replace('T', ' ').slice(0, 16)) : 'nunca'}</b>${b.novos?.length ? ` · novidades: ${b.novos.map(esc).join(', ')}` : ''}.</p>
+      <div class="row"><button class="primary" id="b-atualizar">Verificar agora</button><button id="b-forcar">Baixar tudo de novo</button><button id="b-imagens">Baixar todas as imagens (uso sem internet)</button></div>
+      <div ${pr.ativo || pr.erro || pr.resumo ? '' : 'hidden'} id="b-prog">
+        <div class="row"><span class="grow">${esc(pr.etapa || '')}</span><span class="num">${pr.pct || 0}%</span></div>
+        <div class="progresso"><span style="width:${pr.pct || 0}%"></span></div>
+        <p class="muted">${esc(pr.resumo || '')}</p>${pr.erro ? `<p class="aviso erro">${esc(pr.erro)}</p>` : ''}
+      </div>
+    </section>
+    ${b.sem_imagem && Object.keys(b.sem_imagem).length ? `<section class="panel"><h2>Imagens que não carregaram</h2>
+      <p class="sub">Tentamos o TCGdex (outras artes da mesma carta inclusive) e o Limitless. Clique em "Baixar tudo de novo" mais tarde: coleções recentes costumam ganhar imagens alguns dias depois do lançamento.</p>
+      <p class="mono">${Object.entries(b.sem_imagem).map(([n, c]) => `${esc(n)} (${esc(c)})`).join(' · ')}</p></section>` : ''}
+    ${b.nao_encontradas && b.nao_encontradas.length ? `<section class="panel"><h2>Cartas que não estão na biblioteca</h2>
+      <p class="sub">Aparecem nos logs ou listas mas não existem no TCGdex com esse nome (carta muito nova, promo ou nome diferente). Aparecem como um retângulo com o nome.</p>
+      <p class="mono">${b.nao_encontradas.map(esc).join(' · ')}</p></section>` : ''}
+    <section class="panel"><h2>Adicionar imagem à mão</h2>
+      <p class="sub">Para cartas que ainda não estão no TCGdex ou cuja imagem não carrega. Envie o arquivo (PNG, JPG ou WEBP) ou cole o link da imagem. Com coleção e número, a imagem vale para aquela impressão (ex.: 30C 152). Marque "arte padrão" para que ela seja usada sempre que a carta aparecer pelo nome, no replay e nas análises.</p>
+      <div class="row"><input id="m-nome" placeholder="Nome (ex.: Mew ex)" class="grow"><input id="m-codigo" placeholder="Coleção (ex.: 30C)" style="width:140px"><input id="m-numero" placeholder="Número" style="width:100px"></div>
+      <div class="row"><input type="file" id="m-arquivo" accept="image/png,image/jpeg,image/webp"><span class="muted">ou</span><input id="m-url" placeholder="Link da imagem (https://...)" class="grow"></div>
+      <div class="row"><label class="row" style="gap:6px"><input type="checkbox" id="m-pref"> Usar como arte padrão desta carta</label><span class="grow"></span><button class="primary" id="m-salvar">Adicionar imagem</button></div>
+      <div id="m-lista"></div>
+    </section>
+    <section class="panel"><h2>Testar o conversor</h2>
+      <p class="sub">Digite o nome como aparece no log, ou a coleção e o número de uma arte alternativa (ex.: TWM 214).</p>
+      <div class="row"><input id="b-nome" placeholder="Nome (ex.: Dragapult ex)" class="grow"><input id="b-codigo" placeholder="Coleção (ex.: TWM)" style="width:150px"><input id="b-numero" placeholder="Número" style="width:100px"><button id="b-buscar">Converter</button></div>
+      <div id="b-saida"></div>
+    </section>`;
+  const acao = async (url, corpo) => { try { await api(url, { method: 'POST', body: JSON.stringify(corpo || {}) }); toast('Começou. Acompanhe o progresso aqui.'); setTimeout(renderBiblioteca, 800); } catch (e) { toast(e.message); } };
+  $('#b-atualizar').onclick = () => acao('/api/cartas/atualizar');
+  $('#b-forcar').onclick = () => acao('/api/cartas/atualizar', { forcar: true });
+  $('#b-imagens').onclick = () => acao('/api/cartas/imagens');
+  const listarManuais = async () => {
+    const ms = await api('/api/cartas/manuais');
+    $('#m-lista').innerHTML = ms.length ? `<div class="deck-cards">${ms.map(m => `<figure><img src="${m.id ? imgId(m.id) + '&exata=1' : imgNome(m.nome)}" alt="">
+      <figcaption>${esc(m.nome)} ${esc(m.codigo)} ${esc(m.numero)}${m.preferida ? ' · padrão' : ''}</figcaption>
+      <button class="perigo" data-rm="${esc(m.arquivo)}" style="margin-top:4px;padding:3px 8px;font-size:.75rem">Remover</button></figure>`).join('')}</div>` : '<p class="muted">Nenhuma imagem adicionada à mão.</p>';
+    document.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { await api('/api/cartas/manuais/' + encodeURIComponent(b.dataset.rm), { method: 'DELETE' }); toast('Imagem removida'); listarManuais(); });
+  };
+  listarManuais();
+  $('#m-salvar').onclick = async () => {
+    const fd = new FormData();
+    fd.append('nome', $('#m-nome').value.trim()); fd.append('codigo', $('#m-codigo').value.trim()); fd.append('numero', $('#m-numero').value.trim());
+    fd.append('url', $('#m-url').value.trim()); fd.append('preferida', $('#m-pref').checked ? '1' : '');
+    if ($('#m-arquivo').files[0]) fd.append('arquivo', $('#m-arquivo').files[0]);
+    const r = await fetch('/api/cartas/manuais', { method: 'POST', body: fd });
+    const j = await r.json().catch(() => ({}));
+    toast(r.ok ? 'Imagem adicionada' : (j.erro || 'Não consegui adicionar'));
+    if (r.ok) { ['m-nome', 'm-codigo', 'm-numero', 'm-url'].forEach(i => $('#' + i).value = ''); $('#m-arquivo').value = ''; listarManuais(); }
+  };
+  $('#b-buscar').onclick = async () => {
+    const q = new URLSearchParams({ nome: $('#b-nome').value.trim(), codigo: $('#b-codigo').value.trim(), numero: $('#b-numero').value.trim() });
+    const c = await api('/api/cartas/buscar?' + q).catch(e => ({ erro: e.message }));
+    $('#b-saida').innerHTML = c.erro ? `<p class="aviso erro">${esc(c.erro)}</p>` : `<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:16px">
+      <img src="${imgId(c.id)}&q=high" style="width:160px;border-radius:9px" alt="${esc(c.nome)}">
+      <div><h3>${esc(c.nome)}</h3><p class="muted">Arte básica: ${esc(c.codigo || c.id)} ${esc(c.numero)} · ${esc(c.set_nome)} · ${esc(c.raridade)}</p>
+      <p class="muted">${esc(c.categoria)}${c.ps ? ` · ${c.ps} PS` : ''}${c.estagio ? ` · ${esc(c.estagio)}` : ''}</p></div></div>`;
+  };
+  if (pr.ativo) setTimeout(() => { if (aba() === 'biblioteca') renderBiblioteca(); }, 2000);
+}
+
+/* ---------------- início ---------------- */
+(async () => {
+  await carregarArquetipos();
+  await atualizarStatus();
+  render();
+  setInterval(atualizarStatus, 4000);
+})();
+</script>
+</body>
+</html>

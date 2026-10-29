@@ -1,0 +1,87 @@
+Setup
+Ana_TCG chose heads for the opening coin flip.
+Ana_TCG won the coin toss.
+Ana_TCG decided to go first.
+Ana_TCG drew 7 cards for the opening hand.
+- 7 drawn cards.
+   • Charmander, Pidgey, Nest Ball, Rare Candy, Fire Energy, Arven, Iono
+MistyPsy drew 7 cards for the opening hand.
+- 7 drawn cards.
+MistyPsy took a mulligan.
+Ana_TCG played Charmander to the Active Spot.
+Ana_TCG played Pidgey to the Bench.
+MistyPsy played Dreepy to the Active Spot.
+
+Turn # 1 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Nest Ball.
+- Ana_TCG drew Charmander and played it to the Bench.
+Ana_TCG attached Fire Energy to Charmander in the Active Spot.
+Ana_TCG ended their turn.
+
+Turn # 2 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy played Dreepy to the Bench.
+MistyPsy attached Psychic Energy to Dreepy in the Active Spot.
+MistyPsy played Iono.
+- MistyPsy drew 4 cards.
+MistyPsy's Dreepy used Petty Grudge on Ana_TCG's Charmander for 10 damage.
+MistyPsy ended their turn.
+
+Turn # 3 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Rare Candy.
+Ana_TCG evolved Charmander to Charizard ex in the Active Spot.
+Ana_TCG attached Fire Energy to Charizard ex in the Active Spot.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Dreepy for 180 damage. MistyPsy's Dreepy was Knocked Out!
+Ana_TCG took a Prize card.
+MistyPsy's Dreepy is now in the Active Spot.
+
+Turn # 4 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy played Rare Candy.
+MistyPsy evolved Dreepy to Dragapult ex in the Active Spot.
+MistyPsy played Dreepy to the Bench.
+MistyPsy evolved Dreepy to Drakloak on the Bench.
+MistyPsy attached Fire Energy to Dragapult ex in the Active Spot.
+MistyPsy's Dragapult ex used Phantom Dive on Ana_TCG's Charizard ex for 200 damage.
+Ana_TCG's Pidgey was Knocked Out!
+MistyPsy took a Prize card.
+
+Turn # 5 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Boss's Orders.
+Ana_TCG attached Fire Energy to Charizard ex in the Active Spot.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Drakloak for 210 damage. MistyPsy's Drakloak was Knocked Out!
+Ana_TCG took a Prize card.
+
+Turn # 6 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy attached Psychic Energy to Dragapult ex in the Active Spot.
+MistyPsy's Dragapult ex used Phantom Dive on Ana_TCG's Charizard ex for 200 damage. Ana_TCG's Charizard ex was Knocked Out!
+MistyPsy took 2 Prize cards.
+Ana_TCG's Charmander is now in the Active Spot.
+
+Turn # 7 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Rare Candy.
+Ana_TCG evolved Charmander to Charizard ex in the Active Spot.
+Ana_TCG attached Fire Energy to Charizard ex in the Active Spot.
+Ana_TCG played Defiance Band.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Dragapult ex for 300 damage. MistyPsy's Dragapult ex was Knocked Out!
+Ana_TCG took 2 Prize cards.
+
+Turn # 8 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy played Dreepy to the Active Spot.
+MistyPsy played Rare Candy.
+MistyPsy evolved Dreepy to Dragapult ex in the Active Spot.
+MistyPsy attached Psychic Energy to Dragapult ex in the Active Spot.
+MistyPsy ended their turn.
+
+Turn # 9 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Boss's Orders.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Dragapult ex for 330 damage. MistyPsy's Dragapult ex was Knocked Out!
+Ana_TCG took 2 Prize cards.
+Ana_TCG took all of their Prize cards. Ana_TCG wins.

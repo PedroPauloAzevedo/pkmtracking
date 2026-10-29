@@ -1,0 +1,18 @@
+IMAGENS PARA O MODO AUTOMÁTICO
+==============================
+
+O modo automático procura estes botões na sua tela comparando com imagens recortadas
+por você. Recorte SÓ o botão, com o jogo na resolução e no idioma que você costuma usar.
+
+  botao_battle_log.png   (obrigatório)  o botão "Battle Log" da tela de resultado da partida
+  botao_exportar.png     (obrigatório)  o botão de exportar, no canto superior direito do Battle Log
+  botao_fechar.png       (opcional)     o botão de fechar/voltar do Battle Log
+
+Como recortar no Windows: Win + Shift + S, selecione o botão, abra o Paint, cole (Ctrl+V),
+salve como PNG nesta pasta com o nome exato acima.
+No macOS: Cmd + Shift + 4, selecione o botão; o arquivo vai para a Mesa; renomeie e mova para cá.
+
+Se o programa não reconhecer o botão, recorte de novo um pouco mais justo ou baixe a
+"Precisão" em Ajustes. Se clicar no lugar errado, aumente a "Precisão".
+
+Para abortar um clique em andamento, leve o mouse rapidamente a um canto da tela.
