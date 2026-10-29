@@ -1,0 +1,9 @@
+# Dados pessoais de cada pessoa: nunca vão para o GitHub
+dados/
+.venv/
+__pycache__/
+*.pyc
+*.log
+# Arquivos do sistema
+.DS_Store
+Thumbs.db

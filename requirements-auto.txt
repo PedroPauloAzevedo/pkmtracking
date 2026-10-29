@@ -1,0 +1,4 @@
+# Só para o modo automático (reconhecer botões na tela e clicar).
+pyautogui>=0.9.54
+opencv-python>=4.8
+pillow>=10.0
