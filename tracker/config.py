@@ -34,6 +34,9 @@ CONFIG_PADRAO = {
     "github_repo": "",             # de onde baixar atualizações (usuario/repositorio); vazio = repositorio.txt
     "github_ramo": "main",
     "github_token": "",            # só para repositório privado (token de leitura)
+    "pasta_compartilhada": "",     # pasta do Google Drive compartilhada com os amigos
+    "pasta_auto": False,           # enviar e receber logs por essa pasta sozinho
+    "pasta_minutos": 30,           # de quantos em quantos minutos
 }
 
 

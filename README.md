@@ -47,6 +47,12 @@ Cada pessoa usa o próprio programa e vocês trocam um arquivo .zip (WhatsApp, e
    Downloads, que abre com ele selecionado. Só vão as suas partidas (as recebidas de outros amigos ficam de fora).
 2. **Quem recebe:** na mesma tela, em **Receber logs de um amigo**, escolha o .zip e clique em **Importar**.
    O nick do dono vem dentro do arquivo. Partidas repetidas são ignoradas, então pode mandar tudo de novo quando quiser.
+**Automático (recomendado):** todos usam a mesma pasta compartilhada do Google Drive para computador.
+Em **Amigos (trocar logs) > Automático**, escolha a pasta e ligue "Enviar e receber sozinho". A cada 30 minutos
+(ou o intervalo escolhido) o programa grava `logs-tcg_<seu nick>.zip` nessa pasta e importa os arquivos dos outros.
+Quem recebeu o convite da pasta precisa, no drive.google.com, ir em *Compartilhados comigo* > botão direito na pasta >
+*Organizar > Adicionar atalho* ao Meu Drive; sem isso a pasta não aparece no computador.
+
 3. Em Painel, Partidas, Desempenho e Decisões aparece o filtro **Jogador**: você, cada amigo, ou todos juntos
    (cada partida vista do lado de quem jogou). Meus decks continua só com as suas partidas.
 

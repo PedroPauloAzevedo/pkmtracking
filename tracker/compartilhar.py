@@ -50,7 +50,7 @@ def _meu_nick():
     return analises.descobrir_eu(banco.listar_partidas(), config.ler_config()["nick"])
 
 
-def montar_zip(so_novas=False):
+def montar_zip(so_novas=False, marcar=True):
     """Devolve (nome_do_arquivo, bytes do zip, quantidade de partidas)."""
     cfg = config.ler_config()
     nick = _meu_nick()
@@ -73,8 +73,9 @@ def montar_zip(so_novas=False):
             "formato": FORMATO, "versao": 1, "nick": nick, "programa": _versao(),
             "exportado_em": agora.isoformat(timespec="seconds"), "partidas": len(linhas), "arquivos": arquivos,
         }, ensure_ascii=False, indent=1))
-    cfg["ultima_exportacao"] = max(p["capturada_em"] for p in linhas)
-    config.salvar_config(cfg)
+    if marcar:  # o envio automático pela pasta não mexe na data do último envio manual
+        cfg["ultima_exportacao"] = max(p["capturada_em"] for p in linhas)
+        config.salvar_config(cfg)
     seguro = re.sub(r"[^A-Za-z0-9_-]", "_", nick)
     return f"logs-tcg_{seguro}_{agora.strftime('%Y-%m-%d_%H%M')}.zip", buf.getvalue(), len(linhas)
 
@@ -185,3 +186,184 @@ def apagar_amigo(nome):
     with banco.conectar() as con:
         n = con.execute("DELETE FROM partidas WHERE dono=?", (nome,)).rowcount
     return n
+
+
+# ------------------------------------------------------------------ automático: pasta compartilhada (Google Drive)
+#
+# Todos apontam o programa para a MESMA pasta compartilhada no Google Drive para computador.
+#   - Enviar: de tempos em tempos, se houver partidas suas novas, o programa grava (substituindo)
+#     o arquivo  <pasta>/logs-tcg_<seu nick>.zip  com todas as suas partidas.
+#   - Receber: lê os .zip dos outros nessa pasta e importa o que mudou desde a última vez.
+# O Google Drive cuida de levar o arquivo de um computador para o outro. Nenhuma senha no programa.
+
+import threading
+import time
+
+ARQ_VISTOS = config.PASTA_DADOS / "pasta_compartilhada.json"
+estado_pasta = {"rodando": False, "ultima": None, "mensagem": "", "erro": "", "enviadas": 0, "importadas": []}
+
+
+def _vistos():
+    try:
+        return json.loads(ARQ_VISTOS.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def sugestoes_pasta():
+    """Lugares onde o Google Drive para computador costuma aparecer."""
+    casa = Path.home()
+    candidatos = [casa / "Google Drive", casa / "Meu Drive", casa / "My Drive"]
+    if platform.system() == "Windows":
+        for letra in "GHIJKLMNOPQRSTUVWXYZ":
+            for nome in ("Meu Drive", "My Drive"):
+                candidatos.append(Path(f"{letra}:\\") / nome)
+    else:
+        nuvem = casa / "Library" / "CloudStorage"
+        if nuvem.is_dir():
+            for d in nuvem.glob("GoogleDrive-*"):
+                candidatos += [d / "Meu Drive", d / "My Drive"]
+    saida = []
+    for c in candidatos:
+        try:
+            if c.is_dir():
+                saida.append(str(c))
+        except OSError:
+            pass
+    return saida
+
+
+def escolher_pasta_dialogo():
+    """Abre a janela do Windows/macOS para escolher a pasta (roda no seu computador)."""
+    resultado = {}
+
+    def abrir():
+        try:
+            import tkinter
+            from tkinter import filedialog
+            raiz = tkinter.Tk()
+            raiz.withdraw()
+            raiz.attributes("-topmost", True)
+            resultado["pasta"] = filedialog.askdirectory(title="Escolha a pasta compartilhada do Google Drive") or ""
+            raiz.destroy()
+        except Exception as e:
+            resultado["erro"] = str(e)
+
+    t = threading.Thread(target=abrir)
+    t.start()
+    t.join(300)
+    return resultado
+
+
+def _nome_arquivo(nick):
+    return "logs-tcg_" + (re.sub(r"[^A-Za-z0-9_-]", "_", nick) or "jogador") + ".zip"
+
+
+def sincronizar_pasta():
+    """Uma rodada: envia as suas partidas (se tiver novas) e importa as dos outros."""
+    cfg = config.ler_config()
+    pasta = Path(cfg.get("pasta_compartilhada") or "")
+    if not cfg.get("pasta_compartilhada"):
+        raise ValueError("Escolha a pasta compartilhada primeiro.")
+    if not pasta.is_dir():
+        raise ValueError(f"Não encontrei a pasta {pasta}. O Google Drive para computador está aberto?")
+    nick = _meu_nick()
+    if not nick:
+        raise ValueError("Informe seu nick do TCG Live no Painel antes de ligar o envio automático.")
+    meu_arquivo = pasta / _nome_arquivo(nick)
+    vistos = _vistos()
+    enviadas = 0
+    # 1) enviar: regrava o seu arquivo quando há partida nova
+    minhas = _minhas()
+    marca = f"{len(minhas)}|{minhas[-1]['capturada_em'] if minhas else ''}"
+    if minhas and (vistos.get("_enviado") != marca or not meu_arquivo.exists()):
+        _, conteudo, enviadas = montar_zip(False, marcar=False)
+        temporario = pasta / (meu_arquivo.name + ".tmp")
+        temporario.write_bytes(conteudo)
+        os.replace(temporario, meu_arquivo)
+        vistos["_enviado"] = marca
+    # 2) receber: os .zip dos outros que mudaram
+    importadas = []
+    for arq in sorted(pasta.glob("*.zip")):
+        if arq.name == meu_arquivo.name:
+            continue
+        try:
+            st = arq.stat()
+        except OSError:
+            continue
+        assinatura = f"{st.st_size}|{int(st.st_mtime)}"
+        if vistos.get(arq.name) == assinatura:
+            continue
+        if time.time() - st.st_mtime < 20:  # o Drive ainda pode estar baixando
+            continue
+        try:
+            r = importar([(arq.name, arq.read_bytes())])
+            importadas.append({"arquivo": arq.name, **r})
+            vistos[arq.name] = assinatura
+        except ValueError as e:
+            if "são seus" in str(e):  # um arquivo seu com outro nome: não reler
+                vistos[arq.name] = assinatura
+            else:
+                importadas.append({"arquivo": arq.name, "erro": str(e)})
+        except (OSError, zipfile.BadZipFile) as e:
+            importadas.append({"arquivo": arq.name, "erro": f"não consegui ler ({e})"})
+    ARQ_VISTOS.write_text(json.dumps(vistos, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"enviadas": enviadas, "importadas": importadas, "meu_arquivo": str(meu_arquivo)}
+
+
+class SincronizadorPasta:
+    """Roda sincronizar_pasta de tempos em tempos enquanto o programa está aberto."""
+
+    def __init__(self):
+        self._parar = threading.Event()
+        self._agora = threading.Event()
+        self._thread = None
+
+    def iniciar(self):
+        if self._thread and self._thread.is_alive():
+            return
+        self._parar.clear()
+        self._thread = threading.Thread(target=self._loop, name="pasta-compartilhada", daemon=True)
+        self._thread.start()
+
+    def parar(self):
+        self._parar.set()
+        self._agora.set()
+
+    def agora(self):
+        if self._thread and self._thread.is_alive():
+            self._agora.set()
+        else:
+            threading.Thread(target=self.rodar_uma_vez, daemon=True).start()
+
+    def rodar_uma_vez(self):
+        if estado_pasta["rodando"]:
+            return
+        estado_pasta.update(rodando=True, erro="", mensagem="Sincronizando com a pasta compartilhada…")
+        try:
+            r = sincronizar_pasta()
+            novas = sum(x.get("novas", 0) for x in r["importadas"])
+            erros = [f"{x['arquivo']}: {x['erro']}" for x in r["importadas"] if x.get("erro")]
+            estado_pasta.update(enviadas=r["enviadas"], importadas=r["importadas"], erro="; ".join(erros),
+                                mensagem=(f"Enviei {r['enviadas']} partida(s). " if r["enviadas"] else "Nada novo para enviar. ")
+                                + (f"Recebi {novas} partida(s) nova(s)." if novas else "Nada novo para receber."))
+        except ValueError as e:
+            estado_pasta.update(erro=str(e), mensagem="")
+        except Exception as e:
+            estado_pasta.update(erro=f"Erro inesperado: {e}", mensagem="")
+        finally:
+            estado_pasta.update(rodando=False, ultima=datetime.now().isoformat(timespec="seconds"))
+
+    def _loop(self):
+        self._agora.wait(15)  # deixa o programa abrir primeiro
+        self._agora.clear()
+        while not self._parar.is_set():
+            cfg = config.ler_config()
+            if cfg.get("pasta_auto") and cfg.get("pasta_compartilhada"):
+                self.rodar_uma_vez()
+            minutos = max(5, int(cfg.get("pasta_minutos") or 30))
+            self._agora.wait(minutos * 60)
+            self._agora.clear()
+
+
+sincronizador_pasta = SincronizadorPasta()

@@ -101,7 +101,7 @@ def salvar_config():
     novo = request.get_json(force=True) or {}
     for chave in ("nick", "modo_automatico", "confianca_imagem", "intervalo_coletor", "coletor_ativo",
                   "sincronizar_auto", "sincronizar_horas", "sincronizar_dias", "listas_top",
-                  "github_repo", "github_ramo", "github_token"):
+                  "github_repo", "github_ramo", "github_token", "pasta_compartilhada", "pasta_auto", "pasta_minutos"):
         if chave in novo:
             cfg[chave] = novo[chave]
     config.salvar_config(cfg)
@@ -117,6 +117,12 @@ def salvar_config():
         limitless.sincronizador.iniciar()
     else:
         limitless.sincronizador.parar()
+    if cfg.get("pasta_auto"):
+        compartilhar.sincronizador_pasta.iniciar()
+        if novo.get("pasta_auto") or novo.get("pasta_compartilhada"):
+            compartilhar.sincronizador_pasta.agora()
+    else:
+        compartilhar.sincronizador_pasta.parar()
     return jsonify(cfg)
 
 
@@ -136,8 +142,24 @@ def jogadores_locais():
 
 @app.get("/api/amigos")
 def lista_amigos():
+    cfg = config.ler_config()
     return jsonify({"amigos": compartilhar.amigos(), "exportacao": compartilhar.resumo_exportacao(),
-                    "downloads": str(compartilhar.pasta_downloads())})
+                    "downloads": str(compartilhar.pasta_downloads()),
+                    "pasta": {"caminho": cfg.get("pasta_compartilhada", ""), "auto": bool(cfg.get("pasta_auto")),
+                              "minutos": cfg.get("pasta_minutos", 30), "sugestoes": compartilhar.sugestoes_pasta(),
+                              **compartilhar.estado_pasta}})
+
+
+@app.post("/api/amigos/pasta/escolher")
+def escolher_pasta():
+    return jsonify(compartilhar.escolher_pasta_dialogo())
+
+
+@app.post("/api/amigos/pasta/sincronizar")
+def sincronizar_pasta_agora():
+    compartilhar.sincronizador_pasta.rodar_uma_vez()
+    _cache_pendentes["t"] = 0
+    return jsonify(compartilhar.estado_pasta)
 
 
 @app.post("/api/amigos/exportar")
@@ -733,6 +755,8 @@ def main():
         limitless.sincronizador.iniciar()
     cartas.verificador.iniciar()
     atualizador.verificador.iniciar()
+    if cfg.get("pasta_auto"):
+        compartilhar.sincronizador_pasta.iniciar()
     if not banco.consultar("SELECT 1 FROM arquetipos LIMIT 1"):  # primeira vez: busca a lista de decks
         threading.Thread(target=lambda: _tentar(limitless.atualizar_arquetipos), daemon=True).start()
     print(f"\nColetor de Partidas TCG Live (versão {VERSAO}) rodando. Painel: {url}")

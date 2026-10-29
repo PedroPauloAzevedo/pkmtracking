@@ -28,7 +28,14 @@
    - No fim de cada partida: clique em "Battle Log" e depois no botao de exportar (canto superior direito).
      O programa pega o log sozinho e mostra "Nova partida registrada".
 
-MANDAR SUAS PARTIDAS PARA UM AMIGO
+JUNTAR PARTIDAS COM OS AMIGOS SOZINHO (Google Drive)
+   - Instale o Google Drive para computador (google.com/drive/download) e entre na sua conta.
+   - Aceite o convite da pasta compartilhada. No drive.google.com: Compartilhados comigo >
+     botao direito na pasta > Organizar > Adicionar atalho (no Meu Drive).
+   - No painel: Programa > Amigos (trocar logs) > Automatico > Escolher pasta
+     (normalmente G:\Meu Drive\<nome da pasta>), marque "Enviar e receber sozinho" e clique em Salvar.
+
+MANDAR SUAS PARTIDAS PARA UM AMIGO (manual)
    - No painel: Programa > Amigos (trocar logs) > Exportar meus logs.
    - O arquivo .zip aparece na pasta Downloads: mande pelo WhatsApp ou e-mail.
    - Para receber os de um amigo: na mesma tela, escolha o .zip dele e clique em Importar.
