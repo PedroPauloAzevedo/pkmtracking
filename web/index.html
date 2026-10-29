@@ -1367,6 +1367,11 @@ async function renderBiblioteca() {
     ${b.nao_encontradas && b.nao_encontradas.length ? `<section class="panel"><h2>Cartas que não estão na biblioteca</h2>
       <p class="sub">Aparecem nos logs ou listas mas não existem no TCGdex com esse nome (carta muito nova, promo ou nome diferente). Aparecem como um retângulo com o nome.</p>
       <p class="mono">${b.nao_encontradas.map(esc).join(' · ')}</p></section>` : ''}
+    <section class="panel"><h2>Coleções na biblioteca</h2>
+      <p class="sub">Se uma coleção recente não aparece aqui, clique em "Verificar agora". Coleções novas costumam ganhar imagens no TCGdex alguns dias depois do lançamento; o programa tenta de novo sozinho.</p>
+      ${b.lista_colecoes && b.lista_colecoes.length ? `<div class="tabela alta"><table><thead><tr><th>Coleção</th><th>Código</th><th>Lançamento</th><th class="n">Cartas</th><th class="n">Sem imagem no TCGdex</th></tr></thead><tbody>
+        ${b.lista_colecoes.map(c => `<tr><td>${esc(c.nome)}</td><td class="mono">${esc(c.codigo || '?')}</td><td class="num">${fmtData(c.data)}</td><td class="n">${c.cartas}</td><td class="n" style="${c.sem_imagem ? 'color:var(--bad);font-weight:600' : ''}">${c.sem_imagem}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Nenhuma coleção baixada ainda.</p>'}
+    </section>
     <section class="panel"><h2>Adicionar imagem à mão</h2>
       <p class="sub">Para cartas que ainda não estão no TCGdex ou cuja imagem não carrega. Envie o arquivo (PNG, JPG ou WEBP) ou cole o link da imagem. Com coleção e número, a imagem vale para aquela impressão (ex.: 30C 152). Marque "arte padrão" para que ela seja usada sempre que a carta aparecer pelo nome, no replay e nas análises.</p>
       <div class="row"><input id="m-nome" placeholder="Nome (ex.: Mew ex)" class="grow"><input id="m-codigo" placeholder="Coleção (ex.: 30C)" style="width:140px"><input id="m-numero" placeholder="Número" style="width:100px"></div>

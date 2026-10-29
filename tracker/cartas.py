@@ -50,6 +50,7 @@ ARQ_MANUAIS = PASTA / "manuais.json"
 
 # Séries baixadas: Escarlate e Violeta (sv) e Mega Evolução (me) cobrem o formato Padrão atual.
 SERIES = ("sv", "me")
+VERSAO_BUSCA = 2  # aumente quando mudar a forma de buscar coleções: força uma nova verificação
 
 # Códigos de coleção usados pelo Limitless/TCG Live. Quando o TCGdex informa o código, ele vale;
 # esta tabela é só reserva. Códigos desconhecidos são aprendidos comparando nome + número.
@@ -370,7 +371,10 @@ def atualizar(forcar=False):
             arq = PASTA_SETS / f"{b['id']}.json"
             atual = _ler_json(arq, None)
             total = (b.get("cardCount") or {}).get("total") or 0
-            if atual and not forcar and len(atual["cards"]) >= total:
+            # Coleções recentes ganham imagens alguns dias depois do lançamento: rebaixa se faltar alguma.
+            recente = atual and (atual["set"].get("releaseDate") or "") >= (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+            falta_imagem = atual and recente and any(not c.get("image") for c in atual["cards"])
+            if atual and not forcar and len(atual["cards"]) >= total and not falta_imagem:
                 continue
             detalhe = _get(s, f"/sets/{b['id']}")
             if not detalhe:
@@ -378,8 +382,13 @@ def atualizar(forcar=False):
             ids = [c["id"] for c in detalhe.get("cards", [])]
             with ThreadPoolExecutor(max_workers=6) as ex:
                 cartas = [c for c in ex.map(lambda i: _get(s, f"/cards/{i}"), ids) if c]
-            detalhe.pop("cards", None)
-            _gravar_json(arq, {"set": detalhe, "cards": cartas})
+            info_set = {k: v for k, v in detalhe.items() if k != "cards"}
+            if atual and len(cartas) < len(atual["cards"]):
+                continue  # resposta incompleta do TCGdex: mantém o que já tinha
+            ganhou_img = atual and sum(1 for c in cartas if c.get("image")) > sum(1 for c in atual["cards"] if c.get("image"))
+            if atual and len(cartas) == len(atual["cards"]) and not ganhou_img and not forcar:
+                continue  # nada mudou
+            _gravar_json(arq, {"set": info_set, "cards": cartas})
             novos.append(f"{b.get('name')} ({len(cartas)} cartas)")
         progresso["etapa"] = "Montando o índice"
         ind = montar_indice()
@@ -387,7 +396,8 @@ def atualizar(forcar=False):
                                + (f"Novidades: {', '.join(novos)}." if novos else "Nenhuma coleção nova."))
         progresso["pct"] = 100
         progresso["etapa"] = "Concluído"
-        _gravar_json(ARQ_ESTADO, {"ultima_verificacao": datetime.now().isoformat(timespec="seconds"), "novos": novos})
+        _gravar_json(ARQ_ESTADO, {"ultima_verificacao": datetime.now().isoformat(timespec="seconds"), "novos": novos,
+                                  "versao_busca": VERSAO_BUSCA})
         if novos:
             from . import banco
             banco.reconverter_listas()
@@ -418,6 +428,15 @@ def baixar_todas_imagens():
         progresso["ativo"] = False
 
 
+def _lista_colecoes(ind):
+    por_set = {}
+    for e in ind["cartas"].values():
+        x = por_set.setdefault(e["set"], {"id": e["set"], "nome": e["set_nome"], "codigo": e["codigo"], "data": e["data"], "cartas": 0, "sem_imagem": 0})
+        x["cartas"] += 1
+        x["sem_imagem"] += 0 if e.get("tem_img", True) else 1
+    return sorted(por_set.values(), key=lambda x: x["data"], reverse=True)
+
+
 def status():
     ind = indice()
     estado = _ler_json(ARQ_ESTADO, {})
@@ -427,6 +446,7 @@ def status():
         "imagens": len([x for x in PASTA_IMG.glob("*_*.*") if x.suffix in (".webp", ".png")]) if PASTA_IMG.exists() else 0,
         "ultima_verificacao": estado.get("ultima_verificacao"), "novos": estado.get("novos", []),
         "nao_encontradas": sorted(nao_encontradas), "sem_imagem": falhas_imagem,
+        "lista_colecoes": _lista_colecoes(ind),
         "progresso": progresso,
     }
 
@@ -446,9 +466,12 @@ class Verificador:
     def _loop(self):
         time.sleep(5)
         while True:
-            ultima = _ler_json(ARQ_ESTADO, {}).get("ultima_verificacao")
+            estado = _ler_json(ARQ_ESTADO, {})
+            ultima = estado.get("ultima_verificacao")
             vencida = not ultima or datetime.fromisoformat(ultima) < datetime.now() - timedelta(hours=24)
-            if vencida or not ARQ_INDICE.exists():
+            # Programa atualizado (ex.: passou a baixar coleções novas como a 30th Celebration): verifica já.
+            mudou = estado.get("versao_busca") != VERSAO_BUSCA
+            if vencida or mudou or not ARQ_INDICE.exists():
                 atualizar()
             time.sleep(3600)
 
