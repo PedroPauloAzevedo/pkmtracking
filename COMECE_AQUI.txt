@@ -28,6 +28,11 @@
    - No fim de cada partida: clique em "Battle Log" e depois no botao de exportar (canto superior direito).
      O programa pega o log sozinho e mostra "Nova partida registrada".
 
+MANDAR SUAS PARTIDAS PARA UM AMIGO
+   - No painel: Programa > Amigos (trocar logs) > Exportar meus logs.
+   - O arquivo .zip aparece na pasta Downloads: mande pelo WhatsApp ou e-mail.
+   - Para receber os de um amigo: na mesma tela, escolha o .zip dele e clique em Importar.
+
 ATUALIZACOES
    - Quando houver versao nova, aparece um aviso no painel. Clique em Atualizar
      (ou Programa > Ajustes e captura > Atualizacoes). Seus dados nao sao apagados.

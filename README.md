@@ -39,7 +39,18 @@ Atualizações: em **Ajustes > Atualizações** o programa avisa quando há vers
 Logs repetidos são ignorados, então pode exportar a mesma partida duas vezes sem problema.
 Cada log também é salvo como `.txt` em `dados/logs/` (backup).
 
-## 3. Modo automático (opcional, experimental)
+## 3. Juntar partidas com amigos
+
+Cada pessoa usa o próprio programa e vocês trocam um arquivo .zip (WhatsApp, e-mail, Drive):
+
+1. **Quem manda:** Programa ⚙ > **Amigos (trocar logs)** > **Exportar meus logs**. O arquivo vai para a pasta
+   Downloads, que abre com ele selecionado. Só vão as suas partidas (as recebidas de outros amigos ficam de fora).
+2. **Quem recebe:** na mesma tela, em **Receber logs de um amigo**, escolha o .zip e clique em **Importar**.
+   O nick do dono vem dentro do arquivo. Partidas repetidas são ignoradas, então pode mandar tudo de novo quando quiser.
+3. Em Painel, Partidas, Desempenho e Decisões aparece o filtro **Jogador**: você, cada amigo, ou todos juntos
+   (cada partida vista do lado de quem jogou). Meus decks continua só com as suas partidas.
+
+## 4. Modo automático (opcional, experimental)
 
 Faz os dois cliques do passo 3 por você: termina a partida, e ela já está registrada.
 
@@ -60,7 +71,7 @@ e geraria um log pior do que o que o próprio jogo já entrega pronto. Reconhece
 **O jogo grava o log em algum arquivo?** Até onde se sabe, não. Em **Ajustes > Procurar o log nos arquivos do jogo**
 (ou `python app.py --diagnostico`) o programa vasculha as pastas do TCG Live. Se achar, dá para ler direto do disco.
 
-## 4. Importar campeonatos
+## 5. Importar campeonatos
 
 **Automático (padrão):** o RK9 e o Limitless Labs não têm API nem aviso de torneio novo para os campeonatos oficiais,
 então o próprio programa verifica a cada 6 horas (ajustável) enquanto estiver aberto. Ele importa os torneios que
@@ -85,7 +96,7 @@ Por linha de comando: `python app.py --importar 0078`.
 Os sites não têm API pública para esses dados; o importador lê as páginas. Se o layout mudar, a importação pode falhar
 e o erro aparece no painel. Uso pessoal.
 
-## 5. Replay e biblioteca de cartas
+## 6. Replay e biblioteca de cartas
 
 **Replay:** abra uma partida e clique em **▶ Ver replay**. A mesa é reconstruída linha a linha a partir do log:
 Pokémon Ativo e Banco de cada jogador com as imagens das cartas, dano, energias e ferramentas ligadas, prêmios
@@ -118,7 +129,7 @@ importados. Na tela da partida dá para escolher outro deck numa lista com os no
 versão pelo ataque ou habilidade usado no log, depois pela sua lista em Meus decks, depois pela versão mais usada
 nos torneios.
 
-## 6. O que cada aba mostra
+## 7. O que cada aba mostra
 
 O painel tem duas áreas, escolhidas no topo da navegação: **Minhas partidas** (Painel, Partidas, Desempenho,
 replays) e **Geral** (Meta, Matchups, Perfil de deck, Cartas, Torneios).
@@ -141,7 +152,7 @@ replays) e **Geral** (Meta, Matchups, Perfil de deck, Cartas, Torneios).
 
 Para comparar seus resultados com os campeonatos, use nos seus decks o mesmo nome que o Limitless usa (ex.: "Dragapult ex").
 
-## 7. Arquivos
+## 8. Arquivos
 
 ```
 app.py                  servidor do painel + início do coletor
@@ -161,7 +172,7 @@ dados/                  criado ao rodar: tracker.db, logs/, config.json, regras.
 O banco `dados/tracker.db` é SQLite: dá para abrir no DB Browser for SQLite ou ligar no Power BI.
 Para fazer backup, copie a pasta `dados`.
 
-## 8. Problemas comuns
+## 9. Problemas comuns
 
 - **A partida não foi registrada**: confira se a janela preta está aberta e se a captura está "ligada" no canto do painel.
   Teste copiando um log antigo (Ctrl+C) com o programa aberto.

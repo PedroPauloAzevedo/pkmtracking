@@ -41,14 +41,38 @@ def placar(v, d, e=0):
 # ================================================================== pessoal
 
 def descobrir_eu(partidas, nick):
+    """Seu nick: o configurado ou, sem ele, o jogador que mais aparece nas SUAS partidas (não nas dos amigos)."""
     if nick:
         return nick
+    partidas = [p for p in partidas if not p.get("dono")]
     contagem = Counter(j for p in partidas for j in p["jogadores"])
     if len(partidas) >= 2 and contagem:
         nome, qtd = contagem.most_common(1)[0]
         if qtd >= 2:
             return nome
     return ""
+
+
+def perspectiva(p, eu):
+    """De quem é o ponto de vista da partida: o amigo que mandou o log, ou você."""
+    return p.get("dono") or eu
+
+
+def do_jogador(p, jogador):
+    """Filtro de jogador: '' = só você, '*' = todos, ou o nick de um amigo."""
+    if jogador == "*":
+        return True
+    return (p.get("dono") or "") == (jogador or "")
+
+
+def jogadores(nick):
+    """Você e os amigos de quem você importou logs, com o número de partidas de cada um."""
+    partidas = banco.listar_partidas()
+    eu = descobrir_eu(partidas, nick)
+    cont = Counter(p.get("dono") or "" for p in partidas)
+    saida = [{"id": "", "nome": eu or "Você", "voce": True, "partidas": cont.get("", 0)}]
+    saida += [{"id": d, "nome": d, "voce": False, "partidas": n} for d, n in sorted(cont.items(), key=lambda x: x[0].lower()) if d]
+    return saida
 
 
 def _listas():
@@ -61,6 +85,14 @@ def _arquetipo_lista(deck_id):
 
 def _nome_lista(deck_id):
     return (_listas().get(deck_id) or {}).get("nome", "") if deck_id else ""
+
+
+def _canon(v):
+    """'Charizard ex' digitado à mão e 'charizard-ex' do palpite viram o mesmo deck."""
+    from . import decks
+    if not v:
+        return v
+    return slug(v) if slug(v) in decks.arquetipos() else v
 
 
 def visao(p, eu):
@@ -78,14 +110,15 @@ def visao(p, eu):
     return {
         "id": p["id"], "data": p["capturada_em"], "origem": p["origem"], "eu": eu_, "adversario": adv,
         "resultado": res, "comecei": (r["primeiro"] == eu_) if r["primeiro"] else None,
-        "meu_deck": p["meu_deck"] or _arquetipo_lista(p.get("deck_id")) or decks.palpite_deck(r, eu_),
-        "deck_adv": p["deck_adv"] or decks.palpite_deck(r, adv),
+        "meu_deck": _canon(p["meu_deck"] or _arquetipo_lista(p.get("deck_id")) or decks.palpite_deck(r, eu_)),
+        "deck_adv": _canon(p["deck_adv"] or decks.palpite_deck(r, adv)),
         "deck_id": p.get("deck_id"), "lista_nome": _nome_lista(p.get("deck_id")),
         "premios_eu": pj.get(eu_, {}).get("premios", 0), "premios_adv": pj.get(adv, {}).get("premios", 0),
         "turnos": r["turnos"], "motivo": r["motivo"],
         "primeiro_ko_meu": (r["primeiro_nocaute"] == eu_) if r["primeiro_nocaute"] else None,
         "mulligan_eu": pj.get(eu_, {}).get("mulligans", 0) > 0,
         "tags": p["tags"], "notas": p["notas"], "qtd_nao_lidas": p["qtd_nao_lidas"], "conhecido": sou,
+        "dono": p.get("dono") or "",
     }
 
 
@@ -99,10 +132,10 @@ def _agrupar(linhas, chave):
     return [{"grupo": k, **placar(v, d)} for k, (v, d) in sorted(grupos.items(), key=lambda kv: -sum(kv[1]))]
 
 
-def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, adv=None):
+def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, adv=None, jogador=""):
     partidas = banco.listar_partidas()
     eu = descobrir_eu(partidas, nick)
-    todas = [visao(p, eu) for p in partidas]
+    todas = [visao(p, perspectiva(p, eu)) for p in partidas if do_jogador(p, jogador)]
     linhas = [l for l in todas
               if l["resultado"]
               and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
@@ -139,7 +172,7 @@ def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, ad
         return round(sum(xs) / len(xs), 1) if xs else None
 
     return {
-        "eu": eu, "total": placar(v, len(linhas) - v),
+        "eu": eu, "jogador": jogador or "", "total": placar(v, len(linhas) - v),
         "sem_resultado": sum(1 for l in todas if not l["resultado"]),
         "por_meu_deck": _agrupar(linhas, lambda l: l["meu_deck"] or "Desconhecido"),
         "por_lista": _agrupar(linhas, lambda l: l["lista_nome"] or None),
@@ -425,7 +458,7 @@ def cartas_matchups(arq, chave_carta, torneios=None, k=8, min_partidas=5):
 
 # ================================================================== analista de decisões
 
-def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3):
+def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3, jogador=""):
     """
     O que nas SUAS partidas anda junto com vencer ou perder. Tudo vem dos logs:
       - aberturas: cartas que você jogou nos seus 2 primeiros turnos e a taxa de vitória;
@@ -434,7 +467,7 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
       - cartas jogadas: taxa de vitória quando a carta saiu na partida e quando não saiu.
     São correlações: mostram padrões para investigar, não provam causa.
     """
-    base = analise_pessoal(nick, de, ate, deck, None, lista, adv)
+    base = analise_pessoal(nick, de, ate, deck, None, lista, adv, jogador)
     eu = base["eu"]
     linhas = [l for l in base["partidas"] if l["resultado"]
               and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
@@ -453,6 +486,7 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
         p = banco.obter_partida(l["id"])
         venceu = l["resultado"] == "V"
         adv_nome = l["adversario"]
+        eu = l["eu"]  # ponto de vista desta partida (você ou o amigo que mandou o log)
         # meus turnos numerados (1º turno meu, 2º turno meu...)
         meus_turnos = {}
         for e in p["eventos"]:
@@ -527,7 +561,7 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
 
     media = lambda xs: round(sum(xs) / len(xs), 1) if xs else None
     return {
-        "eu": eu, "partidas": len(linhas), "vitorias": total_v, "min_partidas": min_partidas,
+        "eu": base["eu"], "jogador": jogador or "", "partidas": len(linhas), "vitorias": total_v, "min_partidas": min_partidas,
         "aberturas": tabela(abertura),
         "cartas_jogadas": tabela(jogadas),
         "primeiro_premio": [{"grupo": g, **placar(v, n - v)} for g, (v, n) in primeiro_premio.items()],

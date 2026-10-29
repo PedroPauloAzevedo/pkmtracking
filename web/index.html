@@ -266,6 +266,7 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
       <summary><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Programa<span class="seta">›</span></summary>
       <a href="#ajustes">Ajustes e captura</a>
+      <a href="#amigos">Amigos (trocar logs)</a>
       <a href="#biblioteca">Biblioteca de cartas</a>
       <a href="#revisao">Linhas não lidas<span class="badge" id="badge-revisao" hidden></span></a>
       <a href="#regras">Regras de leitura</a>
@@ -406,7 +407,7 @@ const ROTAS = { painel: renderPainel, partidas: renderPartidas, desempenho: rend
   matchups: renderMatchups, deck: renderDeck, cartas: renderCartas, torneios: renderTorneios, ajustes: renderAjustes,
   regras: renderRegras, biblioteca: renderBiblioteca,
   decks: renderMeusDecks, partida: () => renderDetalhe(rota().id), replay: () => renderReplay(rota().id),
-  meudeck: () => renderMeuDeck(rota().id), decisoes: renderDecisoes, 'cartas-mu': renderCartasMatchups, revisao: renderRevisao };
+  meudeck: () => renderMeuDeck(rota().id), decisoes: renderDecisoes, amigos: renderAmigos, 'cartas-mu': renderCartasMatchups, revisao: renderRevisao };
 // Cada aba pertence a uma área: "meu" (suas partidas) ou "geral" (campeonatos e meta).
 const AREA = { painel: 'meu', partidas: 'meu', desempenho: 'meu', decisoes: 'meu', partida: 'meu', replay: 'meu', decks: 'meu', meudeck: 'meu',
   meta: 'geral', matchups: 'geral', deck: 'geral', cartas: 'geral', 'cartas-mu': 'geral', torneios: 'geral' };
@@ -426,7 +427,7 @@ async function render() {
   document.querySelectorAll('nav a[data-area]').forEach(a => a.hidden = a.dataset.area !== S.area);
   const marcar = ['partida', 'replay'].includes(r) ? 'partidas' : r === 'meudeck' ? 'decks' : r;
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('ativo', a.getAttribute('href') === '#' + marcar));
-  if (['ajustes', 'biblioteca', 'regras', 'revisao'].includes(r)) $('#nav-programa').open = true;
+  if (['ajustes', 'amigos', 'biblioteca', 'regras', 'revisao'].includes(r)) $('#nav-programa').open = true;
   if (S.rp?.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
   document.querySelectorAll('.janela-fundo').forEach(j => j.remove());
   try { await ROTAS[r](); }
@@ -481,9 +482,31 @@ const mini = (nome, id) => nome ? `<img class="mini" src="${imgId(id, nome)}" al
 /* =====================================================================
    SUAS PARTIDAS
    ===================================================================== */
+// ---- jogador: você ou um amigo de quem você importou logs ('' = você, '*' = todos)
+S.jogadores = [];
+try { S.jogador = localStorage.getItem('jogador') || ''; } catch (e) { S.jogador = ''; }
+async function carregarJogadores() {
+  try { S.jogadores = await api('/api/jogadores-locais'); } catch (e) { S.jogadores = []; }
+  if (S.jogador && S.jogador !== '*' && !S.jogadores.some(j => j.id === S.jogador)) S.jogador = '';
+}
+const qJog = () => S.jogador ? 'jogador=' + encodeURIComponent(S.jogador) : '';
+const comJog = url => { const q = qJog(); return q ? url + (url.includes('?') ? '&' : '?') + q : url; };
+const variosJogadores = () => S.jogadores.length > 1;
+const nomeJogadorSel = () => S.jogador === '*' ? 'todos os jogadores' : (S.jogadores.find(j => j.id === S.jogador) || {}).nome || 'você';
+function seletorJogador() {
+  if (!variosJogadores()) return '';
+  return `<span style="display:inline-flex;align-items:center;gap:6px"><label class="label" for="sel-jogador">Jogador</label><select id="sel-jogador">
+    ${S.jogadores.map(j => `<option value="${esc(j.id)}" ${S.jogador === j.id ? 'selected' : ''}>${j.voce ? 'Eu' + (j.nome && j.nome !== 'Você' ? ` (${esc(j.nome)})` : '') : esc(j.nome)} · ${j.partidas}</option>`).join('')}
+    <option value="*" ${S.jogador === '*' ? 'selected' : ''}>Todos os jogadores · ${S.jogadores.reduce((a, j) => a + j.partidas, 0)}</option></select></span>`;
+}
+function ligarSeletorJogador(aoMudar) {
+  const el = $('#sel-jogador'); if (!el) return;
+  el.onchange = e => { S.jogador = e.target.value; try { localStorage.setItem('jogador', S.jogador); } catch (er) {} aoMudar(); };
+}
 function trilha() { return `<span class="trilha">${S.area === 'geral' ? 'Geral' : 'Minhas partidas'}</span>`; }
 async function renderPainel() {
-  const [d, st] = await Promise.all([api('/api/partidas'), api('/api/status')]); const cfg = st.config || {};
+  await carregarJogadores();
+  const [d, st] = await Promise.all([api(comJog('/api/partidas')), api('/api/status')]); const cfg = st.config || {};
   const pend = S.status?.linhas_pendentes || 0;
   const boasVindas = cfg.nick ? '' : `<section class="panel" style="border-left:3px solid var(--accent)"><h2>Bem-vindo! Primeiro passo</h2>
     <p>Digite seu nick do TCG Live <b>exatamente como aparece no jogo</b> (maiúsculas e minúsculas contam). É assim que o programa sabe quais partidas são vitórias suas.</p>
@@ -492,7 +515,8 @@ async function renderPainel() {
   const t = d.total, ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
   const ult = d.partidas.slice(0, 8);
   main.innerHTML = `
-    ${trilha()}<header><h1>Painel</h1><p class="sub">${d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${trilha()}<header><h1>Painel</h1><p class="sub">${S.jogador ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${variosJogadores() ? `<div class="row">${seletorJogador()}</div>` : ''}
     ${boasVindas}
     ${pend ? `<div class="aviso">${pend} partida(s) com linhas que o leitor não reconheceu. <a href="#revisao">Revisar agora</a></div>` : ''}
     <div class="kpis">
@@ -512,6 +536,7 @@ async function renderPainel() {
       <div class="row"><button class="primary" id="btn-manual">Registrar partida</button></div>
     </section>`;
   ligarLinhasPartidas();
+  ligarSeletorJogador(renderPainel);
   if ($('#bv-salvar')) $('#bv-salvar').onclick = async () => { const n = $('#bv-nick').value.trim(); if (!n) return;
     await api('/api/config', { method: 'POST', body: JSON.stringify({ nick: n }) }); toast('Nick salvo'); render(); };
   $('#btn-manual').onclick = async () => {
@@ -524,9 +549,10 @@ async function renderPainel() {
 }
 
 function tabelaPartidas(lista) {
-  return `<div class="tabela alta"><table><thead><tr><th>Data</th><th>Resultado</th><th>Adversário</th><th>Seu deck</th><th>Deck dele</th><th class="n">Prêmios</th><th class="n">Turnos</th><th>Ordem</th><th>Motivo</th></tr></thead><tbody>
+  const cj = lista.some(l => l.dono) || S.jogador === '*';
+  return `<div class="tabela alta"><table><thead><tr><th>Data</th>${cj ? '<th>Jogador</th>' : ''}<th>Resultado</th><th>Adversário</th><th>${cj ? 'Deck do jogador' : 'Seu deck'}</th><th>Deck do adversário</th><th class="n">Prêmios</th><th class="n">Turnos</th><th>Ordem</th><th>Motivo</th></tr></thead><tbody>
     ${lista.map(l => `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
-      <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>
+      <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>${cj ? `<td>${l.dono ? esc(l.dono) : '<b>Eu</b>'}</td>` : ''}
       <td>${l.resultado === 'V' ? '<span class="pill v">Vitória</span>' : l.resultado === 'D' ? '<span class="pill d">Derrota</span>' : '<span class="pill n">?</span>'}</td>
       <td>${esc(l.adversario)}</td><td>${deckHtml(l.meu_deck)}${l.lista_nome ? `<div class="muted" style="font-size:.74rem">lista: ${esc(l.lista_nome)}</div>` : ''}</td><td>${deckHtml(l.deck_adv)}</td>
       <td class="n">${l.premios_eu}–${l.premios_adv}</td><td class="n">${l.turnos}</td>
@@ -540,24 +566,27 @@ function ligarLinhasPartidas() {
 async function renderPartidas() {
   const f = S.filtroPartidas || (S.filtroPartidas = { deck: '', tag: '', de: '', ate: '' });
   const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString();
-  const d = await api('/api/partidas?' + qs);
+  await carregarJogadores();
+  const d = await api(comJog('/api/partidas?' + qs));
   const decks = [...new Set(d.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
   const lista = d.partidas.filter(l => (!f.deck || l.meu_deck === f.deck) && (!f.tag || (l.tags || '').toLowerCase().includes(f.tag.toLowerCase()))
     && (!f.de || l.data.slice(0, 10) >= f.de) && (!f.ate || l.data.slice(0, 10) <= f.ate));
   main.innerHTML = `
     ${trilha()}<header><h1>Partidas</h1><p class="sub">Clique numa partida para ver o detalhe, corrigir o nome dos decks e anotar.</p></header>
     <div class="row">
+      ${seletorJogador()}
       <select id="f-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
       <input id="f-tag" placeholder="Tag (ex.: liga)" value="${esc(f.tag)}">
       <label class="label" for="f-de">De</label><input type="date" id="f-de" value="${f.de}">
       <label class="label" for="f-ate">Até</label><input type="date" id="f-ate" value="${f.ate}">
       <span class="grow"></span>
-      <a class="btn" href="/exportar/minhas_partidas.csv">Baixar para Excel</a>
+      <a class="btn" href="${comJog('/exportar/minhas_partidas.csv')}">Baixar para Excel</a>
       <a class="btn" href="/exportar/eventos.csv">Baixar eventos</a>
     </div>
     <p class="muted num">${lista.length} partidas</p>
     ${lista.length ? tabelaPartidas(lista) : '<p class="vazio">Nenhuma partida com esses filtros.</p>'}`;
   ['deck', 'tag', 'de', 'ate'].forEach(k => $('#f-' + k).onchange = e => { f[k] = e.target.value; renderPartidas(); });
+  ligarSeletorJogador(renderPartidas);
   ligarLinhasPartidas();
 }
 
@@ -585,7 +614,7 @@ async function renderDetalhe(id) {
   const pill = j => r.vencedor ? (r.vencedor === j ? '<span class="pill v">Venceu</span>' : '<span class="pill n">Perdeu</span>') : '';
   const linhas = [['Prêmios pegos','premios'],['Nocautes causados','nocautes'],['Dano total','dano'],['Ataques','ataques'],['Cartas jogadas','jogadas'],['Energias ligadas','energias'],['Evoluções','evolucoes'],['Mulligans','mulligans']];
   main.innerHTML = `
-    <div class="row"><button id="voltar">← Partidas</button><a class="btn primary" href="#replay-${p.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">▶ Ver replay</a><span class="grow"></span><span class="muted num">#${p.id} · ${fmtData(p.capturada_em, true)} · origem: ${esc(p.origem)}</span></div>
+    <div class="row"><button id="voltar">← Partidas</button><a class="btn primary" href="#replay-${p.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">▶ Ver replay</a><span class="grow"></span><span class="muted num">#${p.id} · ${fmtData(p.capturada_em, true)} · origem: ${esc(p.origem)}${p.dono ? ` · partida de <b>${esc(p.dono)}</b>` : ''}</span></div>
     <section class="panel">
       <div class="resultado">
         <div class="lado"><span class="label">${a === r.primeiro ? 'Começou' : 'Segundo'}</span><span class="nome p1">${esc(a)}</span>${pill(a)}</div>
@@ -646,20 +675,22 @@ async function renderDesempenho() {
   const f = S.filtroDes || (S.filtroDes = { de: '', ate: '', deck: '', adv: '', periodo: 0 });
   if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
   const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, adv: f.adv }).filter(([, v]) => v)).toString();
-  const d = await api('/api/partidas?' + qs);
-  const todos = await api('/api/partidas');
+  await carregarJogadores();
+  const d = await api(comJog('/api/partidas?' + qs));
+  const todos = await api(comJog('/api/partidas'));
   const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
   const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
   const ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
   const kpi = (ico, cls, rotulo, v, det) => `<div class="kpi2"><span class="ico-kpi ${cls}">${ico}</span><div><span class="label">${rotulo}</span><div class="v">${v}</div><span class="d">${det}</span></div></div>`;
   const classe = g => g && g.taxa != null ? (g.taxa >= 50 ? 'bom' : 'ruim') : 'neutro';
   main.innerHTML = `
-    ${trilha()}<header><h1>Desempenho</h1><p class="sub">Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
+    ${trilha()}<header><h1>Desempenho</h1><p class="sub">${S.jogador ? `Mostrando: <b>${esc(nomeJogadorSel())}</b>. ` : ''}Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, r]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${r}</button>`).join('')}</div>
       <label class="label" for="d-de">De</label><input type="date" id="d-de" value="${f.de}">
       <label class="label" for="d-ate">Até</label><input type="date" id="d-ate" value="${f.ate}">
       <span class="grow"></span>
+      ${seletorJogador()}
       <select id="d-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
       <select id="d-adv"><option value="">Todos os adversários</option>${advs.map(x => `<option value="${esc(x)}" ${f.adv === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
     </div>
@@ -682,6 +713,7 @@ async function renderDesempenho() {
       ${d.tendencia.length > 1 ? graficoLinhas([{ nome: 'Taxa acumulada', valores: d.tendencia.map(t => t.taxa_acumulada), cor: 'var(--p1)' }], d.tendencia.map(t => t.dia.slice(5).split('-').reverse().join('/'))) : '<p class="muted">Precisa de partidas em pelo menos dois dias.</p>'}
     </section>`;
   $('#d-deck').onchange = e => { f.deck = e.target.value; renderDesempenho(); };
+  ligarSeletorJogador(renderDesempenho);
   $('#d-adv').onchange = e => { f.adv = e.target.value; renderDesempenho(); };
   $('#d-de').onchange = e => { f.de = e.target.value; f.periodo = 0; renderDesempenho(); };
   $('#d-ate').onchange = e => { f.ate = e.target.value; f.periodo = 0; renderDesempenho(); };
@@ -1000,7 +1032,7 @@ async function renderAjustes() {
       <div class="row"><button id="a-diag">Procurar</button></div><div id="a-diag-out"></div>
     </section>
     <section class="panel"><h2>Exportar para o Excel</h2>
-      <div class="row"><a class="btn" href="/exportar/minhas_partidas.csv">Minhas partidas</a><a class="btn" href="/exportar/eventos.csv">Todos os eventos dos logs</a><a class="btn" href="/exportar/torneios.csv">Partidas dos torneios</a><a class="btn" href="/exportar/meta.csv">Meta</a></div>
+      <div class="row"><a class="btn" href="${comJog('/exportar/minhas_partidas.csv')}">Minhas partidas</a><a class="btn" href="/exportar/eventos.csv">Todos os eventos dos logs</a><a class="btn" href="/exportar/torneios.csv">Partidas dos torneios</a><a class="btn" href="/exportar/meta.csv">Meta</a></div>
       <p class="muted">Arquivos .csv com ponto e vírgula, que abrem direto no Excel em português. O banco completo fica em <span class="mono">dados/tracker.db</span>.</p>
     </section>
     <section class="panel"><h2>Atualizações</h2>
@@ -1373,7 +1405,8 @@ async function renderDecisoes() {
   const f = S.filtroDec || (S.filtroDec = { de: '', ate: '', deck: '', lista: '', adv: '', periodo: 0, min: 3 });
   if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
   const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, lista: f.lista, adv: f.adv, min: f.min }).filter(([, v]) => v !== '' && v != null)).toString();
-  const [r, todos, listas] = await Promise.all([api('/api/decisoes?' + qs), api('/api/partidas'), api('/api/decks')]);
+  await carregarJogadores();
+  const [r, todos, listas] = await Promise.all([api(comJog('/api/decisoes?' + qs)), api(comJog('/api/partidas')), api('/api/decks')]);
   const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
   const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
   const dif = x => x == null ? '<span class="muted">–</span>' : `<b style="color:${x > 0 ? 'var(--good)' : x < 0 ? 'var(--bad)' : 'var(--muted)'}">${x > 0 ? '+' : ''}${fmt(x, 0)} p.p.</b>`;
@@ -1387,13 +1420,14 @@ async function renderDecisoes() {
   const vi = r.viradas, rv = r.ritmo, pc = r.perdeu_controle;
   const maxPc = Math.max(1, ...pc.map(x => x.derrotas));
   main.innerHTML = `
-    ${trilha()}<header><h1>Decisões</h1><p class="sub">O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
+    ${trilha()}<header><h1>Decisões</h1><p class="sub">${S.jogador ? `Mostrando: <b>${esc(nomeJogadorSel())}</b> (cada partida do ponto de vista de quem jogou). ` : ''}O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
     <div class="aviso">São <b>correlações</b>, não causas: uma carta pode aparecer mais nas vitórias porque você só consegue jogá-la quando a partida já está boa. Use como pista para revisar replays. Com poucas partidas, a faixa provável (passe o mouse na taxa) é larga.</div>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, rt]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${rt}</button>`).join('')}</div>
       <label class="label" for="x-de">De</label><input type="date" id="x-de" value="${f.de}">
       <label class="label" for="x-ate">Até</label><input type="date" id="x-ate" value="${f.ate}">
       <span class="grow"></span>
+      ${seletorJogador()}
       <select id="x-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
       <select id="x-lista"><option value="">Todas as listas</option>${listas.map(x => `<option value="${x.id}" ${String(f.lista) === String(x.id) ? 'selected' : ''}>${esc(x.nome)}</option>`).join('')}</select>
       <select id="x-adv"><option value="">Todos os adversários</option>${advs.map(x => `<option value="${esc(x)}" ${f.adv === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
@@ -1419,6 +1453,7 @@ async function renderDecisoes() {
     <section class="panel"><h2>Cartas jogadas em qualquer momento</h2>
       ${tabelaCartas(r.cartas_jogadas, `Nenhuma carta com pelo menos ${f.min} partidas (e alguma partida sem ela).`)}</section>`}`;
   const re = () => renderDecisoes();
+  ligarSeletorJogador(re);
   $('#x-deck').onchange = e => { f.deck = e.target.value; re(); };
   $('#x-lista').onchange = e => { f.lista = e.target.value; re(); };
   $('#x-adv').onchange = e => { f.adv = e.target.value; re(); };
@@ -1426,6 +1461,66 @@ async function renderDecisoes() {
   $('#x-de').onchange = e => { f.de = e.target.value; f.periodo = 0; re(); };
   $('#x-ate').onchange = e => { f.ate = e.target.value; f.periodo = 0; re(); };
   document.querySelectorAll('[data-periodo]').forEach(b => b.onclick = () => { f.periodo = Number(b.dataset.periodo); if (!f.periodo) { f.de = ''; f.ate = ''; } re(); });
+}
+
+/* ---- AMIGOS: mandar os seus logs e receber os deles */
+async function renderAmigos() {
+  const r = await api('/api/amigos');
+  const ex = r.exportacao, ult = ex.ultima_exportacao;
+  main.innerHTML = `
+    <header><h1>Amigos (trocar logs)</h1><p class="sub">Junte as partidas de vários jogadores para ter mais dados nos matchups e nas Decisões. Cada um continua com o próprio programa; vocês trocam um arquivo .zip pelo WhatsApp, e-mail ou Drive. Nas telas de Minhas partidas, o filtro <b>Jogador</b> escolhe de quem ver: você, um amigo ou todos juntos.</p></header>
+    <section class="panel"><h2>1. Enviar os meus logs</h2>
+      <p>Jogador: <b>${esc(ex.nick || '(informe seu nick no Painel)')}</b> · ${ex.total} partida(s) suas${ult ? ` · último envio com partidas até ${fmtData(ult, true)}` : ''}.
+      Só vão as <b>suas</b> partidas; as que você recebeu de amigos ficam de fora.</p>
+      ${ult ? `<label class="row" style="gap:6px"><input type="checkbox" id="am-novas" ${ex.novas ? 'checked' : ''}> Só as partidas novas desde o último envio (${ex.novas})</label>` : ''}
+      <div class="row"><button class="primary" id="am-exportar">Exportar meus logs</button>
+        <a class="btn" id="am-baixar" href="/exportar/meus-logs.zip">ou baixar pelo navegador</a></div>
+      <p class="muted" style="font-size:.85rem">O arquivo é salvo em <span class="mono">${esc(r.downloads)}</span> e a pasta abre com ele selecionado: é só arrastar para a conversa. Pode mandar tudo de novo sempre que quiser: quem recebe ignora as partidas repetidas.</p>
+      <div id="am-feito"></div>
+    </section>
+    <section class="panel"><h2>2. Receber logs de um amigo</h2>
+      <p>Escolha o .zip que ele mandou (pode escolher vários de uma vez). Também aceita os .txt da pasta <span class="mono">dados\\logs</span> do programa dele.</p>
+      <div class="row"><input type="file" id="am-arquivos" accept=".zip,.txt" multiple>
+        <input id="am-nome" placeholder="Nick dele (só se o arquivo não for do botão Exportar)" style="width:320px">
+        <button class="primary" id="am-importar">Importar</button></div>
+      <div id="am-resultado"></div>
+    </section>
+    <section class="panel"><h2>Jogadores importados</h2>
+      ${r.amigos.length ? `<div class="tabela"><table><thead><tr><th>Jogador</th><th class="n">Partidas</th><th>Primeira</th><th>Última</th><th></th></tr></thead><tbody>
+        ${r.amigos.map(a => `<tr><td><b>${esc(a.nome)}</b></td><td class="n">${a.partidas}</td><td>${fmtData(a.primeira)}</td><td>${fmtData(a.ultima)}</td>
+          <td style="text-align:right;white-space:nowrap"><button data-ver="${esc(a.nome)}">Ver partidas</button> <button class="perigo" data-apagar="${esc(a.nome)}">Apagar</button></td></tr>`).join('')}
+        </tbody></table></div>` : '<p class="muted">Nenhum amigo importado ainda.</p>'}
+    </section>`;
+  const novas = () => $('#am-novas') && $('#am-novas').checked;
+  const linkBaixar = () => { $('#am-baixar').href = '/exportar/meus-logs.zip' + (novas() ? '?so_novas=1' : ''); };
+  if ($('#am-novas')) $('#am-novas').onchange = linkBaixar; linkBaixar();
+  $('#am-baixar').onclick = () => setTimeout(renderAmigos, 1500);
+  $('#am-exportar').onclick = async () => {
+    try { const x = await api('/api/amigos/exportar', { method: 'POST', body: JSON.stringify({ so_novas: novas() }) });
+      await renderAmigos();
+      $('#am-feito').innerHTML = `<div class="aviso">Pronto: ${x.partidas} partida(s) em <span class="mono">${esc(x.arquivo)}</span>. Mande esse arquivo para o seu amigo.</div>`; }
+    catch (e) { $('#am-feito').innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; }
+  };
+  $('#am-importar').onclick = async () => {
+    const inp = $('#am-arquivos');
+    if (!inp.files.length) { toast('Escolha o arquivo que o seu amigo mandou'); return; }
+    const fd = new FormData(); [...inp.files].forEach(f => fd.append('arquivos', f)); fd.append('nome', $('#am-nome').value.trim());
+    $('#am-importar').disabled = true; $('#am-resultado').innerHTML = '<p class="muted">Lendo os logs…</p>';
+    const resp = await fetch('/api/amigos/importar', { method: 'POST', body: fd }).catch(() => null);
+    const j = resp ? await resp.json().catch(() => ({})) : { erro: AJUDA_CONEXAO };
+    $('#am-importar').disabled = false;
+    if (!resp || !resp.ok) { $('#am-resultado').innerHTML = `<div class="aviso erro">${esc(j.erro || 'Não consegui importar.')}</div>`; return; }
+    await carregarJogadores(); await renderAmigos();
+    $('#am-resultado').innerHTML = `<div class="aviso">Logs de <b>${esc(j.nome)}</b>: ${j.novas} partida(s) nova(s)${j.repetidas ? `, ${j.repetidas} já estavam aqui` : ''}${j.invalidos ? `, ${j.invalidos} arquivo(s) não eram log` : ''}. <a href="#partidas" id="am-ver-novo">Ver partidas dele</a></div>`;
+    $('#am-ver-novo').onclick = () => { S.jogador = j.nome; try { localStorage.setItem('jogador', j.nome); } catch (e) {} };
+  };
+  document.querySelectorAll('[data-ver]').forEach(b => b.onclick = () => { S.jogador = b.dataset.ver; try { localStorage.setItem('jogador', S.jogador); } catch (e) {} location.hash = 'partidas'; });
+  document.querySelectorAll('[data-apagar]').forEach(b => b.onclick = async () => {
+    if (b.dataset.confirmar !== '1') { b.dataset.confirmar = '1'; b.textContent = 'Confirmar: apagar todas as partidas dele'; return; }
+    const x = await api('/api/amigos/' + encodeURIComponent(b.dataset.apagar), { method: 'DELETE' });
+    if (S.jogador === b.dataset.apagar) S.jogador = '';
+    toast(`${x.apagadas} partida(s) apagada(s)`); await carregarJogadores(); renderAmigos();
+  });
 }
 
 async function renderMeuDeck(id) {
@@ -1541,6 +1636,7 @@ async function renderBiblioteca() {
 /* ---------------- início ---------------- */
 (async () => {
   await carregarArquetipos();
+  await carregarJogadores();
   await atualizarStatus();
   render();
   setInterval(atualizarStatus, 4000);

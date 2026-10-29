@@ -6,10 +6,12 @@ Dá para abrir esse arquivo no DB Browser for SQLite, no Power BI ou no Excel
 """
 import hashlib
 import json
+import re
 import sqlite3
 import threading
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 
 from . import config, leitor
 
@@ -93,6 +95,8 @@ def iniciar():
             con.execute("ALTER TABLE meus_decks ADD COLUMN favorito INTEGER DEFAULT 0")
         if "icones_manual" not in {r["name"] for r in con.execute("PRAGMA table_info(meus_decks)")}:
             con.execute("ALTER TABLE meus_decks ADD COLUMN icones_manual TEXT DEFAULT ''")  # ícones que você corrigiu
+        if "dono" not in {r["name"] for r in con.execute("PRAGMA table_info(partidas)")}:
+            con.execute("ALTER TABLE partidas ADD COLUMN dono TEXT DEFAULT ''")  # vazio = sua; senão, o nick do amigo
     if regras_novas:  # regras atualizadas: relê as partidas já gravadas
         reprocessar_partidas(config.ler_regras())
 
@@ -104,22 +108,32 @@ def hash_log(texto):
     return hashlib.sha1(normal.encode("utf-8")).hexdigest()
 
 
-def inserir_partida(texto, origem, regras):
-    """Grava uma partida. Devolve (id, nova?). Logs repetidos são ignorados."""
+def inserir_partida(texto, origem, regras, dono="", capturada_em=None, extras=None):
+    """Grava uma partida. Devolve (id, nova?). Logs repetidos são ignorados.
+    dono: vazio para as suas partidas; o nick do amigo para logs importados dele."""
     h = hash_log(texto)
     with _trava, conectar() as con:
         existente = con.execute("SELECT id FROM partidas WHERE hash=?", (h,)).fetchone()
         if existente:
             return existente["id"], False
         dados = leitor.ler_partida(texto, regras)
-        agora = datetime.now()
-        nome = agora.strftime("%Y-%m-%d_%H%M%S") + f"_{h[:6]}.txt"
+        quando = capturada_em or datetime.now().isoformat(timespec="seconds")
+        nome = quando.replace("T", "_").replace(":", "")[:17] + f"_{h[:6]}.txt"
+        pasta = config.PASTA_LOGS
+        if dono:  # logs de amigos ficam separados, e nunca são reenviados quando você exporta os seus
+            pasta = config.PASTA_DADOS / "logs_amigos" / (re.sub(r"[^A-Za-z0-9_.-]", "_", dono) or "amigo")
+            pasta.mkdir(parents=True, exist_ok=True)
+            nome = str(Path("..") / "logs_amigos" / pasta.name / nome)
         (config.PASTA_LOGS / nome).write_text(texto, encoding="utf-8")
+        ex = extras or {}
         cur = con.execute(
-            "INSERT INTO partidas (hash, capturada_em, origem, arquivo, texto, dados_json) VALUES (?,?,?,?,?,?)",
-            (h, agora.isoformat(timespec="seconds"), origem, nome, texto, json.dumps(dados, ensure_ascii=False)),
+            "INSERT INTO partidas (hash, capturada_em, origem, arquivo, texto, dados_json, dono, meu_deck, deck_adv, tags, notas) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (h, quando, origem, nome, texto, json.dumps(dados, ensure_ascii=False), dono,
+             ex.get("meu_deck", ""), ex.get("deck_adv", ""), ex.get("tags", ""), ex.get("notas", "")),
         )
         pid = cur.lastrowid
+    if dono:
+        return pid, True
     try:  # liga a partida a uma lista de "Meus decks", se as cartas reveladas baterem
         from . import decks
         decks.vincular_automatico(pid)
@@ -130,7 +144,8 @@ def inserir_partida(texto, origem, regras):
 
 def _linha_para_partida(r, completo=False):
     d = json.loads(r["dados_json"])
-    p = {k: r[k] for k in ("id", "capturada_em", "origem", "arquivo", "meu_deck", "deck_adv", "notas", "tags", "deck_id")}
+    p = {k: r[k] for k in ("id", "capturada_em", "origem", "arquivo", "meu_deck", "deck_adv", "notas", "tags", "deck_id", "dono")}
+    p["dono"] = p["dono"] or ""
     p["jogadores"] = d["jogadores"]
     p["resumo"] = d["resumo"]
     p["qtd_nao_lidas"] = len(d["nao_lidas"])

@@ -399,8 +399,8 @@ def vincular_automatico(pid, sobrescrever=False):
     """Liga a partida à lista de "Meus decks" que contém as cartas que você revelou."""
     from . import analises
     p = banco.obter_partida(pid)
-    if not p or (p.get("deck_id") and not sobrescrever):
-        return None
+    if not p or (p.get("deck_id") and not sobrescrever) or p.get("dono"):
+        return None  # partidas de amigos não usam as suas listas
     eu = analises.descobrir_eu(banco.listar_partidas(), config.ler_config()["nick"])
     vistas = (p["resumo"].get("vistas") or {}).get(eu)
     if not vistas:

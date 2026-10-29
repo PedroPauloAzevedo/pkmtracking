@@ -26,7 +26,7 @@ import webbrowser
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
-from tracker import analises, atualizador, banco, cartas, config, decks, diagnostico, leitor, limitless, replay, revisao
+from tracker import analises, atualizador, banco, cartas, compartilhar, config, decks, diagnostico, leitor, limitless, replay, revisao
 from tracker.auto_export import auto
 from tracker.coletor import coletor
 
@@ -76,7 +76,7 @@ def _contar_pendentes():
 def api_decisoes():
     a = request.args
     return jsonify(analises.decisoes(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"),
-                                     a.get("lista"), a.get("adv"), int(a.get("min", 3))))
+                                     a.get("lista"), a.get("adv"), int(a.get("min", 3)), a.get("jogador", "")))
 
 
 @app.get("/api/revisao")
@@ -124,7 +124,58 @@ def salvar_config():
 @app.get("/api/partidas")
 def partidas():
     a = request.args
-    return jsonify(analises.analise_pessoal(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"), a.get("tag"), a.get("lista"), a.get("adv")))
+    return jsonify(analises.analise_pessoal(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"), a.get("tag"),
+                                            a.get("lista"), a.get("adv"), a.get("jogador", "")))
+
+
+# ------------------------------------------------------------------ amigos: trocar logs
+@app.get("/api/jogadores-locais")
+def jogadores_locais():
+    return jsonify(analises.jogadores(config.ler_config()["nick"]))
+
+
+@app.get("/api/amigos")
+def lista_amigos():
+    return jsonify({"amigos": compartilhar.amigos(), "exportacao": compartilhar.resumo_exportacao(),
+                    "downloads": str(compartilhar.pasta_downloads())})
+
+
+@app.post("/api/amigos/exportar")
+def exportar_logs():
+    corpo = request.get_json(force=True) or {}
+    try:
+        return jsonify(compartilhar.exportar_para_downloads(bool(corpo.get("so_novas"))))
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 400
+    except OSError as e:
+        return jsonify({"erro": f"Não consegui salvar o arquivo: {e}"}), 500
+
+
+@app.get("/exportar/meus-logs.zip")
+def baixar_logs():
+    try:
+        nome, conteudo, _ = compartilhar.montar_zip(request.args.get("so_novas") == "1")
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 400
+    return Response(conteudo, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{nome}"'})
+
+
+@app.post("/api/amigos/importar")
+def importar_logs():
+    arquivos = [(f.filename or "", f.read()) for f in request.files.getlist("arquivos")]
+    if not arquivos:
+        return jsonify({"erro": "Escolha o arquivo .zip que o seu amigo mandou."}), 400
+    try:
+        r = compartilhar.importar(arquivos, request.form.get("nome", ""))
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 400
+    _cache_pendentes["t"] = 0
+    return jsonify(r)
+
+
+@app.delete("/api/amigos/<path:nome>")
+def apagar_amigo(nome):
+    return jsonify({"apagadas": compartilhar.apagar_amigo(nome)})
 
 
 @app.post("/api/partidas")
@@ -144,7 +195,7 @@ def partida(pid):
     if not p:
         return jsonify({"erro": "Partida não encontrada."}), 404
     todas = banco.listar_partidas()
-    p["visao"] = analises.visao(p, analises.descobrir_eu(todas, config.ler_config()["nick"]))
+    p["visao"] = analises.visao(p, analises.perspectiva(p, analises.descobrir_eu(todas, config.ler_config()["nick"])))
     return jsonify(p)
 
 
@@ -154,7 +205,7 @@ def replay_partida(pid):
     if not p:
         return jsonify({"erro": "Partida não encontrada."}), 404
     r = replay.gerar(p["texto"], config.ler_regras())
-    r["eu"] = analises.descobrir_eu(banco.listar_partidas(), config.ler_config()["nick"])
+    r["eu"] = analises.perspectiva(p, analises.descobrir_eu(banco.listar_partidas(), config.ler_config()["nick"]))
     r["id"] = pid
     r["versoes"] = decks.resolver_versoes(r, p, r["eu"])  # versão certa de cartas com o mesmo nome
     return jsonify(r)
@@ -513,8 +564,8 @@ def _csv(cabecalho, linhas, nome):
 
 @app.get("/exportar/minhas_partidas.csv")
 def exportar_partidas():
-    dados = analises.analise_pessoal(config.ler_config()["nick"])
-    campos = ["id", "data", "eu", "adversario", "resultado", "comecei", "meu_deck", "deck_adv",
+    dados = analises.analise_pessoal(config.ler_config()["nick"], jogador=request.args.get("jogador", ""))
+    campos = ["id", "data", "dono", "eu", "adversario", "resultado", "comecei", "meu_deck", "deck_adv",
               "premios_eu", "premios_adv", "turnos", "motivo", "primeiro_ko_meu", "mulligan_eu", "tags", "notas"]
     return _csv(campos, [[l[c] for c in campos] for l in dados["partidas"]], "minhas_partidas.csv")
 
