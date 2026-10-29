@@ -483,12 +483,17 @@ const mini = (nome, id) => nome ? `<img class="mini" src="${imgId(id, nome)}" al
    ===================================================================== */
 function trilha() { return `<span class="trilha">${S.area === 'geral' ? 'Geral' : 'Minhas partidas'}</span>`; }
 async function renderPainel() {
-  const d = await api('/api/partidas');
+  const [d, st] = await Promise.all([api('/api/partidas'), api('/api/status')]); const cfg = st.config || {};
   const pend = S.status?.linhas_pendentes || 0;
+  const boasVindas = cfg.nick ? '' : `<section class="panel" style="border-left:3px solid var(--accent)"><h2>Bem-vindo! Primeiro passo</h2>
+    <p>Digite seu nick do TCG Live <b>exatamente como aparece no jogo</b> (maiúsculas e minúsculas contam). É assim que o programa sabe quais partidas são vitórias suas.</p>
+    <div class="row"><input id="bv-nick" placeholder="Seu nick no TCG Live" style="width:260px"><button class="primary" id="bv-salvar">Salvar</button></div>
+    <p class="muted" style="font-size:.85rem">Depois: deixe esta janela aberta, jogue com o jogo em <b>inglês</b> e, no fim de cada partida, clique em Battle Log e no botão de exportar. A partida aparece aqui sozinha.</p></section>`;
   const t = d.total, ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
   const ult = d.partidas.slice(0, 8);
   main.innerHTML = `
     ${trilha()}<header><h1>Painel</h1><p class="sub">${d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${boasVindas}
     ${pend ? `<div class="aviso">${pend} partida(s) com linhas que o leitor não reconheceu. <a href="#revisao">Revisar agora</a></div>` : ''}
     <div class="kpis">
       <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${d.sem_resultado ? `${d.sem_resultado} sem resultado identificado` : 'com resultado'}</span></div>
@@ -507,6 +512,8 @@ async function renderPainel() {
       <div class="row"><button class="primary" id="btn-manual">Registrar partida</button></div>
     </section>`;
   ligarLinhasPartidas();
+  if ($('#bv-salvar')) $('#bv-salvar').onclick = async () => { const n = $('#bv-nick').value.trim(); if (!n) return;
+    await api('/api/config', { method: 'POST', body: JSON.stringify({ nick: n }) }); toast('Nick salvo'); render(); };
   $('#btn-manual').onclick = async () => {
     try { const r = await api('/api/partidas', { method: 'POST', body: JSON.stringify({ texto: $('#manual').value }) });
       if (r.nova && r.nao_lidas) toast(`Partida #${r.id} registrada com ${r.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');

@@ -1,0 +1,42 @@
+﻿COLETOR DE PARTIDAS TCG LIVE - COMECE AQUI
+==========================================
+
+1) INSTALAR O PYTHON (uma vez)
+   - Baixe em https://www.python.org/downloads/ (versao 3.11 ou mais nova).
+   - Na PRIMEIRA tela do instalador, marque "Add python.exe to PATH" e clique em "Install Now".
+
+2) DESCOMPACTAR ESTA PASTA
+   - Clique com o botao direito no .zip > "Extrair tudo...".
+   - Coloque num lugar fixo, por exemplo Documentos\tcg-tracker.
+     (Nao rode de dentro do .zip nem da pasta Downloads temporaria.)
+
+3) INSTALAR O PROGRAMA (uma vez)
+   - Dois cliques em instalar_windows.bat.
+   - Se o Windows mostrar "O Windows protegeu o computador": clique em "Mais informacoes" > "Executar assim mesmo".
+   - Ele pergunta sobre o modo automatico: responda N (pode instalar depois).
+
+4) ABRIR
+   - Dois cliques em iniciar_windows.bat. Uma janela preta abre e o painel aparece no navegador
+     (http://127.0.0.1:8765). Deixe a janela preta aberta enquanto joga.
+   - Opcional: iniciar_com_o_windows.bat faz o programa abrir sozinho quando o PC liga.
+
+5) CONFIGURAR (no painel, uma vez)
+   - Digite seu nick do TCG Live exatamente como aparece no jogo e clique em Salvar.
+
+6) NO JOGO
+   - Deixe o Pokemon TCG Live em INGLES (Settings > Language > English). Em portugues o log nao e lido.
+   - No fim de cada partida: clique em "Battle Log" e depois no botao de exportar (canto superior direito).
+     O programa pega o log sozinho e mostra "Nova partida registrada".
+
+ATUALIZACOES
+   - Quando houver versao nova, aparece um aviso no painel. Clique em Atualizar
+     (ou Programa > Ajustes e captura > Atualizacoes). Seus dados nao sao apagados.
+
+SEUS DADOS
+   - Ficam so no seu computador, na pasta "dados" (partidas, decks, configuracoes).
+     Para fazer backup, copie essa pasta.
+
+PROBLEMAS
+   - "Python nao encontrado": reinstale o Python marcando "Add python.exe to PATH".
+   - O painel nao abre: confira se a janela preta esta aberta e acesse http://127.0.0.1:8765.
+   - Partida nao entrou: veja se o jogo esta em ingles e clique de novo no botao de exportar.
