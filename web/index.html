@@ -111,12 +111,21 @@ nav details.programa a { display: block; padding-left: 34px; }
 .deck-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; text-decoration: none; color: var(--ink); position: relative; }
 .deck-card:hover { border-color: var(--muted); }
 .deck-card.arquivado { opacity: .55; }
-.deck-capa { height: 130px; position: relative; display: grid; place-items: center; overflow: hidden; background: #1d2433; }
-.deck-capa .fundo { position: absolute; inset: -20px; background-size: cover; background-position: center 30%; filter: blur(6px) brightness(.55); }
-.deck-capa .icones-grandes { position: relative; display: flex; gap: 4px; }
-.deck-capa .icones-grandes img { width: 76px; height: 64px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
-.deck-capa .selo { position: absolute; top: 10px; left: 10px; font-size: .72rem; background: rgba(0,0,0,.55); color: #fff; padding: 2px 8px; border-radius: 999px; }
-.deck-capa .estrela { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 1.2rem; color: rgba(255,255,255,.7); padding: 2px 4px; }
+.deck-capa { height: 130px; position: relative; display: grid; place-items: center; overflow: hidden; background: transparent; border-bottom: 1px solid var(--line, rgba(127,127,127,.2)); }
+.deck-capa .icones-grandes { position: relative; display: flex; gap: 6px; align-items: center; justify-content: center; }
+.deck-capa .icones-grandes img { width: 84px; height: 70px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+.deck-capa .selo { position: absolute; top: 10px; left: 10px; font-size: .72rem; background: rgba(127,127,127,.18); color: var(--muted); padding: 2px 8px; border-radius: 999px; }
+.deck-capa .estrela { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 1.2rem; color: var(--muted); padding: 2px 4px; }
+.deck-capa .lapis { position: absolute; bottom: 6px; right: 8px; background: none; border: none; font-size: .95rem; color: var(--muted); padding: 2px 6px; opacity: .55; }
+.deck-card:hover .lapis, .deck-capa .lapis:focus { opacity: 1; }
+.deck-capa .corrigido { position: absolute; bottom: 8px; left: 10px; font-size: .68rem; color: var(--muted); }
+.janela-fundo { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 50; padding: 16px; }
+.janela { background: var(--surface); color: var(--ink); border-radius: 12px; padding: 18px; width: min(440px, 100%); box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.janela .previa { display: flex; justify-content: center; gap: 10px; min-height: 76px; margin: 10px 0; }
+.janela .previa img { width: 84px; height: 70px; object-fit: contain; image-rendering: pixelated; }
+.janela .chips-poke { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.janela .chips-poke button { display: inline-flex; align-items: center; gap: 4px; font-size: .8rem; padding: 2px 8px; }
+.janela .chips-poke img { width: 28px; height: 24px; object-fit: contain; image-rendering: pixelated; }
 .deck-capa .estrela.on { color: #F2C443; }
 .deck-corpo { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
 .deck-corpo b { font: 700 1rem var(--f-display); }
@@ -245,6 +254,7 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
     <a href="#painel" data-area="meu">Painel</a>
     <a href="#partidas" data-area="meu">Partidas</a>
     <a href="#desempenho" data-area="meu">Desempenho</a>
+    <a href="#decisoes" data-area="meu">Decisões</a>
     <a href="#decks" data-area="meu">Meus decks</a>
     <a href="#meta" data-area="geral">Meta</a>
     <a href="#matchups" data-area="geral">Matchups</a>
@@ -396,9 +406,9 @@ const ROTAS = { painel: renderPainel, partidas: renderPartidas, desempenho: rend
   matchups: renderMatchups, deck: renderDeck, cartas: renderCartas, torneios: renderTorneios, ajustes: renderAjustes,
   regras: renderRegras, biblioteca: renderBiblioteca,
   decks: renderMeusDecks, partida: () => renderDetalhe(rota().id), replay: () => renderReplay(rota().id),
-  meudeck: () => renderMeuDeck(rota().id), 'cartas-mu': renderCartasMatchups, revisao: renderRevisao };
+  meudeck: () => renderMeuDeck(rota().id), decisoes: renderDecisoes, 'cartas-mu': renderCartasMatchups, revisao: renderRevisao };
 // Cada aba pertence a uma área: "meu" (suas partidas) ou "geral" (campeonatos e meta).
-const AREA = { painel: 'meu', partidas: 'meu', desempenho: 'meu', partida: 'meu', replay: 'meu', decks: 'meu', meudeck: 'meu',
+const AREA = { painel: 'meu', partidas: 'meu', desempenho: 'meu', decisoes: 'meu', partida: 'meu', replay: 'meu', decks: 'meu', meudeck: 'meu',
   meta: 'geral', matchups: 'geral', deck: 'geral', cartas: 'geral', 'cartas-mu': 'geral', torneios: 'geral' };
 const INICIO_AREA = { meu: 'painel', geral: 'meta' };
 S.area = 'meu';
@@ -418,6 +428,7 @@ async function render() {
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('ativo', a.getAttribute('href') === '#' + marcar));
   if (['ajustes', 'biblioteca', 'regras', 'revisao'].includes(r)) $('#nav-programa').open = true;
   if (S.rp?.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
+  document.querySelectorAll('.janela-fundo').forEach(j => j.remove());
   try { await ROTAS[r](); }
   catch (e) { main.innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; }
 }
@@ -1293,10 +1304,12 @@ async function renderMeusDecks() {
         const p = d.placar, ics = d.icones && d.icones.length ? d.icones : (d.capa ? [pokeId(d.capa.nome)] : []);
         const dias = Math.max(0, Math.round((Date.now() - new Date(d.criado_em)) / 864e5));
         return `<a class="deck-card ${d.ativo ? '' : 'arquivado'}" href="#meudeck-${d.id}" data-nome="${esc((d.nome + ' ' + (d.nome_arquetipo || '')).toLowerCase())}">
-          <div class="deck-capa">${d.capa ? `<div class="fundo" style="background-image:url('${imgId(d.capa.id, d.capa.nome)}')"></div>` : ''}
+          <div class="deck-capa">
             <span class="selo">${d.ativo ? 'Standard' : 'Arquivado'}</span>
             <button class="estrela ${d.favorito ? 'on' : ''}" data-fav="${d.id}" title="${d.favorito ? 'Tirar dos favoritos' : 'Favoritar'}">${d.favorito ? '★' : '☆'}</button>
-            <div class="icones-grandes">${ics.map(i => `<img src="/icone/${encodeURIComponent(i)}" alt="">`).join('')}</div></div>
+            <div class="icones-grandes">${ics.map(i => `<img src="/icone/${encodeURIComponent(i)}" alt="${esc(i)}" title="${esc(i)}">`).join('')}</div>
+            ${d.icones_corrigidos ? '<span class="corrigido">ícones corrigidos por você</span>' : ''}
+            <button class="lapis" data-icones="${d.id}" title="Corrigir os ícones deste deck">✎</button></div>
           <div class="deck-corpo"><b>${esc(d.nome)}</b><span class="muted" style="font-size:.8rem">${esc(d.nome_arquetipo || 'Deck não identificado')} · criado ${dias === 0 ? 'hoje' : `há ${dias} dia${dias === 1 ? '' : 's'}`}</span>
             <div class="deck-nums"><div><span class="label">Taxa de vitória</span><div class="v" style="color:${p.taxa == null ? 'var(--muted)' : p.taxa >= 50 ? 'var(--good)' : 'var(--bad)'}">${p.taxa == null ? '–' : fmt(p.taxa, 0) + '%'}</div></div>
               <div><span class="label">Partidas</span><div class="v">${p.n}</div></div></div></div></a>`; }).join('')}
@@ -1304,8 +1317,108 @@ async function renderMeusDecks() {
   $('#busca-deck').oninput = e => { const q = e.target.value.toLowerCase(); document.querySelectorAll('.deck-card').forEach(c => c.hidden = q && !c.dataset.nome.includes(q)); };
   document.querySelectorAll('[data-fav]').forEach(b => b.onclick = async ev => { ev.preventDefault(); ev.stopPropagation();
     const atual = b.classList.contains('on'); await api('/api/decks/' + b.dataset.fav, { method: 'PUT', body: JSON.stringify({ favorito: !atual }) }); renderMeusDecks(); });
+  document.querySelectorAll('[data-icones]').forEach(b => b.onclick = ev => { ev.preventDefault(); ev.stopPropagation();
+    const d = lista.find(x => x.id === Number(b.dataset.icones)); editarIcones(d, renderMeusDecks); });
   $('#novo').onclick = () => { $('#area-form').innerHTML = formularioDeck(); ligarFormularioDeck(null, id => { location.hash = 'meudeck-' + id; }); $('#area-form').scrollIntoView({ behavior: 'smooth' }); };
   $('#vincular').onclick = async () => { const r = await api('/api/decks/vincular', { method: 'POST' }); toast(`${r.vinculadas} partida(s) ligada(s)`); renderMeusDecks(); };
+}
+
+// ---- corrigir os ícones de um deck (a correção vale para o arquétipo inteiro daqui em diante)
+async function editarIcones(d, aoSalvar) {
+  const det = d.cartas ? d : await api('/api/decks/' + d.id);
+  const pokes = [...new Set(det.cartas.filter(c => c.secao === 'Pokémon').map(c => pokeId(c.nome)))];
+  let atuais = [...(d.icones || [])].slice(0, 2);
+  const fundo = document.createElement('div');
+  fundo.className = 'janela-fundo';
+  fundo.innerHTML = `<div class="janela" role="dialog" aria-label="Corrigir ícones">
+    <h2 style="margin-top:0">Ícones de “${esc(d.nome)}”</h2>
+    <p class="muted" style="font-size:.85rem">Escolha até 2 Pokémon. A correção fica guardada e passa a valer para todo deck ${esc(d.nome_arquetipo || '')} (novas listas, matchups e meta).</p>
+    <div class="previa" id="ic-previa"></div>
+    <div class="row"><input id="ic-1" placeholder="1º Pokémon (ex.: Dragapult)" style="flex:1"><input id="ic-2" placeholder="2º Pokémon (opcional)" style="flex:1"></div>
+    <span class="label">Pokémon da lista (clique para usar)</span>
+    <div class="chips-poke">${pokes.map(p => `<button data-poke="${esc(p)}"><img src="/icone/${encodeURIComponent(p)}" alt="">${esc(p)}</button>`).join('')}</div>
+    <div class="row"><button id="ic-sugestao" title="Apaga a correção e volta à sugestão automática">Voltar à sugestão</button><span class="grow"></span><button id="ic-cancelar">Cancelar</button><button class="primary" id="ic-salvar">Salvar</button></div>
+  </div>`;
+  document.body.appendChild(fundo);
+  const i1 = fundo.querySelector('#ic-1'), i2 = fundo.querySelector('#ic-2');
+  i1.value = atuais[0] || ''; i2.value = atuais[1] || '';
+  const previa = () => { const v = [i1.value, i2.value].map(x => pokeId(x)).filter(Boolean);
+    fundo.querySelector('#ic-previa').innerHTML = v.map(p => `<img src="/icone/${encodeURIComponent(p)}" alt="${esc(p)}" title="${esc(p)}">`).join('') || '<span class="muted">sem ícone</span>'; };
+  i1.oninput = i2.oninput = previa; previa();
+  fundo.querySelectorAll('[data-poke]').forEach(b => b.onclick = () => {
+    if (!i1.value || (i2.value && document.activeElement !== i2)) { i1.value = b.dataset.poke; } else { i2.value = b.dataset.poke; }
+    if (i1.value === i2.value) i2.value = ''; previa(); });
+  const fechar = () => fundo.remove();
+  const salvar = async lista => {
+    try { await api('/api/decks/' + d.id, { method: 'PUT', body: JSON.stringify({ icones: lista }) }); }
+    catch (e) { toast(e.message); return; }
+    fechar(); await carregarArquetipos(); toast(lista.length ? 'Ícones corrigidos — vou usar nos próximos decks deste tipo' : 'Voltou à sugestão automática'); aoSalvar && aoSalvar();
+  };
+  fundo.onclick = e => { if (e.target === fundo) fechar(); };
+  fundo.querySelector('#ic-cancelar').onclick = fechar;
+  fundo.querySelector('#ic-sugestao').onclick = () => salvar([]);
+  fundo.querySelector('#ic-salvar').onclick = () => salvar([i1.value, i2.value].map(x => x.trim()).filter(Boolean));
+  i1.focus();
+}
+
+/* ---- DECISÕES: o que anda junto com vencer nas suas partidas (só a partir dos logs) */
+async function renderDecisoes() {
+  const f = S.filtroDec || (S.filtroDec = { de: '', ate: '', deck: '', lista: '', adv: '', periodo: 0, min: 3 });
+  if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
+  const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, lista: f.lista, adv: f.adv, min: f.min }).filter(([, v]) => v !== '' && v != null)).toString();
+  const [r, todos, listas] = await Promise.all([api('/api/decisoes?' + qs), api('/api/partidas'), api('/api/decks')]);
+  const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
+  const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
+  const dif = x => x == null ? '<span class="muted">–</span>' : `<b style="color:${x > 0 ? 'var(--good)' : x < 0 ? 'var(--bad)' : 'var(--muted)'}">${x > 0 ? '+' : ''}${fmt(x, 0)} p.p.</b>`;
+  const tabelaCartas = (lista, vazio) => {
+    const l = lista.filter(c => c.n >= f.min && c.sem_n > 0);
+    if (!l.length) return `<p class="muted">${vazio}</p>`;
+    return `<div class="tabela"><table><thead><tr><th>Carta</th><th class="n">Partidas</th><th class="n">V–D</th><th>Vitória quando jogou</th><th>Quando não jogou</th><th>Diferença</th></tr></thead><tbody>
+      ${l.map(c => `<tr><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td><td class="n">${c.n}</td><td class="n">${c.v}–${c.d}</td><td>${taxaHtml(c)}</td>
+        <td>${pct(c.taxa_sem)} <span class="ic">${c.sem_n} partidas</span></td><td>${dif(c.diferenca)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  const vi = r.viradas, rv = r.ritmo, pc = r.perdeu_controle;
+  const maxPc = Math.max(1, ...pc.map(x => x.derrotas));
+  main.innerHTML = `
+    ${trilha()}<header><h1>Decisões</h1><p class="sub">O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
+    <div class="aviso">São <b>correlações</b>, não causas: uma carta pode aparecer mais nas vitórias porque você só consegue jogá-la quando a partida já está boa. Use como pista para revisar replays. Com poucas partidas, a faixa provável (passe o mouse na taxa) é larga.</div>
+    <div class="row">
+      <div class="chips-periodo">${PERIODOS.map(([v, rt]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${rt}</button>`).join('')}</div>
+      <label class="label" for="x-de">De</label><input type="date" id="x-de" value="${f.de}">
+      <label class="label" for="x-ate">Até</label><input type="date" id="x-ate" value="${f.ate}">
+      <span class="grow"></span>
+      <select id="x-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
+      <select id="x-lista"><option value="">Todas as listas</option>${listas.map(x => `<option value="${x.id}" ${String(f.lista) === String(x.id) ? 'selected' : ''}>${esc(x.nome)}</option>`).join('')}</select>
+      <select id="x-adv"><option value="">Todos os adversários</option>${advs.map(x => `<option value="${esc(x)}" ${f.adv === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
+      <label class="label" for="x-min">Mín. partidas</label><input type="number" id="x-min" min="1" max="50" value="${f.min}" style="width:64px">
+    </div>
+    ${!r.partidas ? '<p class="muted">Nenhuma partida com resultado nesse filtro.</p>' : `
+    <div class="kpis">
+      <div class="kpi"><span class="label">Partidas analisadas</span><span class="v">${r.partidas}</span><span class="d">${r.vitorias} vitórias</span></div>
+      <div class="kpi"><span class="label">Viradas</span><span class="v">${pct(vi.taxa_virada)}</span><span class="d">venceu ${vi.perdendo_e_venceu} de ${vi.perdendo} em que ficou atrás nos prêmios</span></div>
+      <div class="kpi"><span class="label">Vantagem entregue</span><span class="v">${pct(vi.taxa_entregou)}</span><span class="d">perdeu ${vi.ganhando_e_perdeu} de ${vi.ganhando} em que esteve à frente</span></div>
+      <div class="kpi"><span class="label">Ritmo (vitórias × derrotas)</span><span class="v">${fmt(rv.V?.premio)} × ${fmt(rv.D?.premio)}</span><span class="d">seu turno médio do 1º prêmio · 1º ataque: ${fmt(rv.V?.ataque)} × ${fmt(rv.D?.ataque)}</span></div>
+    </div>
+    <div class="grid2">
+      <section class="panel"><h2>Peso do primeiro prêmio</h2>${tabelaGrupos(r.primeiro_premio, 'Quem pegou primeiro')}</section>
+      <section class="panel"><h2>Turno em que você perdeu o controle</h2>
+        <p class="muted" style="font-size:.85rem">Nas derrotas: o seu turno a partir do qual o adversário ficou à frente nos prêmios e não foi mais alcançado.</p>
+        ${pc.length ? pc.map(x => `<div class="row" style="gap:8px;margin:4px 0"><span style="width:70px">${x.turno}º turno</span><div style="flex:1;background:rgba(127,127,127,.15);border-radius:4px;height:14px"><div style="width:${100 * x.derrotas / maxPc}%;background:var(--bad);height:100%;border-radius:4px"></div></div><span class="n" style="width:80px;text-align:right">${x.derrotas} derrota${x.derrotas === 1 ? '' : 's'}</span></div>`).join('') : '<p class="muted">Sem derrotas com placar de prêmios nesse filtro.</p>'}
+      </section>
+    </div>
+    <section class="panel"><h2>Aberturas (seus 2 primeiros turnos)</h2>
+      <p class="muted" style="font-size:.85rem">Cartas que você jogou, ligou ou evoluiu nos dois primeiros turnos. Diferença = taxa quando jogou − taxa quando não jogou.</p>
+      ${tabelaCartas(r.aberturas, `Nenhuma carta de abertura com pelo menos ${f.min} partidas (e alguma partida sem ela).`)}</section>
+    <section class="panel"><h2>Cartas jogadas em qualquer momento</h2>
+      ${tabelaCartas(r.cartas_jogadas, `Nenhuma carta com pelo menos ${f.min} partidas (e alguma partida sem ela).`)}</section>`}`;
+  const re = () => renderDecisoes();
+  $('#x-deck').onchange = e => { f.deck = e.target.value; re(); };
+  $('#x-lista').onchange = e => { f.lista = e.target.value; re(); };
+  $('#x-adv').onchange = e => { f.adv = e.target.value; re(); };
+  $('#x-min').onchange = e => { f.min = Math.max(1, Number(e.target.value) || 1); re(); };
+  $('#x-de').onchange = e => { f.de = e.target.value; f.periodo = 0; re(); };
+  $('#x-ate').onchange = e => { f.ate = e.target.value; f.periodo = 0; re(); };
+  document.querySelectorAll('[data-periodo]').forEach(b => b.onclick = () => { f.periodo = Number(b.dataset.periodo); if (!f.periodo) { f.de = ''; f.ate = ''; } re(); });
 }
 
 async function renderMeuDeck(id) {
@@ -1316,9 +1429,9 @@ async function renderMeuDeck(id) {
   const secoes = ['Pokémon', 'Trainer', 'Energy'].map(s => [s, d.cartas.filter(c => c.secao === s)]).filter(([, cs]) => cs.length);
   main.innerHTML = `
     <div class="row"><a class="btn" href="#decks">← Meus decks</a></div>
-    ${trilha()}<header class="row" style="gap:10px"><span class="cel-carta">${icones(d.arquetipo)}</span><div><h1>${esc(d.nome)}</h1>
+    ${trilha()}<header class="row" style="gap:10px"><span class="cel-carta">${(d.icones || []).map(i => `<img class="ico" src="/icone/${encodeURIComponent(i)}" alt="">`).join('')}</span><div><h1>${esc(d.nome)}</h1>
       <p class="sub">${esc(d.nome_arquetipo || 'Deck não identificado')} · criado em ${fmtData(d.criado_em)}${d.ativo ? '' : ' · arquivado'}${d.notas ? ` · ${esc(d.notas)}` : ''}</p></div></header>
-    <div class="row"><button id="editar">Editar</button><button id="versao">Criar nova versão</button><button id="arquivar">${d.ativo ? 'Arquivar' : 'Reativar'}</button><span class="grow"></span><button class="perigo" id="apagar-deck">Apagar</button></div>
+    <div class="row"><button id="editar">Editar</button><button id="ed-icones">Corrigir ícones</button><button id="versao">Criar nova versão</button><button id="arquivar">${d.ativo ? 'Arquivar' : 'Reativar'}</button><span class="grow"></span><button class="perigo" id="apagar-deck">Apagar</button></div>
     <div id="area-form"></div>
     <div class="kpis">
       <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${t.v} vitórias</span></div>
@@ -1333,6 +1446,7 @@ async function renderMeuDeck(id) {
     <section class="panel"><h2>Partidas com esta lista</h2>${minhas.length ? tabelaPartidas(minhas) : '<p class="muted">Nenhuma partida ligada ainda. Elas são ligadas sozinhas quando as cartas reveladas batem com a lista, ou escolha a lista na tela da partida.</p>'}</section>`;
   ligarLinhasPartidas();
   $('#editar').onclick = () => { $('#area-form').innerHTML = formularioDeck(d); ligarFormularioDeck(d, () => renderMeuDeck(id)); };
+  $('#ed-icones').onclick = () => editarIcones(d, () => renderMeuDeck(id));
   $('#versao').onclick = () => { $('#area-form').innerHTML = formularioDeck({ ...d, id: null, nome: d.nome + ' (nova versão)', versao_de: d.id }); ligarFormularioDeck({ versao_de: d.id }, nid => { location.hash = 'meudeck-' + nid; }); };
   $('#arquivar').onclick = async () => { await api('/api/decks/' + id, { method: 'PUT', body: JSON.stringify({ ativo: !d.ativo }) }); renderMeuDeck(id); };
   $('#apagar-deck').onclick = async () => { if (!confirm('Apagar este deck? As partidas continuam, só perdem o vínculo com a lista.')) return; await api('/api/decks/' + id, { method: 'DELETE' }); location.hash = 'decks'; };

@@ -72,6 +72,13 @@ def _contar_pendentes():
     return _cache_pendentes["n"]
 
 
+@app.get("/api/decisoes")
+def api_decisoes():
+    a = request.args
+    return jsonify(analises.decisoes(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"),
+                                     a.get("lista"), a.get("adv"), int(a.get("min", 3))))
+
+
 @app.get("/api/revisao")
 def revisao_lista():
     return jsonify(revisao.pendentes())
@@ -190,6 +197,8 @@ def icone(nome):
 @app.get("/api/arquetipos")
 def lista_arquetipos():
     lista = sorted(decks.arquetipos().values(), key=lambda a: (-a.get("jogadores", 0), a["nome"]))
+    aprendidos = decks.icones_aprendidos()   # suas correções de ícone valem em todas as telas
+    lista = [{**x, "icones": aprendidos.get(x["slug"], x["icones"])} for x in lista]
     return jsonify(lista)
 
 
@@ -227,6 +236,11 @@ def ver_deck(did):
 @app.put("/api/decks/<int:did>")
 def editar_deck(did):
     corpo = request.get_json(force=True) or {}
+    if "icones" in corpo and set(corpo) == {"icones"}:
+        icones = decks.salvar_icones(did, corpo["icones"])
+        if icones is None:
+            return jsonify({"erro": "Deck não encontrado."}), 404
+        return jsonify({"ok": True, "icones": decks.obter_deck(did)["icones"]})
     if corpo and set(corpo) <= {"ativo", "favorito"}:
         with banco.conectar() as con:
             for campo in ("ativo", "favorito"):

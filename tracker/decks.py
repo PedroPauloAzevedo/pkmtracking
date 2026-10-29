@@ -101,11 +101,89 @@ def nome_deck(valor):
     return a["nome"] if a else (valor or "")
 
 
+ARQ_APRENDIDOS = config.PASTA_DADOS / "icones_aprendidos.json"
+
+
+def icones_aprendidos():
+    """Correções de ícone que você fez (arquétipo -> Pokémon do ícone). Valem para todo o programa."""
+    try:
+        return json.loads(ARQ_APRENDIDOS.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def aprender_icones(arquetipo, icones):
+    if not arquetipo:
+        return
+    d = icones_aprendidos()
+    if icones:
+        d[arquetipo] = icones
+    else:
+        d.pop(arquetipo, None)
+    ARQ_APRENDIDOS.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def limpar_icones(lista):
+    saida = []
+    for i in lista or []:
+        p = pokemon_id(i) if i else ""
+        p = re.sub(r"[^a-z0-9-]", "", p)
+        if p and p not in saida:
+            saida.append(p)
+    return saida[:2]
+
+
 def icones_deck(valor):
+    aprendido = icones_aprendidos().get(valor or "")
+    if aprendido:
+        return aprendido
     a = arquetipos().get(valor or "")
     if a and a["icones"]:
         return a["icones"]
     return [pokemon_id(valor)] if valor else []
+
+
+def sugerir_icones(deck_id, arquetipo):
+    """Dois Pokémon principais do deck: primeiro o que você ensinou, depois o ícone do arquétipo
+    no Limitless, completando com os Pokémon de maior peso da lista (ex/Mega, Estágio 2, cópias)."""
+    a = arquetipos().get(arquetipo or "")
+    base = list(icones_aprendidos().get(arquetipo or "") or (a["icones"] if a else []))[:2]
+    if len(base) >= 2 or icones_aprendidos().get(arquetipo or ""):
+        return base
+    pontos = Counter()
+    for c in banco.consultar("SELECT nome, qtd FROM meus_decks_cartas WHERE deck_id=? AND secao='Pokémon'", (deck_id,)):
+        e = cartas.por_nome(c["nome"]) or {}
+        estagio = (e.get("estagio") or "").lower().replace(" ", "")
+        peso = 3 if (" ex" in c["nome"] or c["nome"].startswith("Mega ")) else 0
+        peso += 2 if estagio == "stage2" else 1 if estagio == "stage1" else 0
+        pontos[pokemon_id(c["nome"])] += peso + 0.3 * c["qtd"]
+    for p, _ in pontos.most_common():
+        if len(base) >= 2:
+            break
+        if p not in base and _sem_forma(p) not in [_sem_forma(b) for b in base]:
+            base.append(p)
+    return base
+
+
+def _icones_do_deck(d):
+    try:
+        manual = json.loads(d.get("icones_manual") or "[]")
+    except Exception:
+        manual = []
+    d["icones_corrigidos"] = bool(manual)
+    return manual or sugerir_icones(d["id"], d["arquetipo"])
+
+
+def salvar_icones(deck_id, icones):
+    """Grava a sua correção no deck e aprende para o arquétipo (próximos decks e telas usam)."""
+    icones = limpar_icones(icones)
+    r = banco.consultar("SELECT arquetipo FROM meus_decks WHERE id=?", (deck_id,))
+    if not r:
+        return None
+    with banco.conectar() as con:
+        con.execute("UPDATE meus_decks SET icones_manual=? WHERE id=?", (json.dumps(icones) if icones else "", deck_id))
+    aprender_icones(r[0]["arquetipo"], icones)
+    return icones
 
 
 # ------------------------------------------------------------------ ícones
@@ -284,7 +362,7 @@ def listar_decks():
     decks = banco.consultar("SELECT * FROM meus_decks ORDER BY favorito DESC, ativo DESC, criado_em DESC")
     for d in decks:
         d["nome_arquetipo"] = nome_deck(d["arquetipo"])
-        d["icones"] = icones_deck(d["arquetipo"])
+        d["icones"] = _icones_do_deck(d)
         # capa: o Pokémon "ex" mais numeroso da lista (ou o primeiro Pokémon)
         pokes = banco.consultar("SELECT nome, carta_id, qtd FROM meus_decks_cartas WHERE deck_id=? AND secao='Pokémon' ORDER BY rowid", (d["id"],))
         capa = sorted(pokes, key=lambda c: (" ex" not in c["nome"] and "Mega" not in c["nome"], -c["qtd"]))
@@ -299,7 +377,7 @@ def obter_deck(deck_id):
     d = r[0]
     d["cartas"] = banco.consultar("SELECT * FROM meus_decks_cartas WHERE deck_id=? ORDER BY rowid", (deck_id,))
     d["nome_arquetipo"] = nome_deck(d["arquetipo"])
-    d["icones"] = icones_deck(d["arquetipo"])
+    d["icones"] = _icones_do_deck(d)
     return d
 
 

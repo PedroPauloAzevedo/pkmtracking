@@ -91,6 +91,8 @@ def iniciar():
             con.execute("ALTER TABLE partidas ADD COLUMN deck_id INTEGER")  # lista de "Meus decks" usada
         if "favorito" not in {r["name"] for r in con.execute("PRAGMA table_info(meus_decks)")}:
             con.execute("ALTER TABLE meus_decks ADD COLUMN favorito INTEGER DEFAULT 0")
+        if "icones_manual" not in {r["name"] for r in con.execute("PRAGMA table_info(meus_decks)")}:
+            con.execute("ALTER TABLE meus_decks ADD COLUMN icones_manual TEXT DEFAULT ''")  # ícones que você corrigiu
     if regras_novas:  # regras atualizadas: relê as partidas já gravadas
         reprocessar_partidas(config.ler_regras())
 

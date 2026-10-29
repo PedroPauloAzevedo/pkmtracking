@@ -421,3 +421,119 @@ def cartas_matchups(arq, chave_carta, torneios=None, k=8, min_partidas=5):
         linhas.append({"copias": q, "listas": listas_q, "geral": placar(g["v"], g["d"], g["e"]), "celulas": celulas})
     return {"arquetipo": arq, "nome": nome_de_slug(arq), "listas": len(por_nome),
             "colunas": [{"arquetipo": a, "nome": nome_de_slug(a)} for a in colunas], "linhas": linhas}
+
+
+# ================================================================== analista de decisões
+
+def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3):
+    """
+    O que nas SUAS partidas anda junto com vencer ou perder. Tudo vem dos logs:
+      - aberturas: cartas que você jogou nos seus 2 primeiros turnos e a taxa de vitória;
+      - corrida de prêmios: primeiro prêmio, viradas e o turno em que você perdeu o controle;
+      - ritmo: em que turno você atacou e pegou o primeiro prêmio, nas vitórias e nas derrotas;
+      - cartas jogadas: taxa de vitória quando a carta saiu na partida e quando não saiu.
+    São correlações: mostram padrões para investigar, não provam causa.
+    """
+    base = analise_pessoal(nick, de, ate, deck, None, lista, adv)
+    eu = base["eu"]
+    linhas = [l for l in base["partidas"] if l["resultado"]
+              and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
+              and (not deck or slug(l["meu_deck"]) == slug(deck))
+              and (not lista or str(l["deck_id"]) == str(lista))
+              and (not adv or slug(l["deck_adv"]) == slug(adv))]
+    abertura = defaultdict(lambda: [0, 0])     # carta -> [vitórias, partidas]
+    jogadas = defaultdict(lambda: [0, 0])
+    primeiro_premio = defaultdict(lambda: [0, 0])
+    viradas = {"perdendo_e_venceu": 0, "perdendo": 0, "ganhando_e_perdeu": 0, "ganhando": 0}
+    perdeu_controle = Counter()                # turno (seu) em que o adversário passou à frente de vez
+    ritmo = {"V": {"ataque": [], "premio": []}, "D": {"ataque": [], "premio": []}}
+    total_v = sum(1 for l in linhas if l["resultado"] == "V")
+
+    for l in linhas:
+        p = banco.obter_partida(l["id"])
+        venceu = l["resultado"] == "V"
+        adv_nome = l["adversario"]
+        # meus turnos numerados (1º turno meu, 2º turno meu...)
+        meus_turnos = {}
+        for e in p["eventos"]:
+            if e["tipo"] == "turno" and e["jogador"] == eu and e["turno"] not in meus_turnos:
+                meus_turnos[e["turno"]] = len(meus_turnos) + 1
+        cartas_abertura, cartas_partida = set(), set()
+        primeiro_ataque = primeiro_premio_turno = None
+        for e in p["eventos"]:
+            if e["jogador"] != eu:
+                continue
+            meu_n = meus_turnos.get(e["turno"])
+            if e["tipo"] in ("jogada", "evolucao", "energia") and e["carta"]:
+                cartas_partida.add(e["carta"])
+                if meu_n and meu_n <= 2:
+                    cartas_abertura.add(e["carta"])
+            if e["tipo"] == "ataque" and e["valor"] and primeiro_ataque is None and meu_n:
+                primeiro_ataque = meu_n
+            if e["tipo"] == "premio" and primeiro_premio_turno is None and meu_n:
+                primeiro_premio_turno = meu_n
+        for c in cartas_abertura:
+            abertura[c][1] += 1
+            abertura[c][0] += venceu
+        for c in cartas_partida:
+            jogadas[c][1] += 1
+            jogadas[c][0] += venceu
+        k = "V" if venceu else "D"
+        if primeiro_ataque:
+            ritmo[k]["ataque"].append(primeiro_ataque)
+        if primeiro_premio_turno:
+            ritmo[k]["premio"].append(primeiro_premio_turno)
+
+        # corrida de prêmios turno a turno
+        s_eu = p["resumo"]["serie"].get(eu) or []
+        s_adv = p["resumo"]["serie"].get(adv_nome) or []
+        n = min(len(s_eu), len(s_adv))
+        quem_primeiro = None
+        for t in range(n):
+            if s_eu[t] or s_adv[t]:
+                quem_primeiro = "Você pegou o 1º prêmio" if s_eu[t] >= s_adv[t] and s_eu[t] > 0 else "Adversário pegou o 1º prêmio"
+                break
+        if quem_primeiro:
+            primeiro_premio[quem_primeiro][1] += 1
+            primeiro_premio[quem_primeiro][0] += venceu
+        atras = any(s_adv[t] > s_eu[t] for t in range(n))
+        frente = any(s_eu[t] > s_adv[t] for t in range(n))
+        if atras:
+            viradas["perdendo"] += 1
+            viradas["perdendo_e_venceu"] += venceu
+        if frente:
+            viradas["ganhando"] += 1
+            viradas["ganhando_e_perdeu"] += not venceu
+        if not venceu:
+            # último turno em que o adversário passou à frente e não foi mais alcançado
+            ultimo = None
+            for t in range(n):
+                if s_adv[t] > s_eu[t] and (t == 0 or s_adv[t - 1] <= s_eu[t - 1]):
+                    ultimo = t
+            if ultimo is not None:
+                meu_n = max((v for tt, v in meus_turnos.items() if tt <= ultimo), default=1)
+                perdeu_controle[meu_n] += 1
+
+    def tabela(dic):
+        saida = []
+        for c, (v, n) in dic.items():
+            if n < min_partidas:
+                continue
+            sem_n, sem_v = len(linhas) - n, total_v - v
+            com = placar(v, n - v)
+            saida.append({"carta": c, **com, "taxa_sem": round(100 * sem_v / sem_n, 1) if sem_n else None, "sem_n": sem_n,
+                          "diferenca": round(com["taxa"] - 100 * sem_v / sem_n, 1) if sem_n and com["taxa"] is not None else None})
+        return sorted(saida, key=lambda x: (-(x["n"]), x["carta"]))
+
+    media = lambda xs: round(sum(xs) / len(xs), 1) if xs else None
+    return {
+        "eu": eu, "partidas": len(linhas), "vitorias": total_v, "min_partidas": min_partidas,
+        "aberturas": tabela(abertura),
+        "cartas_jogadas": tabela(jogadas),
+        "primeiro_premio": [{"grupo": g, **placar(v, n - v)} for g, (v, n) in primeiro_premio.items()],
+        "viradas": {**viradas,
+                    "taxa_virada": round(100 * viradas["perdendo_e_venceu"] / viradas["perdendo"], 1) if viradas["perdendo"] else None,
+                    "taxa_entregou": round(100 * viradas["ganhando_e_perdeu"] / viradas["ganhando"], 1) if viradas["ganhando"] else None},
+        "perdeu_controle": [{"turno": t, "derrotas": q} for t, q in sorted(perdeu_controle.items())],
+        "ritmo": {k: {"ataque": media(v["ataque"]), "premio": media(v["premio"]), "n": len(v["ataque"])} for k, v in ritmo.items()},
+    }
