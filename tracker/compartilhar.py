@@ -210,14 +210,36 @@ def _vistos():
         return {}
 
 
-def sugestoes_pasta():
-    """Lugares onde o Google Drive para computador costuma aparecer."""
+_sugestoes_cache = {"t": 0, "v": []}
+
+
+def _unidades_windows():
+    """Letras de unidade que existem e são fixas (o Google Drive aparece como unidade fixa, ex.: G:).
+    Não toca em leitor de cartão, DVD ou unidade de rede desconectada: no Windows isso pode
+    travar ou abrir a janela "Não há disco na unidade"."""
+    import ctypes
+    k = ctypes.windll.kernel32
+    k.SetErrorMode(0x0001 | 0x8000)  # sem janelas de erro de disco
+    mascara = k.GetLogicalDrives()
+    saida = []
+    for i in range(26):
+        if mascara & (1 << i):
+            letra = chr(65 + i) + ":\\"
+            if k.GetDriveTypeW(ctypes.c_wchar_p(letra)) == 3 and letra[0] not in "AB":  # 3 = fixa
+                saida.append(letra)
+    return saida
+
+
+def _procurar_sugestoes():
     casa = Path.home()
     candidatos = [casa / "Google Drive", casa / "Meu Drive", casa / "My Drive"]
     if platform.system() == "Windows":
-        for letra in "GHIJKLMNOPQRSTUVWXYZ":
-            for nome in ("Meu Drive", "My Drive"):
-                candidatos.append(Path(f"{letra}:\\") / nome)
+        try:
+            for letra in _unidades_windows():
+                if letra[0] != "C":
+                    candidatos += [Path(letra) / "Meu Drive", Path(letra) / "My Drive"]
+        except Exception:
+            pass
     else:
         nuvem = casa / "Library" / "CloudStorage"
         if nuvem.is_dir():
@@ -228,9 +250,22 @@ def sugestoes_pasta():
         try:
             if c.is_dir():
                 saida.append(str(c))
+                saida += [str(x) for x in sorted(c.iterdir()) if x.is_dir() and "tcg" in x.name.lower()]
         except OSError:
             pass
     return saida
+
+
+def sugestoes_pasta():
+    """Lugares onde o Google Drive para computador costuma aparecer (no máximo 3 s de procura)."""
+    if time.time() - _sugestoes_cache["t"] < 300:
+        return _sugestoes_cache["v"]
+    resultado = []
+    t = threading.Thread(target=lambda: resultado.extend(_procurar_sugestoes()), daemon=True)
+    t.start()
+    t.join(3)
+    _sugestoes_cache.update(t=time.time(), v=list(resultado))
+    return _sugestoes_cache["v"]
 
 
 def escolher_pasta_dialogo():

@@ -140,13 +140,21 @@ def jogadores_locais():
     return jsonify(analises.jogadores(config.ler_config()["nick"]))
 
 
+def _seguro(func, padrao):
+    try:
+        return func()
+    except Exception as e:
+        print("[amigos]", e)
+        return padrao
+
+
 @app.get("/api/amigos")
 def lista_amigos():
     cfg = config.ler_config()
     return jsonify({"amigos": compartilhar.amigos(), "exportacao": compartilhar.resumo_exportacao(),
                     "downloads": str(compartilhar.pasta_downloads()),
                     "pasta": {"caminho": cfg.get("pasta_compartilhada", ""), "auto": bool(cfg.get("pasta_auto")),
-                              "minutos": cfg.get("pasta_minutos", 30), "sugestoes": compartilhar.sugestoes_pasta(),
+                              "minutos": cfg.get("pasta_minutos", 30), "sugestoes": _seguro(compartilhar.sugestoes_pasta, []),
                               **compartilhar.estado_pasta}})
 
 

@@ -1465,6 +1465,7 @@ async function renderDecisoes() {
 
 /* ---- AMIGOS: mandar os seus logs e receber os deles */
 async function renderAmigos() {
+  if (!$('#pa-caminho')) main.innerHTML = '<header><h1>Amigos (trocar logs)</h1></header><p class="muted">Carregando…</p>';
   const r = await api('/api/amigos');
   const ex = r.exportacao, ult = ex.ultima_exportacao, pa = r.pasta;
   main.innerHTML = `
