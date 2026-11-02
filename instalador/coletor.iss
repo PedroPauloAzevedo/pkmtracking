@@ -51,8 +51,11 @@ Name: "{userstartup}\Coletor TCG Live"; Filename: "{app}\python\pythonw.exe"; Pa
 Filename: "{app}\python\pythonw.exe"; Parameters: "app.py"; WorkingDir: "{app}"; Description: "Abrir o Coletor agora"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-; fecha o Coletor antes de desinstalar
-Filename: "powershell.exe"; Parameters: "-NoProfile -Command ""try {{ Invoke-RestMethod -Method Post http://127.0.0.1:8765/api/encerrar -TimeoutSec 3 }} catch {{}}"""; Flags: runhidden; RunOnceId: "FecharColetor"
+; fecha só o Coletor DESTA instalação (o Python dela fica em {app}\python), em qualquer porta;
+; um Coletor de outra pasta continua aberto. Usa a lista de processos do Windows (CIM): o desinstalador é de
+; 32 bits e abre o PowerShell de 32 bits, que não enxerga o caminho de programas de 64 bits com Get-Process.
+; No Inno, só a chave de abrir é dobrada ({{); a de fechar fica simples.
+Filename: "powershell.exe"; Parameters: "-NoProfile -Command ""Get-CimInstance Win32_Process | Where-Object {{ $_.ExecutablePath -like '{app}\python\*' } | ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force }"""; Flags: runhidden; RunOnceId: "FecharColetor"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\python"
