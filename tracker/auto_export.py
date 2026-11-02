@@ -81,6 +81,52 @@ def baixar_prontas():
     return sorted(MODELOS[k] for k in novas)
 
 
+TITULO_JOGO = "Pokemon TCG Live"
+
+
+def _janela_do_jogo():
+    if sys.platform != "win32":
+        return None
+    import ctypes
+    from ctypes import wintypes
+    u, achadas = ctypes.windll.user32, []
+
+    def olhar(h, _):
+        n = u.GetWindowTextLengthW(h)
+        if n and u.IsWindowVisible(h):
+            b = ctypes.create_unicode_buffer(n + 1)
+            u.GetWindowTextW(h, b, n + 1)
+            if b.value == TITULO_JOGO:
+                achadas.append(h)
+        return True
+    u.EnumWindows(ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)(olhar), 0)
+    return achadas[0] if achadas else None
+
+
+def jogo_na_frente():
+    """O jogo é a janela ativa? (Fora do Windows não dá para saber: considera que sim.)"""
+    if sys.platform != "win32":
+        return True
+    import ctypes
+    h = _janela_do_jogo()
+    return bool(h) and ctypes.windll.user32.GetForegroundWindow() == h
+
+
+def trazer_jogo():
+    """Põe o jogo na frente antes de clicar. O toque na tecla Alt é o jeito aceito pelo Windows
+    de deixar um programa em segundo plano trocar a janela ativa."""
+    h = _janela_do_jogo()
+    if not h:
+        return False
+    import ctypes
+    u = ctypes.windll.user32
+    u.keybd_event(0x12, 0, 0, 0)
+    u.keybd_event(0x12, 0, 2, 0)
+    u.SetForegroundWindow(h)
+    time.sleep(0.4)
+    return jogo_na_frente()
+
+
 def python_do_programa():
     """O python.exe que roda o programa (com o ícone na bandeja ele roda como pythonw.exe, que não mostra o pip)."""
     exe = Path(sys.executable)
@@ -108,6 +154,7 @@ class AutoExport:
         self.cliques = 0
         self.perdidas = 0
         self.escalas = {}   # tamanho que funcionou no seu monitor, por botão
+        self.ultima_nota = 0.0  # parecença da última busca (0 a 1), para o registro de diagnóstico
         self._cache = {}
         self._thread = None
         self._parar = threading.Event()
@@ -198,6 +245,7 @@ class AutoExport:
             _, valor, _, pos = cv2.minMaxLoc(cv2.matchTemplate(tela, m, cv2.TM_CCOEFF_NORMED))
             if not melhor or valor > melhor[0]:
                 melhor = (valor, pos, w, h, s)
+        self.ultima_nota = melhor[0] if melhor else 0.0
         if not melhor or melhor[0] < conf:
             return None
         valor, (x, y), w, h, s = melhor
@@ -276,9 +324,11 @@ class AutoExport:
             for tentativa in (1, 2):
                 if tentativa == 2:  # o log pode ter fechado: procura o botão Battle Log de novo
                     bl = self._achar(cv2, self._tela(pyautogui, np, cv2), "battle_log", conf) or bl
+                # Com outra janela ativa (o painel, o navegador...), o clique só "acorda" o jogo ou cai na janela errada.
+                na_frente = jogo_na_frente() or trazer_jogo()
                 pyautogui.click(*self._centro(bl))
                 exp = None
-                for _ in range(6):
+                for _ in range(12):  # o log pode demorar a abrir (partidas longas)
                     time.sleep(0.8)
                     exp = self._achar(cv2, self._tela(pyautogui, np, cv2), "exportar", conf)
                     if exp:
@@ -290,6 +340,9 @@ class AutoExport:
                         if coletor.visto_em > antes:
                             chegou = True
                             break
+                # fica em dados/programa.log: se falhar, dá para saber em qual passo (sem guardar imagem da tela)
+                print(f"[auto] tentativa {tentativa}: jogo na frente={na_frente}, botão de exportar achado={bool(exp)} "
+                      f"(nota {self.ultima_nota:.2f}), log chegou={chegou}")
                 if chegou:
                     break
             if chegou:

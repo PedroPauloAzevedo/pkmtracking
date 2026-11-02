@@ -1,5 +1,24 @@
 [
   {
+    "versao": "2026.11.02-5",
+    "data": "2026-11-02",
+    "titulo": "Modo automático: põe o jogo na frente antes de clicar",
+    "mudancas": [
+      "Modo automático: se outra janela estiver ativa no fim da partida (o painel do Coletor, o navegador...), o programa põe o jogo na frente antes de clicar em Battle Log. Antes, o clique podia cair na janela errada e a partida ficava como \"perdida\".",
+      "Espera mais tempo (até uns 10 segundos) o Battle Log abrir, para partidas longas.",
+      "Cada tentativa do modo automático fica anotada em dados/programa.log (jogo na frente, botão de exportar achado, log chegou), para descobrir o motivo se ainda falhar."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-5\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Na tela de resultado, espere uns segundos antes de clicar em Continue: o Coletor abre o Battle Log e copia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.02-4",
     "data": "2026-11-02",
     "titulo": "Partidas de amigos separadas sozinhas e modo automático instalável pelo painel",
