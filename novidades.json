@@ -1,5 +1,24 @@
 [
   {
+    "versao": "2026.11.02-6",
+    "data": "2026-11-02",
+    "titulo": "Replay: dano de habilidades e do Phantom Dive no Pokémon certo",
+    "mudancas": [
+      "Replay: o jogo escreve \"Fulano put 5 damage counters on Fulano's Budew\" mesmo quando o Budew é do adversário (Cursed Blast do Dusclops, Phantom Dive do Dragapult ex). Quando os dois jogadores tinham um Pokémon com o mesmo nome, o dano caía no Pokémon errado. Agora o replay descobre o dono certo pelo nocaute que vem logo depois ou pelo ataque que causou o dano.",
+      "Replay: linhas com um contador só (\"put a damage counter on...\") passaram a ser contadas.",
+      "Vale também para as partidas já gravadas: é só abrir o replay de novo."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-6\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra o replay de qualquer partida e o dano já aparece no Pokémon certo."
+    ]
+  },
+  {
     "versao": "2026.11.02-5",
     "data": "2026-11-02",
     "titulo": "Modo automático: põe o jogo na frente antes de clicar",

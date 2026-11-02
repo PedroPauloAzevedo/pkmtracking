@@ -114,7 +114,27 @@ def gerar(texto, regras):
             p = m["banco"].pop(i)
         return p
 
+    def dono_dos_contadores(n_linha, j, dono_escrito, alvo):
+        """O jogo escreve "X put N damage counters on X's Y" mesmo quando Y é do ADVERSÁRIO
+        (ex.: Cursed Blast do Dusclops, Phantom Dive do Dragapult ex). Quem é o dono de verdade:
+          1. se Y é nocauteado logo em seguida, o dono é quem perdeu o Pokémon;
+          2. se veio de um ataque ou habilidade de X ("X's ... used ...") e o adversário tem um Y, é do adversário;
+          3. senão, vale o que está escrito (ex.: Estádio Risky Ruins pondo contadores no Básico que X acabou de jogar)."""
+        if dono_escrito != j:
+            return dono_escrito
+        for seguinte in linhas[n_linha:n_linha + 6]:
+            s = leitor.limpar_linha(seguinte)
+            ko = re.match(rf"^{P}'s (.+?) (?:is now|was) Knocked Out", s)
+            if ko and ko.group(2) == alvo:
+                return ko.group(1)
+            if re.match(rf"^(?:Turn # \d+ - )?{P}'s Turn$", s) or " damage counters on " in s:
+                break
+        if ultima_principal and re.match(rf"^{re.escape(j)}'s .+? used ", ultima_principal) and achar(outro(j), alvo, None, False):
+            return outro(j)
+        return dono_escrito
+
     quadros = []
+    ultima_principal = ""  # última linha que não começa com "-" (o ataque ou habilidade que gerou as sublinhas)
     lista_pendente = None
     poder = None          # Pokémon que acabou de usar habilidade (ex.: Dudunsparce "Run Away Draw")
     embaralhou = False    # "X shuffled N cards into their deck." logo depois desse poder
@@ -159,6 +179,7 @@ def gerar(texto, regras):
         m = None
         if not sublinha:
             poder = None
+            ultima_principal = l
         if poder and re.match(rf"^{P} shuffled \d+ cards? into their deck\.$", l) and l.startswith(poder[0]):
             embaralhou = True
 
@@ -261,8 +282,10 @@ def gerar(texto, regras):
                     morto = remover(ref)
                     estado["mesa"][ref[0]]["nocauteados"].append(morto["nome"])
                     d["nocaute_uid"] = morto["uid"]
-        elif casa(rf"^{P} put (\d+) damage counters? on {P}'s (.+?)\.$"):
+        elif casa(rf"^{P} put (\d+|a) damage counters? on {P}'s (.+?)\.$"):  # "put a damage counter" = 1
             j, qtd, dono_alvo, alvo = m.groups()
+            qtd = 1 if qtd == "a" else qtd
+            dono_alvo = dono_dos_contadores(n_linha, j, dono_alvo, alvo)
             ref = achar(dono_alvo, alvo)
             if ref:
                 p = pegar(ref)
