@@ -22,11 +22,11 @@ import io
 import socket
 import sys
 import threading
-import webbrowser
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
-from tracker import analises, atualizador, banco, cartas, compartilhar, config, decks, diagnostico, leitor, limitless, replay, revisao
+from tracker import (analises, atalhos, atualizador, avisos, bandeja, banco, cartas, compartilhar, config, decks,
+                     diagnostico, janela, leitor, limitless, lista_oficial, novidades, regras_jogo, replay, revisao)
 from tracker.auto_export import auto
 from tracker.coletor import coletor
 
@@ -35,6 +35,33 @@ app.json.sort_keys = False  # mantém a ordem dos dados (ex.: Top 8, Top 16, ...
 app.json.ensure_ascii = False
 PASTA_WEB = config.RAIZ / "web"
 VERSAO = atualizador.versao_local()  # vem de versao.txt; aparece no painel e na janela preta
+MODO = {"bandeja": False}  # True quando o programa roda com o ícone perto do relógio (sem janela preta)
+
+
+# ------------------------------------------------------------------ proteção
+# O painel só aceita pedidos dele mesmo. Sem isto, qualquer site aberto no navegador poderia mandar
+# comandos para 127.0.0.1 (por exemplo, trocar o repositório de atualização e mandar "atualizar").
+#   - Host: só 127.0.0.1/localhost (evita o truque de "DNS rebinding");
+#   - Origin / Sec-Fetch-Site: o navegador diz de que site veio o pedido; outro site = recusado.
+# Programas locais (scripts, o atualizador, o desinstalador) não mandam Origin e continuam funcionando.
+HOSTS_LOCAIS = {"127.0.0.1", "localhost", "::1"}
+
+
+@app.before_request
+def so_pedidos_do_painel():
+    from urllib.parse import urlsplit
+    proprio = urlsplit("//" + (request.host or ""))
+    if (proprio.hostname or "") not in HOSTS_LOCAIS:
+        return jsonify({"erro": "Endereço não permitido."}), 403
+    origem = request.headers.get("Origin")
+    if origem:
+        o = urlsplit(origem)
+        if o.scheme != "http" or (o.hostname or "") not in HOSTS_LOCAIS or o.port != proprio.port:
+            return jsonify({"erro": "Pedido de outro site recusado."}), 403
+    if request.headers.get("Sec-Fetch-Site") == "cross-site":
+        return jsonify({"erro": "Pedido de outro site recusado."}), 403
+    if request.method != "GET":
+        analises._memoria_listas["t"] = 0.0  # algo pode ter mudado em Meus decks: relê na próxima análise
 
 
 # ------------------------------------------------------------------ páginas
@@ -43,22 +70,58 @@ def inicio():
     return send_from_directory(PASTA_WEB, "index.html")
 
 
+@app.get("/api/exemplo-log")
+def exemplo_log():
+    """Log de exemplo para o teste do primeiro uso (o coletor reconhece e não grava)."""
+    return Response((config.RAIZ / "exemplos" / "log_de_exemplo.txt").read_text(encoding="utf-8"), mimetype="text/plain")
+
+
+@app.get("/icone.ico")
+def icone_aba():
+    return send_from_directory(PASTA_WEB, "icone.ico")
+
+
 # ------------------------------------------------------------------ status e configurações
 @app.get("/api/status")
 def status():
     cfg = config.ler_config()
     return jsonify({
         "versao": VERSAO,
-        "coletor": {"ativo": coletor.ativo, "erro": coletor.erro, "ultima": coletor.ultima, "capturadas": coletor.capturadas},
+        "coletor": {"ativo": coletor.ativo, "erro": coletor.erro, "ultima": coletor.ultima, "capturadas": coletor.capturadas,
+                    "teste_em": coletor.teste_em},
         "automatico": {"ligado": cfg["modo_automatico"], "status": auto.status, "erro": auto.erro,
-                       "cliques": auto.cliques, "faltando": auto.faltando()},
+                       "cliques": auto.cliques, "perdidas": auto.perdidas, "faltando": auto.faltando()},
+        "aviso": avisos.ultimo(),
         "importacao": limitless.progresso,
         "sincronizacao": limitless.estado_sync,
         "biblioteca": cartas.progresso,
         "atualizacao": atualizador.estado,
         "linhas_pendentes": _contar_pendentes(),
+        "bandeja": MODO["bandeja"],
+        "windows": atalhos.disponivel(),
+        "janela_propria": janela.disponivel(),
         "config": cfg,
     })
+
+
+# ------------------------------------------------------------------ atalhos do Windows
+@app.get("/api/atalhos")
+def ver_atalhos():
+    return jsonify({"disponivel": atalhos.disponivel(), "area": atalhos.existe("area"),
+                    "inicializar": atalhos.existe("inicializar")})
+
+
+@app.post("/api/atalhos")
+def mudar_atalhos():
+    """{"area": true} cria o atalho na Área de Trabalho; {"inicializar": false} tira do início do Windows."""
+    corpo = request.get_json(force=True) or {}
+    try:
+        for onde in ("area", "inicializar"):
+            if onde in corpo:
+                atalhos.criar(onde) if corpo[onde] else atalhos.remover(onde)
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 400
+    return ver_atalhos()
 
 
 _cache_pendentes = {"t": 0, "n": 0}
@@ -76,7 +139,32 @@ def _contar_pendentes():
 def api_decisoes():
     a = request.args
     return jsonify(analises.decisoes(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"),
-                                     a.get("lista"), a.get("adv"), int(a.get("min", 3)), a.get("jogador", "")))
+                                     a.get("lista"), a.get("adv"), int(a.get("min", 3)), a.get("jogador", ""),
+                                     a.get("ordem", "")))
+
+
+# ------------------------------------------------------------------ regras do Standard (base de regras)
+@app.get("/api/regras-standard")
+def regras_standard():
+    return jsonify(regras_jogo.status())
+
+
+@app.post("/api/regras-standard/atualizar")
+def regras_standard_atualizar():
+    regras_jogo.verificar_atualizacao()
+    return jsonify(regras_jogo.status())
+
+
+# ------------------------------------------------------------------ novidades de cada versão
+@app.get("/api/novidades")
+def ver_novidades():
+    return jsonify(novidades.para_mostrar())
+
+
+@app.post("/api/novidades/vista")
+def novidades_vista():
+    novidades.marcar_vista()
+    return jsonify({"ok": True})
 
 
 @app.get("/api/revisao")
@@ -100,6 +188,8 @@ def salvar_config():
     cfg = config.ler_config()
     novo = request.get_json(force=True) or {}
     for chave in ("nick", "modo_automatico", "confianca_imagem", "intervalo_coletor", "coletor_ativo",
+                  "cobrir_continuar", "abrir_em", "guia_visto",
+                  "online_ativo", "online_min_jogadores", "online_dias",
                   "sincronizar_auto", "sincronizar_horas", "sincronizar_dias", "listas_top",
                   "github_repo", "github_ramo", "github_token", "pasta_compartilhada", "pasta_auto", "pasta_minutos"):
         if chave in novo:
@@ -216,7 +306,8 @@ def nova_partida():
     pid, nova = banco.inserir_partida(texto, "manual", config.ler_regras())
     p = banco.obter_partida(pid)
     _cache_pendentes["t"] = 0
-    return jsonify({"id": pid, "nova": nova, "nao_lidas": len(p["nao_lidas"]) if p else 0})
+    return jsonify({"id": pid, "nova": nova, "nao_lidas": len(p["nao_lidas"]) if p else 0,
+                    "problemas": p["resumo"].get("problemas", []) if p else []})
 
 
 @app.get("/api/partidas/<int:pid>")
@@ -291,6 +382,9 @@ def meus_decks():
     for d in decks.listar_decks():
         dados = analises.analise_pessoal(nick, lista=d["id"])
         d["placar"] = dados["total"]
+        d.pop("lista_oficial", None)
+        cartas_deck = banco.consultar("SELECT * FROM meus_decks_cartas WHERE deck_id=? ORDER BY rowid", (d["id"],))
+        d["standard_ok"] = lista_oficial.validar(lista_oficial.gerar({"cartas": cartas_deck}))["valida"]
         saida.append(d)
     return jsonify(saida)
 
@@ -311,7 +405,57 @@ def ver_deck(did):
     if not d:
         return jsonify({"erro": "Deck não encontrado."}), 404
     d["analise"] = analises.analise_pessoal(config.ler_config()["nick"], lista=did)
+    d["standard"] = lista_oficial.validar(lista_oficial.gerar(d))
+    d["lista_oficial_editada"] = bool(d.pop("lista_oficial", ""))
     return jsonify(d)
+
+
+def _cartas_para_probabilidade(did):
+    """Cartas do deck com a marcação de Pokémon Básico (vem da biblioteca de cartas). None se o deck não existe."""
+    d = decks.obter_deck(did)
+    if not d:
+        return None, 0
+    ind = cartas.indice().get("cartas", {})
+    lista, sem_info = [], 0
+    for c in d["cartas"]:
+        e = ind.get(c.get("carta_id") or "") or {}
+        if c["secao"] == "Pokémon" and not e.get("estagio"):
+            sem_info += c["qtd"]
+        lista.append({"nome": c.get("carta_base") or c["nome"], "qtd": c["qtd"], "secao": c["secao"],
+                      "basico": c["secao"] == "Pokémon" and (e.get("estagio") or "").lower() == "basic"})
+    return lista, sem_info
+
+
+@app.get("/api/decks/<int:did>/consistencia")
+def consistencia_deck(did):
+    """Probabilidades da lista (mulligan, carta na mão, nos prêmios) e o mulligan real das suas partidas."""
+    from tracker import probabilidades
+    lista, sem_info = _cartas_para_probabilidade(did)
+    if lista is None:
+        return jsonify({"erro": "Deck não encontrado."}), 404
+    r = probabilidades.resumo_lista(lista)
+    r["sem_estagio"] = sem_info  # Pokémon sem estágio conhecido (biblioteca de cartas incompleta)
+    jogadas = [l for l in analises.analise_pessoal(config.ler_config()["nick"], lista=did)["partidas"] if l["resultado"]]
+    r["observado"] = {"partidas": len(jogadas), "com_mulligan": sum(1 for l in jogadas if l["mulligan_eu"])}
+    return jsonify(r)
+
+
+@app.get("/api/decks/<int:did>/combo")
+def combo_deck(did):
+    """Chance de ter as cartas A e B juntas até o 1º, 2º e 3º turno."""
+    from tracker import probabilidades
+    lista, _ = _cartas_para_probabilidade(did)
+    if lista is None:
+        return jsonify({"erro": "Deck não encontrado."}), 404
+    a, b = request.args.get("a", ""), request.args.get("b", "")
+    ca = [c for c in lista if c["nome"] == a]
+    cb = [c for c in lista if c["nome"] == b]
+    if not ca or not cb or a == b:
+        return jsonify({"erro": "Escolha duas cartas diferentes da lista."}), 400
+    basicos = sum(c["qtd"] for c in lista if c["basico"])
+    qa, qb, deck = sum(c["qtd"] for c in ca), sum(c["qtd"] for c in cb), sum(c["qtd"] for c in lista)
+    return jsonify({"turnos": [probabilidades.combo(qa, qb, basicos, ca[0]["basico"], cb[0]["basico"], t, deck)
+                               for t in (0, 1, 2, 3)]})
 
 
 @app.put("/api/decks/<int:did>")
@@ -335,12 +479,38 @@ def editar_deck(did):
     return jsonify({"ok": True, "avisos": avisos})
 
 
+@app.get("/api/decks/<int:did>/lista-oficial")
+def lista_oficial_ver(did):
+    r = lista_oficial.obter(did)
+    return (jsonify(r), 200) if r else (jsonify({"erro": "Deck não encontrado."}), 404)
+
+
+@app.put("/api/decks/<int:did>/lista-oficial")
+def lista_oficial_salvar(did):
+    corpo = request.get_json(force=True) or {}
+    r = lista_oficial.salvar(did, corpo.get("linhas") or {}, corpo.get("jogador"))
+    return (jsonify(r), 200) if r else (jsonify({"erro": "Deck não encontrado."}), 404)
+
+
+@app.delete("/api/decks/<int:did>/lista-oficial")
+def lista_oficial_descartar(did):
+    r = lista_oficial.descartar(did)
+    return (jsonify(r), 200) if r else (jsonify({"erro": "Deck não encontrado."}), 404)
+
+
+@app.post("/api/lista-oficial/validar")
+def lista_oficial_validar():
+    corpo = request.get_json(force=True) or {}
+    return jsonify(lista_oficial.validar(corpo.get("linhas") or {}))
+
+
 @app.delete("/api/decks/<int:did>")
 def apagar_deck(did):
     with banco.conectar() as con:
         con.execute("DELETE FROM meus_decks_cartas WHERE deck_id=?", (did,))
         con.execute("DELETE FROM meus_decks WHERE id=?", (did,))
         con.execute("UPDATE partidas SET deck_id=NULL WHERE deck_id=?", (did,))
+    banco.marcar_mudanca()
     return jsonify({"ok": True})
 
 
@@ -440,7 +610,22 @@ def enviar_modelo(nome):
         return jsonify({"erro": "A imagem precisa estar em PNG."}), 400
     config.PASTA_MODELOS.mkdir(parents=True, exist_ok=True)
     (config.PASTA_MODELOS / MODELOS[nome]).write_bytes(conteudo)
+    cfg = config.ler_config()  # imagem sua: o tamanho dela no monitor é descoberto de novo
+    cfg["modelos_prontos"] = [k for k in cfg.get("modelos_prontos") or [] if k != nome]
+    config.salvar_config(cfg)
+    from tracker.auto_export import esquecer_escala
+    esquecer_escala()
     return jsonify({"ok": True, "arquivo": MODELOS[nome]})
+
+
+@app.post("/api/modelos-prontos")
+def usar_modelos_prontos():
+    """Baixa as imagens dos botões do projeto Full Bench (licença MIT)."""
+    from tracker.auto_export import baixar_prontas
+    try:
+        return jsonify({"ok": True, "arquivos": baixar_prontas()})
+    except Exception as e:
+        return jsonify({"erro": f"Não consegui baixar as imagens prontas: {e}"}), 400
 
 
 @app.get("/modelos/<nome>")
@@ -538,20 +723,45 @@ def apagar_torneio(tid):
 
 
 def _lista_torneios():
-    t = request.args.get("torneios", "")
-    return [x for x in t.split(",") if x] or None
+    """Torneios escolhidos no painel; sem escolha, todos os Standard da fonte (grandes eventos, online ou todos)."""
+    t = [x for x in request.args.get("torneios", "").split(",") if x]
+    if t:
+        return t
+    return analises.torneios_da_fonte(request.args.get("fonte", "grandes"))
 
 
 @app.get("/api/meta")
 def meta():
     a = request.args
-    return jsonify(analises.meta(_lista_torneios(), int(a.get("top", 0)), int(a.get("corte", 32)),
-                                 int(a.get("k", 12)), int(a.get("min", 10))))
+    torneios = _lista_torneios()
+    m = analises.meta(torneios, int(a.get("top", 0)), int(a.get("corte", 32)), int(a.get("k", 12)), int(a.get("min", 10)))
+    # taxa ajustada de cada confronto (completa os de poucos jogos pela força geral dos decks; ver tracker/estrategia.py)
+    from tracker import estrategia
+    principais = [c["arquetipo"] for c in m["colunas"]]
+    ajust = estrategia.confrontos_ajustados(estrategia._partidas(torneios, com_empates=True), principais)
+    for linha in m["matriz"]:
+        for col, cel in zip(principais, linha["celulas"]):
+            cel["ajustada"] = round(100 * ajust[(linha["arquetipo"], col)]["p"], 1)
+    return jsonify(m)
+
+
+@app.get("/api/variantes/<arq>")
+def variantes_deck(arq):
+    """Variantes do deck (listas agrupadas por semelhança) com a taxa de vitória de cada uma."""
+    from tracker import variantes
+    return jsonify(variantes.variantes(arq, _lista_torneios()))
+
+
+@app.get("/api/qual-deck")
+def qual_deck():
+    """Taxa esperada contra o campo, pior confronto e equilíbrio do meta (tracker/estrategia.py)."""
+    from tracker import estrategia
+    return jsonify(estrategia.qual_deck(_lista_torneios(), int(request.args.get("k", 12))))
 
 
 @app.get("/api/tendencia")
 def tendencia():
-    return jsonify(analises.tendencia(int(request.args.get("k", 8))))
+    return jsonify(analises.tendencia(int(request.args.get("k", 8)), _lista_torneios()))
 
 
 @app.get("/api/deck/<arq>")
@@ -705,7 +915,7 @@ def _tratar_instancia_antiga(url, porta, sem_navegador):
     if versao == VERSAO:
         print(f"O programa já está rodando. Abrindo o painel: {url}")
         if not sem_navegador:
-            webbrowser.open(url)
+            janela.abrir(url)
         return False
     print(f"Encontrei uma versão anterior do coletor rodando ({versao or 'desconhecida'}). Fechando para usar a nova…")
     try:
@@ -721,16 +931,54 @@ def _tratar_instancia_antiga(url, porta, sem_navegador):
     return False
 
 
+def _reabrir_sem_janela():
+    """Aberto pelo python.exe (com janela preta)? Abre de novo pelo pythonw.exe (sem janela) e fecha este.
+
+    Assim a janela preta só pisca e some, inclusive quando quem abre é o atualizador de versões antigas.
+    """
+    import os
+    import subprocess
+    exe = os.path.basename(sys.executable).lower()
+    w = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
+    if exe != "python.exe" or not os.path.exists(w):
+        return False
+    try:
+        subprocess.Popen([w, str(config.RAIZ / "app.py"), *sys.argv[1:]], cwd=str(config.RAIZ),
+                         creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
+    except OSError:
+        return False
+    print("Abrindo o Coletor com o ícone perto do relógio. Esta janela pode ser fechada.")
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser(description="Coletor de Partidas TCG Live")
     ap.add_argument("--diagnostico", action="store_true", help="procura arquivos de log do jogo no disco")
     ap.add_argument("--importar", metavar="ID", help="importa um torneio do Limitless Labs (ex.: 0078)")
     ap.add_argument("--sincronizar", action="store_true", help="importa os torneios recentes que faltam e sai")
     ap.add_argument("--sem-navegador", action="store_true", help="não abrir o navegador ao iniciar")
+    ap.add_argument("--janela", action="store_true", help="usar a janela preta em vez do ícone perto do relógio")
+    ap.add_argument("--criar-atalho", action="store_true", help="cria o atalho na Área de Trabalho (Windows) e sai")
     args = ap.parse_args()
+
+    if args.criar_atalho:
+        try:
+            print("Atalho criado:", atalhos.criar("area"))
+        except Exception as e:
+            print(e)
+        return
+    usar_bandeja = (sys.platform == "win32" and not args.janela and bandeja.disponivel()
+                    and not (args.diagnostico or args.sincronizar or args.importar))
+    if usar_bandeja and _reabrir_sem_janela():
+        return
 
     banco.iniciar()
     preparar_registro()
+    cfg = config.ler_config()
+    if cfg.get("versao_listas") != 2:  # listas de Meus decks lidas de novo (códigos como 30C)
+        _tentar(decks.reler_listas)
+        cfg["versao_listas"] = 2
+        config.salvar_config(cfg)
     if args.diagnostico:
         r = diagnostico.procurar()
         print("Pastas do jogo encontradas:", *(r["pastas"] or ["(nenhuma)"]), sep="\n  ")
@@ -763,14 +1011,29 @@ def main():
         limitless.sincronizador.iniciar()
     cartas.verificador.iniciar()
     atualizador.verificador.iniciar()
+    regras_jogo.verificador.iniciar()
     if cfg.get("pasta_auto"):
         compartilhar.sincronizador_pasta.iniciar()
     if not banco.consultar("SELECT 1 FROM arquetipos LIMIT 1"):  # primeira vez: busca a lista de decks
         threading.Thread(target=lambda: _tentar(limitless.atualizar_arquetipos), daemon=True).start()
     print(f"\nColetor de Partidas TCG Live (versão {VERSAO}) rodando. Painel: {url}")
-    print("Deixe esta janela aberta enquanto joga. Para sair, feche-a ou aperte Ctrl+C.\n")
     if not args.sem_navegador:
-        threading.Timer(1.2, lambda: webbrowser.open(url)).start()
+        threading.Timer(1.2, lambda: janela.abrir(url)).start()
+    if usar_bandeja:
+        # o painel roda em segundo plano; a thread principal fica com o ícone até a pessoa escolher Sair
+        import os
+        print("Rodando com o ícone perto do relógio (sem janela preta).\n")
+        MODO["bandeja"] = True
+        threading.Thread(target=lambda: app.run(host="127.0.0.1", port=cfg["porta"], debug=False, threaded=True),
+                         daemon=True, name="painel").start()
+        try:
+            bandeja.rodar(url, ao_sair=lambda: os._exit(0))
+        except Exception as e:  # ícone não abriu: segue sem ele, como quando inicia com o Windows
+            MODO["bandeja"] = False
+            print("[aviso] Não consegui mostrar o ícone perto do relógio:", e)
+            threading.Event().wait()
+        return
+    print("Deixe esta janela aberta enquanto joga. Para sair, feche-a ou aperte Ctrl+C.\n")
     app.run(host="127.0.0.1", port=cfg["porta"], debug=False, threaded=True)
 
 

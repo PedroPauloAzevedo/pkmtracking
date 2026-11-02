@@ -1,0 +1,746 @@
+<title>Leitor de Partidas TCG Live</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra de entrada no topo, partida selecionada abaixo em abas (resumo, eventos, cartas, regras, histórico). */
+:root {
+  --bg: #EEF1F5;
+  --surface: #FFFFFF;
+  --sunken: #F5F7FA;
+  --ink: #172033;
+  --muted: #5B6578;
+  --line: #D5DBE5;
+  --accent: #E8B321;
+  --on-accent: #1A1404;
+  --p1: #2B63D9;
+  --p2: #D2432F;
+  --good: #1E8A5A;
+  --bad: #C2382B;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1420; --surface: #171E2C; --sunken: #121826; --ink: #E6EBF3; --muted: #95A0B5; --line: #2A3447;
+    --accent: #F2C443; --on-accent: #1A1404; --p1: #6E9BFF; --p2: #FF7A66; --good: #4CC28A; --bad: #FF6B5C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1420; --surface: #171E2C; --sunken: #121826; --ink: #E6EBF3; --muted: #95A0B5; --line: #2A3447;
+  --accent: #F2C443; --on-accent: #1A1404; --p1: #6E9BFF; --p2: #FF7A66; --good: #4CC28A; --bad: #FF6B5C;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: 1.75rem; font-weight: 800; }
+h2 { font-size: 1.2rem; font-weight: 600; }
+h3 { font-size: 1rem; font-weight: 600; }
+.lead { color: var(--muted); margin: 4px 0 0; max-width: 65ch; }
+.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--f-mono); font-size: 0.85rem; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+button, .btn {
+  font: 500 0.88rem var(--f-body); color: var(--ink); background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 7px; padding: 7px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+button:hover, .btn:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .btn:focus-within { outline: 2px solid var(--p1); outline-offset: 2px; }
+input[type=text], input[type=search], select, textarea {
+  font: 400 0.9rem var(--f-body); color: var(--ink); background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; min-width: 0;
+}
+textarea { font-family: var(--f-mono); font-size: 0.8rem; width: 100%; resize: vertical; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grow { flex: 1 1 180px; }
+.file-input { position: relative; overflow: hidden; }
+.file-input input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* Partidas carregadas */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.82rem; padding: 4px 10px; border-radius: 999px; background: var(--sunken); border: 1px solid var(--line); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip .tag { font-weight: 600; margin-left: 4px; }
+.tag-v { color: var(--good); } .tag-d { color: var(--bad); }
+.chip[aria-pressed="true"] .tag-v, .chip[aria-pressed="true"] .tag-d { color: inherit; }
+
+/* Abas */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 10px 14px; color: var(--muted); white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* Resultado */
+.result { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.side { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.side.right { text-align: right; align-items: flex-end; }
+.pname { font-family: var(--f-display); font-size: 1.35rem; font-weight: 800; overflow-wrap: anywhere; }
+.p1 { color: var(--p1); } .p2 { color: var(--p2); }
+.score { font-family: var(--f-display); font-size: 2.4rem; font-weight: 800; font-variant-numeric: tabular-nums; text-align: center; line-height: 1; }
+.score small { display: block; font: 600 0.7rem var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.pill { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.win { color: var(--good); } .pill.loss { color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 20px; color: var(--muted); font-size: 0.88rem; }
+.meta b { color: var(--ink); font-weight: 600; }
+
+.stats { width: 100%; border-collapse: collapse; }
+.stats th, .stats td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.stats th:first-child, .stats td:first-child { text-align: left; }
+.stats thead th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font: 11px var(--f-body); }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; gap: 14px; font-size: 0.82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+.ko-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ko-list li { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 0.88rem; align-items: baseline; }
+.ko-list li:last-child { border-bottom: none; }
+.turn-badge { font: 500 0.75rem var(--f-mono); color: var(--muted); }
+.prize-dots { display: inline-flex; gap: 3px; }
+.prize-dots span { width: 8px; height: 11px; border-radius: 2px; background: var(--accent); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; max-height: 560px; overflow-y: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+table.data th { position: sticky; top: 0; background: var(--sunken); text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.data td { padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.data td.n { text-align: right; font-variant-numeric: tabular-nums; }
+table.data tr:last-child td { border-bottom: none; }
+.tipo { font: 500 0.72rem var(--f-mono); padding: 1px 6px; border-radius: 4px; background: var(--sunken); border: 1px solid var(--line); white-space: nowrap; }
+.tipo.ataque, .tipo.nocaute { border-color: var(--p2); }
+.tipo.premio { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+.rules td { vertical-align: middle; }
+.rules input[type=text] { width: 100%; font-family: var(--f-mono); font-size: 0.78rem; }
+.rules .bad input[type=text] { border-color: var(--bad); }
+.err { color: var(--bad); font-size: 0.82rem; }
+.hint { color: var(--muted); font-size: 0.85rem; max-width: 70ch; margin: 0; }
+.test-out { background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-family: var(--f-mono); font-size: 0.78rem; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 40px; }
+.unread { max-height: 240px; overflow: auto; }
+
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+.example-note { font-size: 0.8rem; color: var(--on-accent); background: var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.toast { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; }
+#fallback textarea { min-height: 140px; }
+
+@media (max-width: 720px) {
+  .two { grid-template-columns: 1fr; }
+  .result { grid-template-columns: 1fr; text-align: left; }
+  .side.right { text-align: left; align-items: flex-start; }
+  .score { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Leitor de Partidas TCG Live</h1>
+    <p class="lead">Cole o log exportado ao fim da partida (ou abra os arquivos .txt). A leitura é feita por regras que você pode editar na aba Regras.</p>
+  </header>
+
+  <section class="panel" aria-label="Entrada de logs">
+    <textarea id="entrada" rows="6" placeholder="Cole aqui o histórico da partida (Setup, Turn # 1 - ...)"></textarea>
+    <div class="row">
+      <button class="primary" id="btn-ler">Ler partida colada</button>
+      <label class="btn file-input">Abrir arquivos .txt<input type="file" id="arquivos" accept=".txt,text/plain" multiple></label>
+      <button id="btn-exemplo">Carregar exemplo</button>
+      <span class="grow"></span>
+      <label class="label" for="nick">Seu nick</label>
+      <input type="text" id="nick" placeholder="ex.: Ana_TCG" style="width:160px">
+    </div>
+    <div class="chips" id="chips"></div>
+    <p class="err" id="erro-entrada" hidden></p>
+  </section>
+
+  <section class="panel" aria-label="Partida">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="resumo" aria-selected="true">Resumo</button>
+      <button class="tab" role="tab" data-tab="eventos" aria-selected="false">Eventos</button>
+      <button class="tab" role="tab" data-tab="cartas" aria-selected="false">Cartas</button>
+      <button class="tab" role="tab" data-tab="historico" aria-selected="false">Histórico</button>
+      <button class="tab" role="tab" data-tab="regras" aria-selected="false">Regras de leitura</button>
+    </div>
+    <div id="view"></div>
+  </section>
+
+  <section class="panel" id="fallback" hidden>
+    <h3>Copie o conteúdo abaixo</h3>
+    <p class="hint">A cópia automática não está disponível aqui. O texto já está selecionado: use Ctrl+C (ou Cmd+C).</p>
+    <textarea id="fallback-txt" readonly></textarea>
+    <div class="row"><button id="fallback-fechar">Fechar</button></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<!-- ===================================================================
+     PARTE 1 — O LEITOR (parser). Não mexe na tela, só transforma texto em dados.
+     É aqui que você aprende/ajusta a lógica. Cada regra é uma expressão regular
+     (regex) com "grupos nomeados", ex.: (?<player>...) captura o nome do jogador.
+     =================================================================== -->
+<script id="parser">
+// Tipos de evento que o leitor entende. A chave é usada no código; o texto aparece na tela.
+const TIPOS = {
+  turno: 'Início de turno', moeda: 'Cara ou coroa', ordem: 'Quem começa', mulligan: 'Mulligan',
+  compra: 'Compra de cartas', jogada: 'Carta jogada', evolucao: 'Evolução', energia: 'Energia ligada',
+  ataque: 'Ataque', nocaute: 'Nocaute', premio: 'Prêmio pego', recuo: 'Recuo',
+  fim_turno: 'Fim de turno', vitoria: 'Vitória', outro: 'Outro'
+};
+
+// Regras padrão. Grupos que o resumo usa: player, card, target, dano, qtd, n (nº do turno), ordem.
+const REGRAS_PADRAO = [
+  { id: 'turno',        tipo: 'turno',     ativa: true, re: "^Turn # (?<n>\\d+) - (?<player>.+)'s Turn$" },
+  { id: 'moeda',        tipo: 'moeda',     ativa: true, re: "^(?<player>.+) won the coin toss\\.$" },
+  { id: 'ordem',        tipo: 'ordem',     ativa: true, re: "^(?<player>.+) decided to go (?<ordem>first|second)\\.$" },
+  { id: 'mulligan',     tipo: 'mulligan',  ativa: true, re: "^(?<player>.+) took a mulligan\\.$" },
+  { id: 'compra',       tipo: 'compra',    ativa: true, re: "^(?<player>.+?) drew (?<qtd>a|\\d+) cards?\\b" },
+  { id: 'buscou_jogou', tipo: 'jogada',    ativa: true, re: "^(?<player>.+?) drew (?<card>.+?) and played it to the (?<lugar>Bench|Active Spot)\\.$" },
+  { id: 'jogada',       tipo: 'jogada',    ativa: true, re: "^(?<player>.+?) played (?<card>.+?)(?: to the (?<lugar>Active Spot|Bench))?\\.$" },
+  { id: 'evolucao',     tipo: 'evolucao',  ativa: true, re: "^(?<player>.+?) evolved (?<from>.+?) to (?<card>.+?)(?: (?:in|on) the (?<lugar>.+?))?\\.$" },
+  { id: 'energia',      tipo: 'energia',   ativa: true, re: "^(?<player>.+?) attached (?<card>.+?) to (?<target>.+?)(?: (?:in|on) the (?<lugar>.+?))?\\.$" },
+  { id: 'ataque',       tipo: 'ataque',    ativa: true, re: "^(?<player>.+?)'s (?<card>.+?) used (?<golpe>.+?)(?: on (?<defensor>.+?)'s (?<target>.+?))?(?: for (?<dano>\\d+) damage)?\\." },
+  { id: 'nocaute',      tipo: 'nocaute',   ativa: true, re: "(?:^|\\. )(?<player>[^.]+?)'s (?<card>[^.]+?) (?:is now|was) Knocked Out" },
+  { id: 'premio',       tipo: 'premio',    ativa: true, re: "^(?<player>.+?) took (?<qtd>a|\\d+) Prize cards?\\." },
+  { id: 'recuo',        tipo: 'recuo',     ativa: true, re: "^(?<player>.+?) retreated (?<card>.+?) to the Bench\\.$" },
+  { id: 'fim_turno',    tipo: 'fim_turno', ativa: true, re: "^(?<player>.+?) ended their turn\\.$" },
+  { id: 'vitoria',      tipo: 'vitoria',   ativa: true, re: "(?<player>[^.]+?) wins\\.?$" }
+];
+
+// Limpa uma linha: tira espaços, o "- " das sub-linhas e espaços duplicados.
+function limparLinha(bruta) {
+  return bruta.replace(/\s+/g, ' ').trim().replace(/^- /, '');
+}
+
+// "a" vira 1; números viram número; vazio vira null.
+function paraNumero(v) {
+  if (v === undefined || v === null || v === '') return null;
+  if (v === 'a' || v === 'an') return 1;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Compila as regras ativas. Regras com regex inválida são devolvidas em "erros".
+function compilarRegras(regras) {
+  const ok = [], erros = {};
+  for (const r of regras) {
+    if (!r.ativa) continue;
+    try { ok.push({ ...r, rx: new RegExp(r.re) }); }
+    catch (e) { erros[r.id] = e.message; }
+  }
+  return { ok, erros };
+}
+
+// LÊ UM LOG INTEIRO e devolve { jogadores, eventos, naoLidas, resumo }.
+function lerPartida(texto, regras) {
+  const { ok: rs } = compilarRegras(regras);
+  const linhas = texto.split(/\r?\n/);
+
+  // Passo 1: descobrir os nomes dos jogadores (pelos cabeçalhos de turno e cara/coroa).
+  // Isso evita que frases como "X drew Y and played..." sejam confundidas com um nome.
+  const jogadores = [];
+  for (const bruta of linhas) {
+    const l = limparLinha(bruta);
+    for (const r of rs) {
+      if (r.tipo !== 'turno' && r.tipo !== 'moeda' && r.tipo !== 'ordem') continue;
+      const m = l.match(r.rx);
+      const p = m?.groups?.player?.trim();
+      if (p && !jogadores.includes(p)) jogadores.push(p);
+    }
+  }
+
+  // Passo 2: ler linha a linha e transformar em eventos.
+  const eventos = [], naoLidas = [];
+  let turno = 0, dono = null;
+  linhas.forEach((bruta, i) => {
+    const l = limparLinha(bruta);
+    if (!l || l.startsWith('•') || /^\d+ drawn cards?\.?$/.test(l) || l === 'Setup') return;
+    let leu = false;
+    for (const r of rs) {
+      const m = l.match(r.rx);
+      if (!m) continue;
+      const g = m.groups || {};
+      const jogador = (g.player || '').trim();
+      // Se a regra captura um jogador, ele precisa ser um dos jogadores conhecidos.
+      if (g.player !== undefined && jogadores.length && !jogadores.includes(jogador)) continue;
+      if (r.tipo === 'turno') { turno = Number(g.n) || turno + 1; dono = jogador; }
+      eventos.push({
+        linha: i + 1, turno, dono, tipo: r.tipo, regra: r.id, jogador,
+        carta: (g.card || '').trim(), alvo: (g.target || '').trim(), golpe: (g.golpe || '').trim(),
+        valor: paraNumero(g.dano ?? g.qtd ?? null), extra: g.ordem || g.lugar || g.from || '',
+        texto: l
+      });
+      leu = true;
+    }
+    if (!leu) naoLidas.push({ linha: i + 1, texto: l });
+  });
+
+  return { jogadores, eventos, naoLidas, resumo: resumir(jogadores, eventos, texto) };
+}
+
+// Monta as estatísticas a partir dos eventos.
+function resumir(jogadores, eventos, texto) {
+  const outro = p => jogadores.find(j => j !== p) || '';
+  const base = () => ({ premios: 0, nocautes: 0, dano: 0, ataques: 0, mulligans: 0, jogadas: 0, energias: 0, evolucoes: 0 });
+  const porJogador = Object.fromEntries(jogadores.map(j => [j, base()]));
+  const cartas = Object.fromEntries(jogadores.map(j => [j, {}]));
+  const contar = (j, c) => { if (!j || !c || !cartas[j]) return; cartas[j][c] = (cartas[j][c] || 0) + 1; };
+
+  let primeiro = null, vencedor = null, maxTurno = 0;
+  const nocautes = [];
+  for (const e of eventos) {
+    const s = porJogador[e.jogador];
+    maxTurno = Math.max(maxTurno, e.turno);
+    switch (e.tipo) {
+      case 'ordem': primeiro = e.extra === 'first' ? e.jogador : outro(e.jogador); break;
+      case 'mulligan': if (s) s.mulligans++; break;
+      case 'jogada': if (s) s.jogadas++; contar(e.jogador, e.carta); break;
+      case 'evolucao': if (s) s.evolucoes++; contar(e.jogador, e.carta); break;
+      case 'energia': if (s) s.energias++; contar(e.jogador, e.carta); break;
+      case 'ataque': if (s) { s.ataques++; s.dano += e.valor || 0; } break;
+      case 'premio': if (s) s.premios += e.valor || 0; break;
+      case 'nocaute': {
+        // O nocaute é do Pokémon de "jogador"; quem ganha o crédito é o adversário.
+        const autor = outro(e.jogador);
+        if (porJogador[autor]) porJogador[autor].nocautes++;
+        nocautes.push({ turno: e.turno, autor, vitima: e.jogador, carta: e.carta, premios: 0 });
+        break;
+      }
+      case 'vitoria': vencedor = e.jogador; break;
+    }
+  }
+  // Liga cada prêmio ao nocaute mais recente do mesmo turno.
+  for (const e of eventos.filter(x => x.tipo === 'premio')) {
+    const ko = [...nocautes].reverse().find(k => k.turno === e.turno && k.autor === e.jogador && !k.premios);
+    if (ko) ko.premios = e.valor || 0;
+  }
+
+  // Prêmios acumulados ao fim de cada turno (para o gráfico).
+  const serie = Object.fromEntries(jogadores.map(j => [j, Array(maxTurno + 1).fill(0)]));
+  for (const j of jogadores) {
+    let acc = 0;
+    for (let t = 0; t <= maxTurno; t++) {
+      acc += eventos.filter(e => e.tipo === 'premio' && e.jogador === j && e.turno === t).reduce((a, e) => a + (e.valor || 0), 0);
+      serie[j][t] = acc;
+    }
+  }
+
+  // Motivo da vitória.
+  const t = texto.toLowerCase();
+  let motivo = 'Não identificado';
+  if (vencedor && porJogador[vencedor]?.premios >= 6) motivo = 'Pegou todos os prêmios';
+  else if (t.includes('conceded')) motivo = 'Desistência do adversário';
+  else if (/(no more cards|could not draw|deck out|ran out of cards)/.test(t)) motivo = 'Deck do adversário acabou';
+  else if (/no (more )?pok[eé]mon/.test(t)) motivo = 'Adversário sem Pokémon em jogo';
+
+  return { primeiro, vencedor, motivo, turnos: maxTurno, porJogador, cartas, nocautes, serie };
+}
+</script>
+
+<!-- ===================================================================
+     PARTE 2 — A TELA. Pega os dados do leitor e desenha resumo, tabelas e gráfico.
+     =================================================================== -->
+<script>
+const EXEMPLO = `Setup
+Ana_TCG chose heads for the opening coin flip.
+Ana_TCG won the coin toss.
+Ana_TCG decided to go first.
+Ana_TCG drew 7 cards for the opening hand.
+- 7 drawn cards.
+   • Charmander, Pidgey, Nest Ball, Rare Candy, Fire Energy, Arven, Iono
+MistyPsy drew 7 cards for the opening hand.
+- 7 drawn cards.
+MistyPsy took a mulligan.
+Ana_TCG played Charmander to the Active Spot.
+Ana_TCG played Pidgey to the Bench.
+MistyPsy played Dreepy to the Active Spot.
+
+Turn # 1 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Nest Ball.
+- Ana_TCG drew Charmander and played it to the Bench.
+Ana_TCG attached Fire Energy to Charmander in the Active Spot.
+Ana_TCG ended their turn.
+
+Turn # 2 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy played Dreepy to the Bench.
+MistyPsy attached Psychic Energy to Dreepy in the Active Spot.
+MistyPsy played Iono.
+- MistyPsy drew 4 cards.
+MistyPsy's Dreepy used Petty Grudge on Ana_TCG's Charmander for 10 damage.
+MistyPsy ended their turn.
+
+Turn # 3 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Rare Candy.
+Ana_TCG evolved Charmander to Charizard ex in the Active Spot.
+Ana_TCG attached Fire Energy to Charizard ex in the Active Spot.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Dreepy for 180 damage. MistyPsy's Dreepy was Knocked Out!
+Ana_TCG took a Prize card.
+MistyPsy's Dreepy is now in the Active Spot.
+
+Turn # 4 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy played Rare Candy.
+MistyPsy evolved Dreepy to Dragapult ex in the Active Spot.
+MistyPsy played Dreepy to the Bench.
+MistyPsy evolved Dreepy to Drakloak on the Bench.
+MistyPsy attached Fire Energy to Dragapult ex in the Active Spot.
+MistyPsy's Dragapult ex used Phantom Dive on Ana_TCG's Charizard ex for 200 damage.
+Ana_TCG's Pidgey was Knocked Out!
+MistyPsy took a Prize card.
+
+Turn # 5 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Boss's Orders.
+Ana_TCG attached Fire Energy to Charizard ex in the Active Spot.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Drakloak for 210 damage. MistyPsy's Drakloak was Knocked Out!
+Ana_TCG took a Prize card.
+
+Turn # 6 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy attached Psychic Energy to Dragapult ex in the Active Spot.
+MistyPsy's Dragapult ex used Phantom Dive on Ana_TCG's Charizard ex for 200 damage. Ana_TCG's Charizard ex was Knocked Out!
+MistyPsy took 2 Prize cards.
+Ana_TCG's Charmander is now in the Active Spot.
+
+Turn # 7 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Rare Candy.
+Ana_TCG evolved Charmander to Charizard ex in the Active Spot.
+Ana_TCG attached Fire Energy to Charizard ex in the Active Spot.
+Ana_TCG played Defiance Band.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Dragapult ex for 300 damage. MistyPsy's Dragapult ex was Knocked Out!
+Ana_TCG took 2 Prize cards.
+
+Turn # 8 - MistyPsy's Turn
+MistyPsy drew a card.
+MistyPsy played Dreepy to the Active Spot.
+MistyPsy played Rare Candy.
+MistyPsy evolved Dreepy to Dragapult ex in the Active Spot.
+MistyPsy attached Psychic Energy to Dragapult ex in the Active Spot.
+MistyPsy ended their turn.
+
+Turn # 9 - Ana_TCG's Turn
+Ana_TCG drew a card.
+Ana_TCG played Boss's Orders.
+Ana_TCG's Charizard ex used Burning Darkness on MistyPsy's Dragapult ex for 330 damage. MistyPsy's Dragapult ex was Knocked Out!
+Ana_TCG took 2 Prize cards.
+Ana_TCG took all of their Prize cards. Ana_TCG wins.`;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const recuperar = (k, padrao) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : padrao; } catch (e) { return padrao; } };
+
+const estado = {
+  partidas: [],          // { id, nome, texto, exemplo, dados }
+  atual: -1,
+  aba: 'resumo',
+  regras: recuperar('tcg.regras', null) || REGRAS_PADRAO.map(r => ({ ...r })),
+  nick: recuperar('tcg.nick', ''),
+  filtro: { tipo: '', jogador: '', busca: '' }
+};
+
+/* ---------- Entrada ---------- */
+function adicionarPartida(texto, nome, exemplo = false) {
+  const dados = lerPartida(texto, estado.regras);
+  if (!dados.jogadores.length) {
+    mostrarErro(`Não encontrei jogadores em "${nome}". Confira se é o log completo, começando por "Setup".`);
+    return;
+  }
+  estado.partidas.push({ id: Date.now() + Math.random(), nome, texto, exemplo, dados });
+  estado.atual = estado.partidas.length - 1;
+  mostrarErro('');
+  render();
+}
+function mostrarErro(msg) { const el = $('#erro-entrada'); el.textContent = msg; el.hidden = !msg; }
+function reler() { for (const p of estado.partidas) p.dados = lerPartida(p.texto, estado.regras); }
+
+$('#btn-ler').addEventListener('click', () => {
+  const t = $('#entrada').value.trim();
+  if (!t) return mostrarErro('Cole um log no campo acima antes de ler.');
+  adicionarPartida(t, `Partida ${estado.partidas.length + 1}`);
+  $('#entrada').value = '';
+});
+$('#btn-exemplo').addEventListener('click', () => adicionarPartida(EXEMPLO, 'Exemplo', true));
+$('#arquivos').addEventListener('change', ev => {
+  for (const f of ev.target.files) {
+    const fr = new FileReader();
+    fr.onload = () => adicionarPartida(String(fr.result), f.name.replace(/\.txt$/i, ''));
+    fr.readAsText(f);
+  }
+  ev.target.value = '';
+});
+$('#nick').value = estado.nick;
+$('#nick').addEventListener('input', e => { estado.nick = e.target.value.trim(); guardar('tcg.nick', estado.nick); render(); });
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab'); if (!b) return;
+  estado.aba = b.dataset.tab; render();
+});
+
+/* ---------- Copiar (para colar no Excel) ---------- */
+function copiar(texto, msg) {
+  const fallback = () => { $('#fallback').hidden = false; const ta = $('#fallback-txt'); ta.value = texto; ta.focus(); ta.select(); };
+  try {
+    navigator.clipboard.writeText(texto).then(() => toast(msg), fallback);
+  } catch (e) { fallback(); }
+}
+$('#fallback-fechar').addEventListener('click', () => { $('#fallback').hidden = true; });
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 1800); }
+const tsv = (cab, linhas) => [cab, ...linhas].map(l => l.map(v => String(v ?? '').replace(/[\t\n]/g, ' ')).join('\t')).join('\n');
+
+/* ---------- Render principal ---------- */
+function render() {
+  renderChips();
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.tab === estado.aba));
+  const p = estado.partidas[estado.atual];
+  const v = $('#view');
+  if (estado.aba === 'regras') return renderRegras(v);
+  if (estado.aba === 'historico') return renderHistorico(v);
+  if (!p) { v.innerHTML = `<p class="empty">Nenhuma partida carregada. Cole um log, abra arquivos .txt ou use o exemplo.</p>`; return; }
+  if (estado.aba === 'resumo') renderResumo(v, p);
+  if (estado.aba === 'eventos') renderEventos(v, p);
+  if (estado.aba === 'cartas') renderCartas(v, p);
+}
+
+function resultadoPara(p) {
+  const r = p.dados.resumo;
+  if (!estado.nick || !p.dados.jogadores.includes(estado.nick) || !r.vencedor) return null;
+  return r.vencedor === estado.nick ? 'V' : 'D';
+}
+
+function renderChips() {
+  $('#chips').innerHTML = estado.partidas.map((p, i) => {
+    const res = resultadoPara(p);
+    const tag = res ? `<span class="tag ${res === 'V' ? 'tag-v' : 'tag-d'}">${res}</span>` : '';
+    return `<button class="chip" data-i="${i}" aria-pressed="${i === estado.atual}">${esc(p.nome)}${tag}</button>`;
+  }).join('');
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { estado.atual = Number(c.dataset.i); render(); }));
+}
+
+// Ordena os jogadores: você primeiro (se o nick bater), senão quem começou.
+function ordemJogadores(p) {
+  const js = [...p.dados.jogadores];
+  const fixo = js.includes(estado.nick) ? estado.nick : p.dados.resumo.primeiro;
+  if (fixo && js[0] !== fixo) js.reverse();
+  return js;
+}
+
+function renderResumo(v, p) {
+  const r = p.dados.resumo;
+  const [a, b] = ordemJogadores(p);
+  const pa = r.porJogador[a] || {}, pb = r.porJogador[b] || {};
+  const pill = j => r.vencedor ? (r.vencedor === j ? '<span class="pill win">Venceu</span>' : '<span class="pill loss">Perdeu</span>') : '';
+  const linhas = [
+    ['Prêmios pegos', 'premios'], ['Nocautes causados', 'nocautes'], ['Dano total', 'dano'], ['Ataques', 'ataques'],
+    ['Cartas jogadas', 'jogadas'], ['Energias ligadas', 'energias'], ['Evoluções', 'evolucoes'], ['Mulligans', 'mulligans']
+  ];
+  v.innerHTML = `
+    ${p.exemplo ? '<div><span class="example-note">Partida de exemplo</span></div>' : ''}
+    <div class="result">
+      <div class="side"><span class="label">${a === r.primeiro ? 'Começou' : 'Segundo'}</span><span class="pname p1">${esc(a)}</span>${pill(a)}</div>
+      <div class="score">${pa.premios ?? 0}–${pb.premios ?? 0}<small>prêmios</small></div>
+      <div class="side right"><span class="label">${b === r.primeiro ? 'Começou' : 'Segundo'}</span><span class="pname p2">${esc(b || '?')}</span>${pill(b)}</div>
+    </div>
+    <div class="meta">
+      <span>Vencedor: <b>${esc(r.vencedor || 'não identificado')}</b></span>
+      <span>Motivo: <b>${esc(r.motivo)}</b></span>
+      <span>Turnos: <b class="num">${r.turnos}</b></span>
+      <span>Linhas não lidas: <b class="num">${p.dados.naoLidas.length}</b></span>
+    </div>
+    <table class="stats">
+      <thead><tr><th></th><th class="p1">${esc(a)}</th><th class="p2">${esc(b || '')}</th></tr></thead>
+      <tbody>${linhas.map(([n, k]) => `<tr><td>${n}</td><td>${pa[k] ?? 0}</td><td>${pb[k] ?? 0}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="two">
+      <div class="chart" style="min-width:0">
+        <h3>Corrida de prêmios</h3>
+        ${graficoPremios(r, a, b)}
+        <div class="legend"><span><i style="background:var(--p1)"></i>${esc(a)}</span><span><i style="background:var(--p2)"></i>${esc(b || '')}</span></div>
+      </div>
+      <div style="min-width:0">
+        <h3>Nocautes</h3>
+        ${r.nocautes.length ? `<ul class="ko-list">${r.nocautes.map(k => `
+          <li><span class="turn-badge">T${k.turno}</span>
+              <span><span class="${k.autor === a ? 'p1' : 'p2'}">${esc(k.autor)}</span> nocauteou ${esc(k.carta)}</span>
+              <span class="prize-dots" title="${k.premios} prêmio(s)">${'<span></span>'.repeat(k.premios)}</span></li>`).join('')}</ul>`
+          : '<p class="hint">Nenhum nocaute encontrado.</p>'}
+      </div>
+    </div>`;
+}
+
+// Gráfico em degraus: prêmios acumulados (0 a 6) ao fim de cada turno.
+function graficoPremios(r, a, b) {
+  const W = 520, H = 220, m = { l: 30, r: 12, t: 12, b: 28 };
+  const n = Math.max(r.turnos, 1);
+  const x = t => m.l + (t / n) * (W - m.l - m.r);
+  const y = v => H - m.b - (v / 6) * (H - m.t - m.b);
+  const degraus = s => { if (!s) return ''; let d = `M${x(0)},${y(s[0])}`; for (let t = 1; t < s.length; t++) d += ` H${x(t)} V${y(s[t])}`; return d; };
+  let g = '';
+  for (let v = 0; v <= 6; v += 2) g += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  const passo = n > 12 ? 2 : 1;
+  for (let t = 0; t <= n; t += passo) g += `<text x="${x(t)}" y="${H - 8}" text-anchor="middle">${t === 0 ? 'Setup' : 'T' + t}</text>`;
+  const fim = (s, cor) => s ? `<circle cx="${x(s.length - 1)}" cy="${y(s[s.length - 1])}" r="4" fill="${cor}"/>` : '';
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Prêmios acumulados por turno">
+    ${g}
+    <path d="${degraus(r.serie[a])}" fill="none" stroke="var(--p1)" stroke-width="2.5"/>
+    <path d="${degraus(r.serie[b])}" fill="none" stroke="var(--p2)" stroke-width="2.5" stroke-dasharray="${r.serie[a] && r.serie[b] ? '0' : '0'}"/>
+    ${fim(r.serie[a], 'var(--p1)')}${fim(r.serie[b], 'var(--p2)')}
+  </svg>`;
+}
+
+function renderEventos(v, p) {
+  const f = estado.filtro;
+  const lista = p.dados.eventos.filter(e =>
+    (!f.tipo || e.tipo === f.tipo) && (!f.jogador || e.jogador === f.jogador) &&
+    (!f.busca || e.texto.toLowerCase().includes(f.busca.toLowerCase())));
+  const tiposUsados = [...new Set(p.dados.eventos.map(e => e.tipo))];
+  v.innerHTML = `
+    <div class="row">
+      <select id="f-tipo"><option value="">Todos os tipos</option>${tiposUsados.map(t => `<option value="${t}" ${f.tipo === t ? 'selected' : ''}>${TIPOS[t] || t}</option>`).join('')}</select>
+      <select id="f-jog"><option value="">Os dois jogadores</option>${p.dados.jogadores.map(j => `<option ${f.jogador === j ? 'selected' : ''}>${esc(j)}</option>`).join('')}</select>
+      <input type="search" id="f-busca" class="grow" placeholder="Buscar no texto (ex.: Charizard)" value="${esc(f.busca)}">
+      <button id="copiar-eventos">Copiar para Excel</button>
+      <button id="copiar-json">Copiar JSON</button>
+    </div>
+    <p class="hint num">${lista.length} de ${p.dados.eventos.length} eventos</p>
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th>Linha</th><th>Turno</th><th>Tipo</th><th>Jogador</th><th>Carta</th><th>Alvo</th><th>Valor</th><th>Texto original</th></tr></thead>
+      <tbody>${lista.map(e => `<tr><td class="n">${e.linha}</td><td class="n">${e.turno}</td><td><span class="tipo ${e.tipo}">${esc(TIPOS[e.tipo] || e.tipo)}</span></td>
+        <td>${esc(e.jogador)}</td><td>${esc(e.carta)}</td><td>${esc(e.alvo)}</td><td class="n">${e.valor ?? ''}</td><td class="mono">${esc(e.texto)}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+  $('#f-tipo').onchange = e => { f.tipo = e.target.value; render(); };
+  $('#f-jog').onchange = e => { f.jogador = e.target.value; render(); };
+  $('#f-busca').oninput = e => { f.busca = e.target.value; const pos = e.target.selectionStart; render(); const el = $('#f-busca'); el.focus(); el.setSelectionRange(pos, pos); };
+  $('#copiar-eventos').onclick = () => copiar(tsv(
+    ['partida', 'linha', 'turno', 'dono_do_turno', 'tipo', 'jogador', 'carta', 'alvo', 'golpe', 'valor', 'texto'],
+    lista.map(e => [p.nome, e.linha, e.turno, e.dono, e.tipo, e.jogador, e.carta, e.alvo, e.golpe, e.valor, e.texto])), 'Eventos copiados. Cole no Excel.');
+  $('#copiar-json').onclick = () => copiar(JSON.stringify({ partida: p.nome, ...p.dados }, null, 2), 'JSON copiado.');
+}
+
+function renderCartas(v, p) {
+  const js = ordemJogadores(p);
+  const bloco = (j, cls) => {
+    const itens = Object.entries(p.dados.resumo.cartas[j] || {}).sort((x, y) => y[1] - x[1]);
+    return `<div style="min-width:0"><h3 class="${cls}">${esc(j)}</h3>
+      <div class="table-wrap"><table class="data"><thead><tr><th>Carta</th><th>Vezes usada</th></tr></thead>
+      <tbody>${itens.map(([c, n]) => `<tr><td>${esc(c)}</td><td class="n">${n}</td></tr>`).join('') || '<tr><td colspan="2">Nada encontrado</td></tr>'}</tbody></table></div></div>`;
+  };
+  v.innerHTML = `<p class="hint">Conta cartas jogadas, evoluções e energias ligadas. Cartas que nunca saíram da mão não aparecem no log.</p>
+    <div class="row"><button id="copiar-cartas">Copiar para Excel</button></div>
+    <div class="two">${bloco(js[0], 'p1')}${js[1] ? bloco(js[1], 'p2') : ''}</div>`;
+  $('#copiar-cartas').onclick = () => {
+    const linhas = [];
+    for (const j of js) for (const [c, n] of Object.entries(p.dados.resumo.cartas[j] || {})) linhas.push([p.nome, j, c, n]);
+    copiar(tsv(['partida', 'jogador', 'carta', 'vezes'], linhas), 'Cartas copiadas. Cole no Excel.');
+  };
+}
+
+function renderHistorico(v) {
+  if (!estado.partidas.length) { v.innerHTML = '<p class="empty">Carregue uma ou mais partidas para ver o histórico.</p>'; return; }
+  const nick = estado.nick;
+  const linhas = estado.partidas.map(p => {
+    const r = p.dados.resumo;
+    const adv = nick && p.dados.jogadores.includes(nick) ? p.dados.jogadores.find(j => j !== nick) : '';
+    // "Atacante principal" do adversário: o Pokémon dele que mais atacou. Serve como palpite do deck.
+    const ataques = {};
+    p.dados.eventos.filter(e => e.tipo === 'ataque' && e.jogador === adv).forEach(e => ataques[e.carta] = (ataques[e.carta] || 0) + 1);
+    const principal = Object.entries(ataques).sort((x, y) => y[1] - x[1])[0]?.[0] || '';
+    const eu = r.porJogador[nick];
+    return { nome: p.nome, adv, principal, res: resultadoPara(p), comecei: nick ? r.primeiro === nick : null, turnos: r.turnos,
+      placar: eu ? `${eu.premios}–${r.porJogador[adv]?.premios ?? 0}` : '', motivo: r.motivo };
+  });
+  const minhas = linhas.filter(l => l.res);
+  const v1 = minhas.filter(l => l.res === 'V').length;
+  const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '–';
+  const prim = minhas.filter(l => l.comecei), seg = minhas.filter(l => l.comecei === false);
+  v.innerHTML = `
+    ${nick ? '' : '<p class="hint">Preencha "Seu nick" acima para ver vitórias, derrotas e taxa de vitória.</p>'}
+    <table class="stats"><thead><tr><th></th><th>Partidas</th><th>Vitórias</th><th>Taxa</th></tr></thead><tbody>
+      <tr><td>Geral</td><td>${minhas.length}</td><td>${v1}</td><td>${pct(v1, minhas.length)}</td></tr>
+      <tr><td>Começando</td><td>${prim.length}</td><td>${prim.filter(l => l.res === 'V').length}</td><td>${pct(prim.filter(l => l.res === 'V').length, prim.length)}</td></tr>
+      <tr><td>Indo em segundo</td><td>${seg.length}</td><td>${seg.filter(l => l.res === 'V').length}</td><td>${pct(seg.filter(l => l.res === 'V').length, seg.length)}</td></tr>
+    </tbody></table>
+    <div class="row"><button id="copiar-hist">Copiar para Excel</button></div>
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th>Partida</th><th>Adversário</th><th>Atacante principal dele</th><th>Resultado</th><th>Ordem</th><th>Prêmios</th><th>Turnos</th><th>Motivo</th></tr></thead>
+      <tbody>${linhas.map(l => `<tr><td>${esc(l.nome)}</td><td>${esc(l.adv)}</td><td>${esc(l.principal)}</td>
+        <td>${l.res ? (l.res === 'V' ? '<span class="pill win">Vitória</span>' : '<span class="pill loss">Derrota</span>') : ''}</td>
+        <td>${l.comecei === null ? '' : l.comecei ? '1º' : '2º'}</td><td class="n">${l.placar}</td><td class="n">${l.turnos}</td><td>${esc(l.motivo)}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+  $('#copiar-hist').onclick = () => copiar(tsv(['partida', 'adversario', 'atacante_principal', 'resultado', 'comecei', 'premios', 'turnos', 'motivo'],
+    linhas.map(l => [l.nome, l.adv, l.principal, l.res, l.comecei === null ? '' : (l.comecei ? 'sim' : 'nao'), l.placar, l.turnos, l.motivo])), 'Histórico copiado. Cole no Excel.');
+}
+
+function renderRegras(v) {
+  const { erros } = compilarRegras(estado.regras);
+  const p = estado.partidas[estado.atual];
+  const naoLidas = p ? p.dados.naoLidas : [];
+  v.innerHTML = `
+    <p class="hint">Cada linha do log é testada contra todas as regras ativas. Grupos nomeados viram colunas: <span class="mono">(?&lt;player&gt;...)</span> jogador, <span class="mono">(?&lt;card&gt;...)</span> carta, <span class="mono">(?&lt;target&gt;...)</span> alvo, <span class="mono">(?&lt;dano&gt;\\d+)</span> ou <span class="mono">(?&lt;qtd&gt;...)</span> valor. Alterações ficam salvas neste navegador.</p>
+    <div class="table-wrap"><table class="data rules">
+      <thead><tr><th>Ativa</th><th>Nome</th><th>Tipo</th><th style="width:60%">Expressão regular</th><th></th></tr></thead>
+      <tbody>${estado.regras.map((r, i) => `<tr class="${erros[r.id] ? 'bad' : ''}">
+        <td><input type="checkbox" id="ativa-${i}" data-i="${i}" class="r-ativa" ${r.ativa ? 'checked' : ''} aria-label="Ativar ${esc(r.id)}"></td>
+        <td class="mono">${esc(r.id)}</td>
+        <td><select id="tipo-${i}" data-i="${i}" class="r-tipo">${Object.entries(TIPOS).map(([k, t]) => `<option value="${k}" ${r.tipo === k ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+        <td><input type="text" id="re-${i}" data-i="${i}" class="r-re" value="${esc(r.re)}" spellcheck="false">${erros[r.id] ? `<div class="err">${esc(erros[r.id])}</div>` : ''}</td>
+        <td><button data-i="${i}" class="r-del" aria-label="Remover regra ${esc(r.id)}">Remover</button></td></tr>`).join('')}</tbody>
+    </table></div>
+    <div class="row">
+      <button class="primary" id="r-aplicar">Aplicar e reler partidas</button>
+      <button id="r-nova">Nova regra</button>
+      <button id="r-padrao">Restaurar regras padrão</button>
+    </div>
+    <div class="panel" style="background:var(--sunken)">
+      <h3>Testar uma linha</h3>
+      <input type="text" id="teste-linha" placeholder="Cole uma linha do log para ver quais regras a leem" spellcheck="false">
+      <div class="test-out" id="teste-out">Nenhuma linha testada.</div>
+    </div>
+    <div>
+      <h3>Linhas que nenhuma regra leu ${p ? `<span class="hint num">(${naoLidas.length} em "${esc(p.nome)}")</span>` : ''}</h3>
+      <p class="hint">Bom ponto de partida para criar regras novas: clique numa linha para levá-la ao teste.</p>
+      <div class="table-wrap unread"><table class="data"><tbody>${naoLidas.slice(0, 200).map(l => `<tr><td class="n">${l.linha}</td><td class="mono"><button class="unread-l" style="all:unset;cursor:pointer">${esc(l.texto)}</button></td></tr>`).join('') || '<tr><td>Nenhuma.</td></tr>'}</tbody></table></div>
+    </div>`;
+
+  const editar = (i, campo, valor) => { estado.regras[i][campo] = valor; guardar('tcg.regras', estado.regras); };
+  v.querySelectorAll('.r-ativa').forEach(el => el.onchange = () => editar(+el.dataset.i, 'ativa', el.checked));
+  v.querySelectorAll('.r-tipo').forEach(el => el.onchange = () => editar(+el.dataset.i, 'tipo', el.value));
+  v.querySelectorAll('.r-re').forEach(el => el.oninput = () => { editar(+el.dataset.i, 're', el.value); testar(); });
+  v.querySelectorAll('.r-del').forEach(el => el.onclick = () => { estado.regras.splice(+el.dataset.i, 1); guardar('tcg.regras', estado.regras); render(); });
+  $('#r-aplicar').onclick = () => { reler(); render(); toast('Regras aplicadas.'); };
+  $('#r-nova').onclick = () => { estado.regras.push({ id: 'regra_' + (estado.regras.length + 1), tipo: 'outro', ativa: true, re: '^(?<player>.+?) ' }); guardar('tcg.regras', estado.regras); render(); };
+  $('#r-padrao').onclick = () => { estado.regras = REGRAS_PADRAO.map(r => ({ ...r })); guardar('tcg.regras', estado.regras); reler(); render(); toast('Regras padrão restauradas.'); };
+  $('#teste-linha').oninput = testar;
+  v.querySelectorAll('.unread-l').forEach(el => el.onclick = () => { $('#teste-linha').value = el.textContent; testar(); $('#teste-linha').focus(); });
+
+  function testar() {
+    const l = limparLinha($('#teste-linha').value);
+    const out = $('#teste-out');
+    if (!l) { out.textContent = 'Nenhuma linha testada.'; return; }
+    const { ok } = compilarRegras(estado.regras);
+    const achou = ok.map(r => ({ r, m: l.match(r.rx) })).filter(x => x.m);
+    out.textContent = achou.length
+      ? achou.map(({ r, m }) => `✓ ${r.id} (${TIPOS[r.tipo] || r.tipo})\n` + Object.entries(m.groups || {}).filter(([, val]) => val !== undefined).map(([k, val]) => `    ${k} = "${val}"`).join('\n')).join('\n\n')
+      : 'Nenhuma regra leu esta linha.';
+  }
+}
+
+// Abre já com o exemplo carregado para mostrar como fica.
+adicionarPartida(EXEMPLO, 'Exemplo', true);
+</script>

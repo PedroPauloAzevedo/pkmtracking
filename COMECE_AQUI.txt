@@ -1,6 +1,10 @@
 ﻿COLETOR DE PARTIDAS TCG LIVE - COMECE AQUI
 ==========================================
 
+JEITO MAIS FACIL: se voce recebeu o ColetorTCG-Instalador-<versao>.exe, de dois cliques nele e siga as
+telas. Nao precisa de Python nem dos passos 1 a 3 abaixo. Depois, va direto para o passo 5.
+(Se o Windows mostrar "O Windows protegeu o computador": "Mais informacoes" > "Executar assim mesmo".)
+
 1) INSTALAR O PYTHON (uma vez)
    - Baixe em https://www.python.org/downloads/ (versao 3.11 ou mais nova).
    - Na PRIMEIRA tela do instalador, marque "Add python.exe to PATH" e clique em "Install Now".
@@ -14,14 +18,20 @@
    - Dois cliques em instalar_windows.bat.
    - Se o Windows mostrar "O Windows protegeu o computador": clique em "Mais informacoes" > "Executar assim mesmo".
    - Ele pergunta sobre o modo automatico: responda N (pode instalar depois).
+   - No fim, ele cria o atalho "Coletor TCG Live" na Area de Trabalho.
 
 4) ABRIR
-   - Dois cliques em iniciar_windows.bat. Uma janela preta abre e o painel aparece no navegador
-     (http://127.0.0.1:8765). Deixe a janela preta aberta enquanto joga.
-   - Opcional: iniciar_com_o_windows.bat faz o programa abrir sozinho quando o PC liga.
+   - Dois cliques no atalho "Coletor TCG Live" da Area de Trabalho (ou no iniciar_windows.bat).
+     O painel aparece no navegador (http://127.0.0.1:8765) e o programa fica num icone perto do relogio.
+   - Clique no icone para abrir o painel. Botao direito: ligar/desligar a captura e Sair.
+     Bolinha verde no icone = captura ligada. Fechar o navegador NAO fecha o programa.
+   - Se o icone nao aparecer, clique na setinha ^ ao lado do relogio (o Windows esconde icones novos ali).
+   - Opcional: em Programa > Ajustes e captura > Como abrir o programa, ligue "Abrir sozinho quando o Windows liga".
 
 5) CONFIGURAR (no painel, uma vez)
-   - Digite seu nick do TCG Live exatamente como aparece no jogo e clique em Salvar.
+   - Na primeira vez, o programa mostra 3 passos: seu nick (opcional: ele descobre sozinho), o jogo em
+     ingles e um teste da captura. Da para refazer em Programa > Ajustes e captura.
+   - Ctrl+K abre a busca rapida: telas, seus decks, decks do meta e partidas.
 
 6) NO JOGO
    - Deixe o Pokemon TCG Live em INGLES (Settings > Language > English). Em portugues o log nao e lido.
@@ -50,5 +60,5 @@ SEUS DADOS
 
 PROBLEMAS
    - "Python nao encontrado": reinstale o Python marcando "Add python.exe to PATH".
-   - O painel nao abre: confira se a janela preta esta aberta e acesse http://127.0.0.1:8765.
+   - O painel nao abre: confira se o icone do Coletor esta perto do relogio (ou abra pelo atalho) e acesse http://127.0.0.1:8765.
    - Partida nao entrou: veja se o jogo esta em ingles e clique de novo no botao de exportar.

@@ -258,10 +258,106 @@ def _assinaturas():
     return dados
 
 
+MINIMO_LISTAS_NB = 200   # com menos listas de torneio que isso, o modelo de probabilidade não tem base
+CONFIANCA_NB = 0.5       # abaixo disso, vale o método por ícones (e depois o palpite pelo dano, no leitor)
+
+
+def _modelo_nb():
+    """Para cada deck: quantas listas e em quantas delas cada carta aparece (listas dos torneios importados)."""
+    if "nb" in _cache and time.time() - _cache["nb"][0] < 120:
+        return _cache["nb"][1]
+    rows = banco.consultar(
+        "SELECT j.arquetipo AS arq, l.torneio || '/' || l.labs_id AS lista, COALESCE(NULLIF(l.carta_base,''), l.carta) AS carta "
+        "FROM t_listas l JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id WHERE j.arquetipo != ''")
+    cartas_lista = defaultdict(set)
+    arq_lista = {}
+    for r in rows:
+        cartas_lista[r["lista"]].add(normalizar_nome_carta(r["carta"]))
+        arq_lista[r["lista"]] = r["arq"]
+    n = Counter(arq_lista.values())
+    cont = defaultdict(Counter)
+    geral = Counter()
+    for lista, cs in cartas_lista.items():
+        cont[arq_lista[lista]].update(cs)
+        geral.update(cs)
+    total = len(arq_lista)
+    # Índice para calcular rápido (mesmas contas de _identificar_nb_direto, reorganizadas):
+    #   nota(deck) = log(fração de listas do deck) - (cartas vistas) * log(listas do deck + BETA)
+    #              + soma, para cada carta vista que o deck usa, de log(1 + vezes / (BETA * freq. geral))
+    # (a parte igual para todos os decks foi tirada: não muda o vencedor nem a confiança)
+    validos = {a: q for a, q in n.items() if q >= MIN_LISTAS_DECK}
+    base = {a: math.log(q / total) for a, q in validos.items()} if total else {}
+    log_n = {a: math.log(q + BETA_NB) for a, q in validos.items()}
+    indice = defaultdict(dict)
+    for a in validos:
+        for carta, vezes in cont[a].items():
+            g = BETA_NB * (geral[carta] + 1) / (total + 2)
+            indice[carta][a] = math.log(1 + vezes / g)
+    dados = {"n": n, "cont": cont, "geral": geral, "total": total, "base": base, "log_n": log_n, "indice": indice}
+    _cache["nb"] = (time.time(), dados)
+    _cache.pop("ident", None)  # modelo novo: esquece as identificações já feitas
+    return dados
+
+
+BETA_NB = 2.0          # força da suavização pela frequência geral da carta
+MIN_LISTAS_DECK = 3    # deck com 1 ou 2 listas "aceita" qualquer carta e ganharia por acaso
+
+
+def identificar_nb(reveladas):
+    """Naive Bayes: o deck em que as cartas vistas são mais prováveis. Devolve (slug, confiança 0-1).
+    Só as cartas vistas contam (não ver uma carta não prova que ela não está no deck).
+    Testado em testes/experimentos/e2_identificar_deck.py: acerta mais que o método por ícones com poucas cartas.
+    Usa o índice do modelo: só os decks que têm as cartas vistas recebem pontos extras."""
+    m = _modelo_nb()
+    if m["total"] < MINIMO_LISTAS_NB or not reveladas or not m["base"]:
+        return "", 0.0
+    k = len(reveladas)
+    notas = {a: b - k * m["log_n"][a] for a, b in m["base"].items()}
+    for carta in reveladas:
+        for a, extra in m["indice"].get(carta, {}).items():
+            notas[a] += extra
+    melhor = max(notas, key=notas.get)
+    topo = notas[melhor]
+    return melhor, 1 / sum(math.exp(v - topo) for v in notas.values())
+
+
+def _identificar_nb_direto(reveladas, beta=BETA_NB, minimo=MIN_LISTAS_DECK):
+    """A mesma conta de identificar_nb, sem o índice (mais lenta). Fica para conferir que as duas batem."""
+    m = _modelo_nb()
+    if m["total"] < MINIMO_LISTAS_NB or not reveladas:
+        return "", 0.0
+    notas = {}
+    for a, n in m["n"].items():
+        if n < minimo:
+            continue  # deck com 1 ou 2 listas "aceita" qualquer carta e ganharia por acaso
+        c = m["cont"][a]
+        # suavização pela frequência geral da carta: carta comum em todo deck pesa pouco; rara, pesa muito
+        notas[a] = math.log(n / m["total"]) + sum(
+            math.log((c.get(x, 0) + beta * (m["geral"].get(x, 0) + 1) / (m["total"] + 2)) / (n + beta)) for x in reveladas)
+    if not notas:
+        return "", 0.0
+    melhor = max(notas, key=notas.get)
+    topo = notas[melhor]
+    return melhor, 1 / sum(math.exp(v - topo) for v in notas.values())
+
+
 def identificar(vistas):
-    """Melhor arquétipo para um conjunto de cartas reveladas. Devolve slug ou ''."""
+    """Melhor arquétipo para um conjunto de cartas reveladas. Devolve slug ou ''.
+    Primeiro o modelo de probabilidade (se houver listas de torneio suficientes e ele estiver confiante);
+    senão, o método por ícones e assinatura de cartas."""
     if not vistas:
         return ""
+    _modelo_nb()  # garante o modelo em dia antes de olhar a memória de identificações
+    memoria = _cache.setdefault("ident", {})
+    chave = frozenset(vistas)
+    if chave not in memoria:
+        s, confianca = identificar_nb({normalizar_nome_carta(c) for c in vistas if not cartas.eh_energia_basica(c)})
+        memoria[chave] = s if s and confianca >= CONFIANCA_NB else _identificar_por_icones(vistas)
+    return memoria[chave]
+
+
+def _identificar_por_icones(vistas):
+    """Método anterior: ícone do deck entre os Pokémon vistos + assinatura de cartas comuns no deck."""
     reveladas = {normalizar_nome_carta(c) for c in vistas}
     pokes = {pokemon_id(c) for c in vistas}
     pokes |= {_sem_forma(p) for p in pokes}  # Mega Lopunny ex também conta como Lopunny
@@ -314,7 +410,8 @@ def ler_lista(texto):
             continue
         if re.match(r"^total cards", l, re.I):
             continue
-        m = re.match(r"^(\d+)\s+(.+?)\s+([A-Z][A-Z0-9]{1,4}(?:-[A-Z0-9]+)?)\s+(\d+[a-zA-Z]?)$", l)
+        # código da coleção: 2 a 5 letras/dígitos com pelo menos uma letra (SFA, PR-SV, 30C...)
+        m = re.match(r"^(\d+)\s+(.+?)\s+((?=[A-Z0-9]*[A-Z])[A-Z0-9]{2,5}(?:-[A-Z0-9]+)?)\s+(\d+[a-zA-Z]?)$", l)
         if m:
             qtd, nome, set_code, numero = m.groups()
         else:
@@ -355,7 +452,29 @@ def salvar_deck(dados, deck_id=None):
             e = cartas.converter(c["set"], c["numero"], c["nome"]) if c["set"] else cartas.por_nome(c["nome"])
             con.execute("INSERT INTO meus_decks_cartas VALUES (?,?,?,?,?,?,?,?)",
                         (deck_id, c["qtd"], c["nome"], c["set"], c["numero"], c["secao"], e["id"] if e else "", e["nome"] if e else ""))
+    # Confere com as regras do Standard (60 cartas, 4 cópias, ACE SPEC, Básico, marcas de regulamento)
+    from . import lista_oficial
+    v = lista_oficial.validar(lista_oficial.gerar(obter_deck(deck_id)))
+    avisos = [a for a in avisos if not a.startswith("A lista tem")] + [f"Standard: {x}" for x in v["problemas"]]
     return deck_id, avisos
+
+
+def reler_listas():
+    """Relê as listas salvas com o leitor atual (ex.: códigos que começam com número, como 30C)."""
+    n = 0
+    for d in banco.consultar("SELECT id, lista FROM meus_decks"):
+        novas, _ = ler_lista(d["lista"])
+        atuais = banco.consultar("SELECT nome, set_code, numero FROM meus_decks_cartas WHERE deck_id=? ORDER BY rowid", (d["id"],))
+        if not novas or [(c["nome"], c["set"], c["numero"]) for c in novas] == [(c["nome"], c["set_code"], c["numero"]) for c in atuais]:
+            continue
+        with banco.conectar() as con:
+            con.execute("DELETE FROM meus_decks_cartas WHERE deck_id=?", (d["id"],))
+            for c in novas:
+                e = cartas.converter(c["set"], c["numero"], c["nome"]) if c["set"] else cartas.por_nome(c["nome"])
+                con.execute("INSERT INTO meus_decks_cartas VALUES (?,?,?,?,?,?,?,?)",
+                            (d["id"], c["qtd"], c["nome"], c["set"], c["numero"], c["secao"], e["id"] if e else "", e["nome"] if e else ""))
+        n += 1
+    return n
 
 
 def listar_decks():
@@ -401,7 +520,11 @@ def vincular_automatico(pid, sobrescrever=False):
     p = banco.obter_partida(pid)
     if not p or (p.get("deck_id") and not sobrescrever) or p.get("dono"):
         return None  # partidas de amigos não usam as suas listas
-    eu = analises.descobrir_eu(banco.listar_partidas(), config.ler_config()["nick"])
+    exportou = p["resumo"].get("exportou")
+    # o próprio log diz quem exportou; só sem isso é preciso ler todas as partidas para descobrir "você"
+    # (ler todas a cada partida nova deixava a importação de muitos logs cada vez mais lenta)
+    eu = exportou if exportou in p["jogadores"] else analises.perspectiva(
+        p, analises.descobrir_eu(banco.listar_partidas(), config.ler_config()["nick"]))
     vistas = (p["resumo"].get("vistas") or {}).get(eu)
     if not vistas:
         return None
@@ -419,6 +542,7 @@ def resolver_versoes(rep, partida, eu):
     """
     Cartas diferentes podem ter o mesmo nome (ex.: Dunsparce TEF 128 e JTG 120). O log só traz o
     nome, então escolhemos a versão nesta ordem:
+      0. só as versões que valem no Standard (marca de regulamento válida), se houver alguma;
       1. ataque/habilidade usado no log que só uma das versões tem;
       2. a versão que está na sua lista de "Meus decks" ligada à partida;
       3. a versão mais usada nas listas dos torneios para o deck do adversário (ou no geral);
@@ -451,11 +575,15 @@ def resolver_versoes(rep, partida, eu):
             chaves = ind["por_nome"].get(cartas.normalizar(nome)) or []
             if len(chaves) <= 1:
                 continue  # só existe uma versão: o padrão já resolve
-            ids = [ind["basica"][k] for k in chaves]
+            chaves = cartas._preferir_standard(chaves)
+            validas = [k for k in chaves if cartas.legal_chave(k) is not False] or chaves
+            ids = [ind["basica"][k] for k in validas]
             usados = golpes.get((j, nome))
             escolha = None
             if usados:
-                compat = [ind["basica"][k] for k in chaves if usados & set(k.split("|")[-1].split(",") + k.split("|")[-2].split(","))]
+                def compativeis(ks):
+                    return [ind["basica"][k] for k in ks if usados & set(k.split("|")[-1].split(",") + k.split("|")[-2].split(","))]
+                compat = compativeis(validas) or compativeis(chaves)
                 if len(compat) == 1:
                     escolha = compat[0]
             if not escolha and j == eu and cartas.normalizar(nome) in lista_deck:

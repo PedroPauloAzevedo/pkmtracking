@@ -81,6 +81,19 @@ else:
         return None
 
 
+_exemplo = {}
+
+
+def hash_exemplo():
+    """Impressão do log de exemplo (exemplos/log_de_exemplo.txt), usado no teste do primeiro uso."""
+    if "h" not in _exemplo:
+        try:
+            _exemplo["h"] = banco.hash_log((config.RAIZ / "exemplos" / "log_de_exemplo.txt").read_text(encoding="utf-8"))
+        except OSError:
+            _exemplo["h"] = None
+    return _exemplo["h"]
+
+
 # ------------------------------------------------------------ o vigia
 class Coletor:
     def __init__(self):
@@ -89,6 +102,8 @@ class Coletor:
         self.ultima = None          # {"id":..., "quando":...} da última partida capturada
         self.capturadas = 0
         self.origem_proxima = "area_transferencia"   # o modo automático muda isso antes de clicar
+        self.visto_em = 0            # quando um log apareceu pela última vez (mesmo repetido)
+        self.teste_em = 0            # quando o log de exemplo foi copiado (teste do primeiro uso)
         self._thread = None
         self._parar = threading.Event()
 
@@ -117,13 +132,18 @@ class Coletor:
                     if texto and texto != ultimo_texto:
                         ultimo_texto = texto
                         if leitor.parece_log(texto):
+                            self.visto_em = time.time()  # o modo automático confere se a cópia chegou
+                            if banco.hash_log(texto) == hash_exemplo():
+                                self.teste_em = time.time()  # teste do primeiro uso: não grava o exemplo
+                                continue
                             pid, nova = banco.inserir_partida(texto, self.origem_proxima, config.ler_regras())
                             self.origem_proxima = "area_transferencia"
                             if nova:
                                 self.capturadas += 1
                                 p = banco.obter_partida(pid)
                                 self.ultima = {"id": pid, "quando": time.strftime("%H:%M:%S"),
-                                               "nao_lidas": len(p["nao_lidas"]) if p else 0}
+                                               "nao_lidas": len(p["nao_lidas"]) if p else 0,
+                                               "problemas": p["resumo"].get("problemas", []) if p else []}
                                 print(f"[coletor] Partida #{pid} registrada.")
                 self.erro = ""
             except Exception as e:  # nunca deixa o vigia morrer

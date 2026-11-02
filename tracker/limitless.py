@@ -339,10 +339,13 @@ def importar(tid, listas_top=64, fallback_top=256):
                     continue
 
         info["info"] = {"fonte_partidas": fonte, "listas_top": listas_top}
+        info["fonte"], info["formato"] = "labs", formato_labs(tid)
         banco.salvar_torneio(info, jogadores, partidas, listas if listas_top else None)
         com_arq = sum(1 for p in partidas if p["arq1"] and p["arq2"])
         progresso["resumo"] = (f"{info['nome']}: {len(jogadores)} jogadores, {len(partidas)} partidas "
-                               f"({com_arq} com os dois decks conhecidos), {len({c['labs_id'] for c in listas})} listas. Fonte: {fonte}.")
+                               f"({com_arq} com os dois decks conhecidos), {len({c['labs_id'] for c in listas})} listas. Fonte: {fonte}."
+                               + (f" Formato {info['formato']}: fica fora das contas (o programa só usa Standard)."
+                                  if info["formato"] not in ("", "standard") else ""))
         ao_progredir("Concluído", 1)
     except ErroImportacao as e:
         progresso["erro"] = str(e)
@@ -350,6 +353,185 @@ def importar(tid, listas_top=64, fallback_top=256):
         progresso["erro"] = f"Erro inesperado: {e}"
     finally:
         progresso["ativo"] = False
+
+
+# ------------------------------------------------------------------ formato dos torneios do Labs (só Standard)
+#
+# O Labs não diz o formato do torneio. O índice do site principal (limitlesstcg.com/tournaments)
+# diz (data-format: standard, standard-jp, expanded...), e a página de cada evento tem o link
+# para o Labs. Guardamos o que já foi descoberto em dados/limitless_formatos.json para não
+# abrir a página de cada evento de novo.
+
+INDICE = "https://limitlesstcg.com"
+
+
+def _arq_formatos():
+    from . import config
+    return config.PASTA_DADOS / "limitless_formatos.json"
+
+
+def _ler_formatos():
+    import json
+    try:
+        return json.loads(_arq_formatos().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def formatos_labs(nav=None, dias=120):
+    """{id do Labs: formato} dos eventos do índice do Limitless dos últimos `dias` dias."""
+    import json
+    from datetime import date as _date, timedelta
+    nav = nav or Navegador()
+    eventos = _ler_formatos()
+    limite = (_date.today() - timedelta(days=dias)).isoformat()
+    sopa = nav.sopa(f"{INDICE}/tournaments?show=100")
+    for tr in sopa.select("tr[data-format]"):
+        a = tr.find("a", href=re.compile(r"^/tournaments/\d+/?$"))
+        if not a:
+            continue
+        principal = re.search(r"\d+", a["href"]).group(0)
+        ev = eventos.setdefault(principal, {})
+        ev.update(formato=tr.get("data-format", ""), data=tr.get("data-date"), nome=tr.get("data-name"))
+        if "labs" not in ev and (ev.get("data") or "") >= limite:
+            try:  # uma página por evento, só na primeira vez
+                m = re.search(r"labs\.limitlesstcg\.com/(\d{4})", str(nav.sopa(f"{INDICE}/tournaments/{principal}")))
+                ev["labs"] = m.group(1) if m else None
+            except ErroImportacao:
+                continue
+    _arq_formatos().write_text(json.dumps(eventos, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {ev["labs"]: ev["formato"] for ev in eventos.values() if ev.get("labs")}
+
+
+def formato_labs(tid):
+    """Formato já descoberto de um torneio do Labs ('' se ainda não se sabe)."""
+    return next((ev["formato"] for ev in _ler_formatos().values() if ev.get("labs") == tid), "")
+
+
+# ------------------------------------------------------------------ torneios online (play.limitlesstcg.com)
+#
+# A plataforma de torneios online do Limitless tem uma API pública (docs.limitlesstcg.com):
+# lista de torneios por jogo e formato, classificação com o deck e a lista de cada jogador,
+# e o resultado de cada mesa. Sem chave, o limite é de 50 pedidos a cada 5 minutos;
+# por isso esperamos PAUSA_API segundos entre os pedidos.
+
+API = "https://play.limitlesstcg.com/api"
+PAUSA_API = 6.5
+PREFIXO_ONLINE = "on-"   # ids dos torneios online no banco (os do Labs são números como 0078)
+
+
+class ApiLimitless:
+    def __init__(self):
+        self.s = requests.Session()
+        self.s.headers["User-Agent"] = "TCGLiveTracker/1.0 (uso pessoal)"
+        self._ultimo = 0.0
+
+    def get(self, caminho, **params):
+        for tentativa in range(3):
+            espera = PAUSA_API - (time.time() - self._ultimo)
+            if espera > 0:
+                time.sleep(espera)
+            try:
+                r = self.s.get(API + caminho, params=params, timeout=40)
+            except requests.RequestException as e:
+                raise ErroImportacao(f"Não consegui acessar a API do Limitless: {e}")
+            self._ultimo = time.time()
+            if r.status_code == 429:  # passou do limite: espera o que o site pedir
+                time.sleep(min(int(r.headers.get("Retry-After", "60") or 60), 300))
+                continue
+            if r.status_code != 200:
+                raise ErroImportacao(f"A API do Limitless respondeu com o código {r.status_code} ({caminho}).")
+            return r.json()
+        raise ErroImportacao("A API do Limitless continua pedindo para esperar. Tente mais tarde.")
+
+
+def listar_online(api, dias=21, minimo=64, hoje=None):
+    """Torneios online Standard terminados nos últimos `dias` dias, com pelo menos `minimo` jogadores."""
+    from datetime import date as _date, timedelta
+    hoje = hoje or _date.today()
+    limite = (hoje - timedelta(days=dias)).isoformat()
+    achados = []
+    for pagina in range(1, 6):
+        lote = api.get("/tournaments", game="PTCG", format="STANDARD", limit=500, page=pagina)
+        if not lote:
+            break
+        for t in lote:
+            data = (t.get("date") or "")[:10]
+            # só os que já terminaram (o torneio de hoje pode estar em andamento)
+            if limite <= data < hoje.isoformat() and (t.get("players") or 0) >= minimo:
+                achados.append({"id": t["id"], "nome": t.get("name", ""), "data": data, "jogadores": t.get("players")})
+        if min((t.get("date") or "")[:10] for t in lote) < limite:
+            break
+    return sorted(achados, key=lambda t: t["data"], reverse=True)
+
+
+def importar_online(api, t, listas_top=64):
+    """Importa um torneio online: classificação com deck, resultado de cada mesa e as listas do topo."""
+    from . import decks
+    classificacao = api.get(f"/tournaments/{t['id']}/standings")
+    mesas = api.get(f"/tournaments/{t['id']}/pairings")
+    jogadores, arq_de, novos = [], {}, {}
+    for j in classificacao:
+        deck = j.get("deck") or {}
+        rec = j.get("record") or {}
+        chave = str(j.get("player") or "").lower()
+        arq_de[chave] = deck.get("id") or ""
+        if deck.get("id"):
+            novos.setdefault(deck["id"], {"slug": deck["id"], "nome": deck.get("name") or deck["id"], "icones": deck.get("icons") or []})
+        jogadores.append({"labs_id": chave, "nome": j.get("name") or chave, "nome_norm": chave,
+                          "pais": j.get("country") or "", "posicao": j.get("placing"), "pontos": None,
+                          "v": rec.get("wins"), "d": rec.get("losses"), "e": rec.get("ties"), "arquetipo": deck.get("id") or "",
+                          "_lista": j.get("decklist")})
+    partidas = []
+    for m in mesas:
+        j1, j2, venc = str(m.get("player1") or "").lower(), str(m.get("player2") or "").lower(), m.get("winner")
+        if not j1 or not j2 or venc in (None, -1, "-1"):
+            continue  # folga, atraso ou derrota dupla: não é partida jogada
+        venc = str(venc).lower()
+        res = "T" if venc == "0" else "W" if venc == j1 else "L" if venc == j2 else None
+        if res:
+            partidas.append({"rodada": m.get("round"), "mesa": str(m.get("table") or m.get("match") or ""),
+                             "j1": j1, "j2": j2, "res1": res, "arq1": arq_de.get(j1, ""), "arq2": arq_de.get(j2, "")})
+    listas = []
+    alvo = sorted((j for j in jogadores if j["_lista"]), key=lambda j: j["posicao"] or 99999)[:listas_top] if listas_top else []
+    for j in alvo:
+        for secao in ("pokemon", "trainer", "energy"):
+            for c in j["_lista"].get(secao) or []:
+                listas.append({"labs_id": j["labs_id"], "carta": c.get("name", ""), "set": (c.get("set") or "").upper(),
+                               "numero": str(c.get("number") or "").lstrip("0") or "", "qtd": c.get("count") or 1})
+    for j in jogadores:
+        j.pop("_lista", None)
+    conhecidos = {r["slug"] for r in banco.consultar("SELECT slug FROM arquetipos")}  # nomes do Labs têm preferência
+    faltam = [d for s, d in novos.items() if s not in conhecidos]
+    if faltam:
+        decks.salvar_arquetipos(faltam)
+    info = {"id": PREFIXO_ONLINE + t["id"], "nome": t["nome"], "data": t["data"], "jogadores": t.get("jogadores") or len(jogadores),
+            "rk9": None, "fonte": "online", "formato": "standard",
+            "info": {"fonte_partidas": "Limitless (torneio online)", "api_id": t["id"], "listas_top": listas_top}}
+    banco.salvar_torneio(info, jogadores, partidas, listas if listas_top else None)
+    return f"{t['nome']}: {len(jogadores)} jogadores, {len(partidas)} partidas"
+
+
+def sincronizar_online(cfg, parar, ao_progredir):
+    """Importa os torneios online que faltam. Devolve a lista do que foi feito."""
+    if not cfg.get("online_ativo", True):
+        return []
+    api = ApiLimitless()
+    ao_progredir("Procurando torneios online no Limitless…")
+    disponiveis = listar_online(api, int(cfg.get("online_dias", 21)), int(cfg.get("online_min_jogadores", 64)))
+    ja = {t["id"] for t in banco.listar_torneios()}
+    faltam = [t for t in disponiveis if PREFIXO_ONLINE + t["id"] not in ja][:int(cfg.get("online_por_vez", 40))]
+    feitos = []
+    for n, t in enumerate(faltam, 1):
+        if parar.is_set():
+            break
+        ao_progredir(f"Torneios online: {n} de {len(faltam)} ({t['nome'][:40]})")
+        try:
+            feitos.append({"id": PREFIXO_ONLINE + t["id"], "ok": True, "resumo": importar_online(api, t, int(cfg.get("listas_top", 64)))})
+        except ErroImportacao as e:
+            feitos.append({"id": PREFIXO_ONLINE + t["id"], "ok": False, "resumo": str(e)})
+            break  # a API está recusando: tenta na próxima verificação
+    return feitos
 
 
 # ------------------------------------------------------------------ atualização automática
@@ -361,10 +543,12 @@ def importar(tid, listas_top=64, fallback_top=256):
 #   - torneio importado enquanto acontecia (ou logo depois) -> importa de novo até
 #     3 dias após o início, para pegar o resultado final e as listas publicadas depois
 
-def escolher_para_importar(eventos, importados, hoje, dias=45, max_sem_data=3):
-    """eventos: lista do Labs; importados: {id: {"data":..., "importado_em":...}}. Devolve ids em ordem."""
+def escolher_para_importar(eventos, importados, hoje, dias=45, max_sem_data=3, formatos=None):
+    """eventos: lista do Labs; importados: {id: {"data":..., "importado_em":...}}. Devolve ids em ordem.
+    formatos: {id do Labs: formato}; torneios que não são Standard ficam de fora."""
     from datetime import date as _date, timedelta
     escolhidos = []
+    eventos = [e for e in eventos if (formatos or {}).get(e["id"], "standard") == "standard"]
     com_data = [e for e in eventos if e.get("data")]
     for e in com_data:
         inicio = _date.fromisoformat(e["data"])
@@ -440,8 +624,15 @@ class Sincronizador:
         try:
             eventos = listar_eventos()
             atualizar_arquetipos(eventos)
+            try:  # formato de cada evento (só Standard entra nas contas)
+                formatos = formatos_labs(dias=max(120, int(cfg.get("sincronizar_dias", 45))))
+                banco.marcar_formatos(formatos)
+            except ErroImportacao as e:
+                formatos = {}
+                print("[limitless] não consegui confirmar os formatos:", e)
             importados = {t["id"]: t for t in banco.listar_torneios()}
-            alvo = escolher_para_importar(eventos, importados, _date.today(), int(cfg.get("sincronizar_dias", 45)))
+            alvo = escolher_para_importar(eventos, importados, _date.today(), int(cfg.get("sincronizar_dias", 45)),
+                                          formatos=formatos)
             for tid in alvo:
                 if self._parar.is_set():
                     break
@@ -449,8 +640,19 @@ class Sincronizador:
                 importar(tid, int(cfg.get("listas_top", 64)))
                 feitos.append({"id": tid, "ok": not progresso["erro"] or bool(progresso["resumo"]),
                                "resumo": progresso["resumo"] or progresso["erro"]})
-            estado_sync["mensagem"] = (f"{len(feitos)} torneio(s) importado(s) ou atualizado(s)." if feitos
-                                       else "Nenhum torneio novo.")
+            online = []
+            if not self._parar.is_set():
+                try:
+                    online = sincronizar_online(cfg, self._parar, lambda m: estado_sync.update(mensagem=m))
+                except ErroImportacao as e:
+                    online = [{"id": "", "ok": False, "resumo": f"Torneios online: {e}"}]
+            feitos += online
+            novos_online = sum(1 for f in online if f["ok"])
+            estado_sync["mensagem"] = ((f"{len(feitos) - len(online)} grande(s) evento(s) e {novos_online} torneio(s) online "
+                                        "importado(s) ou atualizado(s).") if feitos else "Nenhum torneio novo.")
+            erro_online = next((f["resumo"] for f in online if not f["ok"]), "")
+            if erro_online:
+                estado_sync["mensagem"] += f" Torneios online pararam: {erro_online}"
         except ErroImportacao as e:
             estado_sync["mensagem"] = f"Não consegui verificar: {e}"
         except Exception as e:

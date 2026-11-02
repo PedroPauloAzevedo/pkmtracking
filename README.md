@@ -18,7 +18,13 @@ Cada pessoa tem os próprios dados (pasta `dados/`, que nunca vai para o GitHub)
 com amigos: cada um instala, informa o próprio nick em Ajustes e usa no seu computador.
 Atualizações: em **Ajustes > Atualizações** o programa avisa quando há versão nova aqui e se atualiza com um clique.
 
-**Windows**
+**Windows, jeito mais fácil (sem Python):** baixe o `ColetorTCG-Instalador-<versão>.exe` (fica em **Releases**,
+no lado direito desta página do GitHub), dê dois cliques e siga as telas. Se o Windows mostrar "O Windows protegeu o
+computador", clique em **Mais informações > Executar assim mesmo**. O programa vai para
+`%LOCALAPPDATA%\Programs\ColetorTCG`, cria o atalho na Área de Trabalho e já vem com o modo automático.
+Para montar o instalador: `python instalador/montar.py` (precisa do Inno Setup 6; veja o começo do script).
+
+**Windows, pelo código**
 1. Instale o Python 3.11 ou mais novo em https://www.python.org/downloads/ e marque **"Add python.exe to PATH"** na primeira tela.
 2. Descompacte esta pasta onde quiser (ex.: `Documentos\tcg-tracker`).
 3. Dê dois cliques em `instalar_windows.bat`. Ele cria um ambiente isolado (`.venv`) e instala as dependências.
@@ -30,11 +36,15 @@ Atualizações: em **Ajustes > Atualizações** o programa avisa quando há vers
 
 ## 2. Usar
 
-1. Abra `iniciar_windows.bat` (ou `iniciar_mac.command`). Uma janela preta fica aberta e o painel abre em http://127.0.0.1:8765.
+1. Abra pelo atalho **Coletor TCG Live** da Área de Trabalho (o instalador cria; ou use `iniciar_windows.bat`).
+   No Windows o programa fica num **ícone perto do relógio** (bolinha verde = captura ligada) e o painel abre em
+   http://127.0.0.1:8765. Clique no ícone para abrir o painel; botão direito para ligar/desligar a captura ou sair.
+   No Mac: `iniciar_mac.command` (deixe a janela do Terminal aberta).
 2. Em **Ajustes e captura**, informe seu nick do TCG Live.
 3. Jogue normalmente. No fim da partida, clique em **Battle Log** e no botão de **exportar** (canto superior direito).
    O programa percebe o log na área de transferência e grava na hora. Aparece o aviso "Nova partida registrada".
-4. Feche a janela preta quando terminar.
+4. Para fechar: botão direito no ícone > **Sair** (fechar a aba do navegador não fecha o programa).
+   Quer a janela preta antiga? `python app.py --janela`.
 
 Logs repetidos são ignorados, então pode exportar a mesma partida duas vezes sem problema.
 Cada log também é salvo como `.txt` em `dados/logs/` (backup).
@@ -54,9 +64,15 @@ Quem recebeu o convite da pasta precisa, no drive.google.com, ir em *Compartilha
 *Organizar > Adicionar atalho* ao Meu Drive; sem isso a pasta não aparece no computador.
 
 3. Em Painel, Partidas, Desempenho e Decisões aparece o filtro **Jogador**: você, cada amigo, ou todos juntos
-   (cada partida vista do lado de quem jogou). Meus decks continua só com as suas partidas.
+   (cada partida vista do lado de quem jogou; um jogo entre vocês dois conta uma vez só, pela "impressão digital"
+   da partida). Meus decks continua só com as suas partidas.
 
 ## 4. Modo automático (opcional, experimental)
+
+Jeito rápido: **Programa > Ajustes e captura > Modo automático > Usar imagens prontas** (imagens dos botões do
+projeto [Full Bench](https://github.com/heatfireash/FullBench), licença MIT) e **Ligar modo automático**.
+O programa descobre sozinho o tamanho dos botões no seu monitor, cobre o botão Continue com um quadrinho vermelho
+enquanto copia (clique nele para liberar), tenta de novo se o log não chegar e avisa quando uma partida foi perdida.
 
 Faz os dois cliques do passo 3 por você: termina a partida, e ela já está registrada.
 
@@ -79,16 +95,23 @@ e geraria um log pior do que o que o próprio jogo já entrega pronto. Reconhece
 
 ## 5. Importar campeonatos
 
+Duas fontes, escolhidas em **Fonte** nas telas de Meta e torneios:
+- **Grandes eventos** (Regionais, Internacionais, Mundial): Limitless Labs + RK9, como abaixo. O programa confere no
+  índice do limitlesstcg.com o formato de cada evento; o que não é Standard fica fora das contas.
+- **Torneios online** (play.limitlesstcg.com): a API pública do Limitless traz deck, lista e resultado de cada mesa.
+  A atualização automática importa os Standard com 64+ jogadores dos últimos 21 dias (ajustável em **Torneios**),
+  no máximo 40 por verificação, porque o site aceita 50 pedidos a cada 5 minutos sem chave.
+
 **Automático (padrão):** o RK9 e o Limitless Labs não têm API nem aviso de torneio novo para os campeonatos oficiais,
 então o próprio programa verifica a cada 6 horas (ajustável) enquanto estiver aberto. Ele importa os torneios que
 começaram nos últimos 45 dias e ainda não estão no banco, e reimporta os que foram baixados durante o evento,
 até 3 dias depois do início, para pegar o resultado final e as listas publicadas depois.
 Configure em **Importar torneios > Atualização automática**, ou rode `python app.py --sincronizar`.
 
-**Para não precisar abrir nada:** rode `iniciar_com_o_windows.bat` uma vez. O coletor passa a abrir sozinho, sem janela,
-quando o computador liga; captura as partidas e atualiza os torneios em segundo plano. O painel continua em
-http://127.0.0.1:8765 (vale salvar nos favoritos). Para desfazer: `nao_iniciar_com_o_windows.bat`.
-Para fechar o programa nesse modo: **Ajustes > Encerrar o programa**.
+**Para não precisar abrir nada:** em **Programa > Ajustes e captura > Como abrir o programa**, ligue
+"Abrir sozinho quando o Windows liga" (ou rode `iniciar_com_o_windows.bat` uma vez). O coletor abre com o computador,
+fica no ícone perto do relógio, captura as partidas e atualiza os torneios em segundo plano.
+Para desfazer: o mesmo botão (Desligar) ou `nao_iniciar_com_o_windows.bat`.
 
 **Manual:** em **Importar torneios**:
 - **Buscar torneios no Limitless Labs** lista os eventos; clique em **Importar**.
@@ -137,18 +160,23 @@ nos torneios.
 
 ## 7. O que cada aba mostra
 
-O painel tem duas áreas, escolhidas no topo da navegação: **Minhas partidas** (Painel, Partidas, Desempenho,
-replays) e **Geral** (Meta, Matchups, Perfil de deck, Cartas, Torneios).
+O menu tem 4 seções: **Início**, **Minhas partidas** (abas Partidas, Desempenho e Decisões), **Meus decks**
+(com a Lista oficial em PDF) e **Meta e torneios** (abas Meta, Matchups, Perfil de deck, Uso de cartas,
+Cartas x matchups e Torneios). Embaixo, **Programa** reúne Regras do Standard, Ajustes e captura, Amigos,
+Biblioteca de cartas, Linhas não lidas e Regras de leitura.
 
 | Aba | Conteúdo |
 |---|---|
-| Painel | Partidas, taxa de vitória com faixa de confiança, começando x segundo, últimas partidas, colar log manual |
+| Início | Se a captura está pronta, partidas, taxa de vitória com faixa de confiança, começando x segundo, últimas partidas, colar log à mão |
 | Partidas | Lista com filtros; detalhe com corrida de prêmios, nocautes, eventos; corrigir nome dos decks, tags e notas |
+| Decisões | Aberturas e ritmo, separados por quem começou (filtro Todas / Começando / Indo em segundo) |
+| Meus decks | Suas listas, conferência do Standard (selo Standard ✓) e Lista oficial (PDF) no formulário da Play! Pokémon |
 | Desempenho | Taxa contra cada deck (comparada com os campeonatos), com cada deck seu, ordem, 1º nocaute, mulligan, como termina, evolução no tempo |
 | Meta | % do campo, taxa de vitória sem espelhos, conversão para o Top X e fator de conversão, tendência entre torneios |
 | Matchups | Matriz deck x deck com cor por taxa e número de partidas |
 | Perfil de deck | Matchups contra o campo, taxa esperada contra o meta, melhores colocações, presença por torneio, esqueleto da lista |
 | Cartas | % das listas, média e distribuição de cópias, taxa de vitória com/sem a carta; comparar duas listas carta a carta |
+| Regras do Standard | Resumo em português das regras oficiais, com índice e busca |
 | Regras de leitura | Editar as expressões regulares que leem o log e testar linhas |
 
 **Taxa de vitória** = vitórias ÷ (vitórias + derrotas + empates), como no Limitless.
@@ -162,7 +190,9 @@ Para comparar seus resultados com os campeonatos, use nos seus decks o mesmo nom
 
 ```
 app.py                  servidor do painel + início do coletor
-iniciar_com_o_windows.bat   faz o coletor abrir sozinho, sem janela, com o Windows
+iniciar_com_o_windows.bat   faz o coletor abrir sozinho com o Windows (também dá pelo painel, em Ajustes)
+tracker/bandeja.py      ícone perto do relógio do Windows (no lugar da janela preta)
+tracker/atalhos.py      atalhos na Área de Trabalho e no início do Windows
 tracker/leitor.py       lê o texto do log e transforma em eventos (comece por aqui para aprender)
 tracker/coletor.py      vigia a área de transferência
 tracker/auto_export.py  modo automático (reconhece botões e clica)
@@ -180,7 +210,8 @@ Para fazer backup, copie a pasta `dados`.
 
 ## 9. Problemas comuns
 
-- **A partida não foi registrada**: confira se a janela preta está aberta e se a captura está "ligada" no canto do painel.
+- **A partida não foi registrada**: confira se o ícone do Coletor está perto do relógio (se não aparecer, olhe na setinha ^)
+  e se a bolinha está verde (captura ligada). O Início do painel também mostra isso.
   Teste copiando um log antigo (Ctrl+C) com o programa aberto.
 - **Venceu/perdeu aparece como "?"**: informe seu nick em Ajustes exatamente como aparece no log.
 - **Linhas não lidas**: o TCG Live pode escrever alguma frase diferente. Copie a linha, cole em Regras de leitura > Testar e ajuste/crie uma regra.

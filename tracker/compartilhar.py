@@ -150,8 +150,11 @@ def importar(arquivos, nome=""):
         raise ValueError("Não encontrei logs do TCG Live nesse arquivo. Peça para o seu amigo usar o botão "
                          "\"Exportar meus logs\" em Programa > Amigos, ou mandar os .txt da pasta dados\\logs.")
     # O dono precisa ser o nick que aparece nos logs: é por ele que o programa sabe quem venceu.
-    cont = Counter(j for _, t, _ in validos for j in set(leitor.ler_partida(t, regras)["jogadores"]))
-    provavel = cont.most_common(1)[0][0] if cont else ""
+    lidos = [leitor.ler_partida(t, regras) for _, t, _ in validos]
+    cont = Counter(j for d in lidos for j in set(d["jogadores"]))
+    # quem exportou cada log (o jogo só mostra o nome das cartas compradas por ele) é a pista mais forte
+    exportou = Counter(d["resumo"].get("exportou") for d in lidos if d["resumo"].get("exportou"))
+    provavel = (exportou or cont).most_common(1)[0][0] if (exportou or cont) else ""
     dono = (nome or envio["nick"] or "").strip()
     if dono:
         certo = next((j for j in cont if j.lower() == dono.lower()), None)
@@ -160,7 +163,7 @@ def importar(arquivos, nome=""):
                              + (f" O jogador que mais aparece é \"{provavel}\"." if provavel else "")
                              + " Use o nick exatamente como está no jogo.")
         dono = certo
-    elif provavel and cont[provavel] >= max(2, int(0.8 * len(validos))):
+    elif provavel and (exportou[provavel] >= 0.8 * len(validos) or cont[provavel] >= max(2, int(0.8 * len(validos)))):
         dono = provavel
     else:
         raise ValueError("Não consegui descobrir de quem são esses logs. Digite o nick do seu amigo e importe de novo.")
@@ -185,6 +188,7 @@ def amigos():
 def apagar_amigo(nome):
     with banco.conectar() as con:
         n = con.execute("DELETE FROM partidas WHERE dono=?", (nome,)).rowcount
+    banco.marcar_mudanca()
     return n
 
 

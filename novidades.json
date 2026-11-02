@@ -1,0 +1,146 @@
+[
+  {
+    "versao": "2026.11.02-2",
+    "data": "2026-11-02",
+    "titulo": "ACE SPEC de cada lista e versões dos decks por ACE SPEC",
+    "mudancas": [
+      "Ao importar torneios, o programa guarda a ACE SPEC da lista de cada jogador (e calcula sozinho a das listas já importadas na primeira abertura).",
+      "Perfil de deck > ACE SPEC e versões: tabela com cada ACE SPEC usada no deck (listas, % do deck, taxa de vitória) e a marca \"diferença provável\" quando a escolha vence mais ou menos que o resto do deck, com pelo menos 30 jogos.",
+      "As versões do deck agora são separadas pela ACE SPEC. As usadas por poucas listas entram na versão mais parecida, e duas ACE SPEC com listas quase iguais viram uma versão só.",
+      "Perfil de deck > Melhores colocações mostra a ACE SPEC de cada jogador."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor (pelo atalho Coletor TCG Live ou pelo iniciar_windows.bat).",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-2\" e confirme. O programa reinicia sozinho e a página volta em alguns segundos.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair, ou feche a janela preta), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada é obrigatório. A ACE SPEC das listas já importadas é calculada sozinha na primeira abertura (leva alguns segundos).",
+      "A ACE SPEC vem da biblioteca de cartas: mantenha a biblioteca atualizada em Programa > Biblioteca de cartas.",
+      "Abra Meta e torneios > Perfil de deck e role até \"ACE SPEC e versões\"."
+    ]
+  },
+  {
+    "versao": "2026.11.02-1",
+    "data": "2026-11-02",
+    "titulo": "Segurança, consistência do deck, qual deck jogar, variantes e telas mais rápidas",
+    "mudancas": [
+      "Segurança: o painel passou a recusar pedidos vindos de outros sites abertos no navegador (antes, uma página maliciosa conseguiria mudar o repositório de atualização e mandar o programa se atualizar com o código de outra pessoa).",
+      "Meus decks > deck > Consistência: chance de mulligan, de ter cada carta na mão inicial e até o 1º, 2º e 3º turno, de ficar com cópias presas nos prêmios, e de ter duas cartas juntas. Contas exatas com as regras do Standard. Também mostra quantas das suas partidas com o deck tiveram mulligan, comparado com o esperado.",
+      "Meta > Qual deck jogar?: taxa de vitória esperada de cada deck contra o campo atual, o pior confronto e o \"equilíbrio\" do meta (a mistura de decks que nenhum outro consegue explorar).",
+      "Perfil de deck > Variantes: as listas do deck agrupadas por semelhança, com as cartas que diferenciam cada versão e a taxa de vitória de cada uma.",
+      "Matchups: opção de ver a taxa ajustada, que completa os confrontos com poucos jogos pela força geral dos decks e prevê melhor os torneios seguintes.",
+      "Identificação do deck do adversário mais precisa quando poucas cartas aparecem na partida (usa as listas dos torneios importados).",
+      "Telas bem mais rápidas com muitas partidas e torneios: Uso de cartas 44 vezes mais rápida com os torneios online; Início e Partidas abrem em décimos de segundo mesmo com mil partidas; gravar uma partida não fica mais lento conforme o banco cresce."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor (pelo atalho Coletor TCG Live ou pelo iniciar_windows.bat).",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-1\" e confirme. O programa reinicia sozinho e a página volta em alguns segundos.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair, ou feche a janela preta), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada é obrigatório.",
+      "Abra Meus decks > um deck e veja a seção Consistência. Se aparecer o aviso de Pokémon sem estágio, atualize a biblioteca em Programa > Biblioteca de cartas.",
+      "Em Meta e torneios > Meta, role até \"Qual deck jogar?\". Escolha a Fonte (grandes eventos, online ou todos) antes."
+    ]
+  },
+  {
+    "versao": "2026.11.01-4",
+    "data": "2026-11-01",
+    "titulo": "Torneios online do Limitless e só Standard confirmado",
+    "mudancas": [
+      "Torneios online: o programa importa sozinho os torneios Standard do play.limitlesstcg.com (são umas 30 por semana com 64 jogadores ou mais), com o deck, a lista e o resultado de cada mesa de cada jogador.",
+      "Nas telas de Meta e torneios há a escolha de Fonte: Grandes eventos (Regionais, Internacionais e outros do Limitless Labs), Torneios online ou Todos. Com muitos torneios, a evolução do meta aparece semana a semana.",
+      "Só Standard de verdade: o programa confere no site do Limitless o formato de cada grande evento. Os que não são Standard ficam fora das contas e nem são importados sozinhos. Na tela Torneios, cada evento mostra \"Standard ✓\" ou \"formato não confirmado\".",
+      "A comparação das suas partidas com os campeonatos (Desempenho) passa a usar também os torneios online, que são mais parecidos com as partidas do TCG Live."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor (pelo atalho Coletor TCG Live ou pelo iniciar_windows.bat).",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.01-4\" e confirme. O programa reinicia sozinho e a página volta em alguns segundos.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair, ou feche a janela preta), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Os torneios online chegam pela atualização automática de torneios. Para começar já: Meta e torneios > Torneios > Verificar agora. O site limita os pedidos, então a primeira leva demora uns 10 minutos para 40 torneios; o resto chega nas próximas verificações.",
+      "Na mesma tela dá para desligar os torneios online ou mudar o mínimo de jogadores e quantos dias olhar para trás.",
+      "Nas telas de Meta, Matchups, Perfil de deck e Cartas, escolha a Fonte que quer ver. A escolha fica guardada."
+    ]
+  },
+  {
+    "versao": "2026.11.01-3",
+    "data": "2026-11-01",
+    "titulo": "Modo automático mais esperto, primeiro uso guiado, busca rápida e instalador sem Python",
+    "mudancas": [
+      "Partidas entre você e um amigo não contam mais duas vezes em \"Todos os jogadores\": o programa reconhece que o seu log e o dele são o mesmo jogo.",
+      "Logs cortados (sem a linha final, sem a mão inicial de um jogador, prêmios a mais) ganham um aviso \"incompleto?\" na lista e no detalhe da partida.",
+      "O programa descobre sozinho quem é você em cada log (o jogo só mostra o nome das cartas que quem exportou comprou). O nick em Ajustes virou opcional, e partidas jogadas com outra conta sua também ficam do seu lado.",
+      "Modo automático: botão \"Usar imagens prontas\" (não precisa mais recortar os botões), funciona em qualquer resolução, cobre o botão Continue com um quadrinho vermelho enquanto copia, tenta de novo se o log não chegar e avisa quando uma partida foi perdida.",
+      "O painel abre numa janela própria, sem abas nem barra de endereço (dá para voltar para a aba do navegador em Ajustes).",
+      "Primeiro uso guiado em 3 passos (nick, jogo em inglês e um teste da captura), que pode ser refeito em Ajustes.",
+      "Busca rápida: Ctrl+K (ou o botão Buscar no menu) acha telas, seus decks, decks do meta e partidas pelo nome do adversário.",
+      "Instalador .exe que não precisa de Python, para quem for começar a usar agora (quem já usa não precisa reinstalar)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor (pelo atalho Coletor TCG Live ou pelo iniciar_windows.bat).",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.01-3\" e confirme. O programa reinicia sozinho e a página volta em alguns segundos.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair, ou feche a janela preta), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada é obrigatório. Suas partidas antigas são relidas sozinhas na primeira abertura (para ganhar os avisos e o \"quem é você\").",
+      "Usa o modo automático? Em Programa > Ajustes e captura > Modo automático, clique em \"Usar imagens prontas\". Suas imagens antigas ficam guardadas em modelos/minhas.",
+      "Prefere o painel numa aba do navegador? Ajustes > Como abrir o programa > Abrir o painel > Numa aba do navegador.",
+      "Experimente Ctrl+K para buscar qualquer tela, deck ou adversário."
+    ]
+  },
+  {
+    "versao": "2026.11.01-2",
+    "data": "2026-11-01",
+    "titulo": "Ícone perto do relógio, atalho na Área de Trabalho e menu mais simples",
+    "mudancas": [
+      "Acabou a janela preta: o Coletor agora fica num ícone perto do relógio do Windows. Clique nele para abrir o painel; com o botão direito, você liga ou desliga a captura e fecha o programa. A bolinha do ícone fica verde quando a captura está ligada.",
+      "Quando uma partida nova entra, aparece um aviso do Windows, mesmo com o painel fechado.",
+      "Atalho Coletor TCG Live na Área de Trabalho: dois cliques abrem o programa (ou só o painel, se ele já estiver aberto). Crie pelo aviso no Início ou em Programa > Ajustes e captura > Como abrir o programa. Ali também dá para ligar ou desligar \"Abrir sozinho quando o Windows liga\".",
+      "Menu com 4 seções: Início, Minhas partidas (Partidas, Desempenho e Decisões em abas), Meus decks e Meta e torneios (Meta, Matchups, Perfil de deck, Uso de cartas, Cartas x matchups e Torneios em abas). O Programa continua embaixo.",
+      "O Início mostra se a captura está pronta e qual foi a última partida capturada. Colar um log à mão ficou num quadro que abre com um clique."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor pelo iniciar_windows.bat (ou deixe aberto, se já estiver).",
+      "Espere o aviso amarelo \"Nova versão disponível\" no canto da tela, ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.01-2\" e confirme. O programa instala o que falta, reinicia sozinho e a página volta em alguns segundos. A janela preta pisca e some: a partir de agora o Coletor fica no ícone perto do relógio.",
+      "Se der erro ou o botão não aparecer: feche a janela preta do Coletor, abra de novo pelo iniciar_windows.bat e tente outra vez."
+    ],
+    "passos": [
+      "No Início, clique em Criar atalho para ter o Coletor TCG Live na Área de Trabalho.",
+      "Se o ícone não aparecer perto do relógio, clique na setinha ^ ao lado do relógio: o Windows às vezes esconde ícones novos ali. Dá para arrastá-lo para fora, para ficar sempre à vista.",
+      "Para fechar o programa: botão direito no ícone > Sair. Fechar a aba do navegador não fecha o Coletor.",
+      "Se você já usava o iniciar_com_o_windows.bat, vá em Programa > Ajustes e captura > Como abrir o programa e clique em Desligar e depois em Ligar, para o atalho ganhar o ícone novo."
+    ]
+  },
+  {
+    "versao": "2026.11.01-1",
+    "data": "2026-11-01",
+    "titulo": "Regras do Standard, lista oficial em PDF e aberturas por quem começou",
+    "mudancas": [
+      "Nova tela Regras do Standard (menu Programa): resumo em português das regras oficiais da Play! Pokémon, só do formato Standard, com índice e busca. A base é revisada todo mês e chega sozinha, sem precisar atualizar o programa.",
+      "Meus decks > abra um deck > Lista oficial (PDF): gera o formulário de lista de deck da Play! Pokémon. Dá para editar qualquer campo na folha (fica salvo sozinho) e usar Salvar em PDF.",
+      "Cada lista de Meus decks é conferida com as regras do Standard: 60 cartas, até 4 com o mesmo nome, 1 ACE SPEC, pelo menos 1 Pokémon Básico e marcas de regulamento válidas. O selo do deck mostra Standard ✓ ou Fora do Standard.",
+      "Decisões: as aberturas e o ritmo agora aparecem separados por quem começou, e há um filtro Todas / Começando / Indo em segundo.",
+      "Leitura dos logs: com cartas de mesmo nome, o programa escolhe a versão que vale no Standard; descobre quem começou e quem venceu (6 prêmios) quando o log não traz essas linhas; e o replay não evolui um Pokémon que acabou de entrar em jogo. As partidas que você já tinha são relidas sozinhas."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor pelo iniciar_windows.bat (ou deixe aberto, se já estiver).",
+      "Espere o aviso amarelo \"Nova versão disponível\" no canto da tela, ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.01-1\" e confirme. O programa reinicia sozinho e a página volta em alguns segundos.",
+      "Se der erro ou o botão não aparecer: feche a janela preta do Coletor, abra de novo pelo iniciar_windows.bat e tente outra vez."
+    ],
+    "passos": [
+      "Nada é obrigatório: suas partidas, decks e a troca de logs com os amigos continuam como estavam.",
+      "Para jogar um torneio: Meus decks > abra o deck > Lista oficial (PDF). Preencha nome, Player ID e data de nascimento uma vez; eles ficam guardados só neste computador.",
+      "Para o PDF: clique em Salvar em PDF e, na janela de impressão, escolha \"Salvar como PDF\" em Destino. Confira se o papel é A4.",
+      "Se o selo de algum deck mostrar \"Fora do Standard\", abra o deck para ver o motivo (por exemplo, uma carta de marca G sem reimpressão válida)."
+    ]
+  }
+]

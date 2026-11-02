@@ -1,3 +1,7 @@
-flask>=3.0
-requests>=2.31
-beautifulsoup4>=4.12
+# limite de cima: uma atualização nunca puxa uma versão nova grande que quebre o programa
+flask>=3.0,<4
+requests>=2.31,<3
+beautifulsoup4>=4.12,<5
+# Icone perto do relogio do Windows (no lugar da janela preta)
+pystray>=0.19,<1; sys_platform == "win32"
+pillow>=10.0,<14; sys_platform == "win32"

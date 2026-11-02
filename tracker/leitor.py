@@ -11,6 +11,9 @@ Também aceitamos a sintaxe de JavaScript (?<nome>...), convertida automaticamen
 """
 import re
 import unicodedata
+from functools import lru_cache
+
+PREMIOS_PARTIDA = 6  # Standard: partidas de 6 prêmios (ver regras_jogo)
 
 TIPOS = {
     "turno": "Início de turno", "moeda": "Cara ou coroa", "ordem": "Quem começa",
@@ -28,6 +31,7 @@ def slug(texto):
     return re.sub(r"[^a-z0-9]+", "-", t.lower()).strip("-")
 
 
+@lru_cache(maxsize=65536)  # chamada centenas de milhares de vezes nas análises; o resultado nunca muda
 def normalizar_nome_carta(nome):
     """Para comparar nomes de cartas: sem acento, minúsculo, e 'Basic Psychic Energy' = 'Psychic Energy'."""
     t = unicodedata.normalize("NFKD", (nome or "").replace("\u2019", "'")).encode("ascii", "ignore").decode()
@@ -181,7 +185,79 @@ def ler_partida(texto, regras):
             vistas[e["jogador"]][e["carta"]] = vistas[e["jogador"]].get(e["carta"], 0) + 1
     resumo = resumir(jogadores, eventos, texto)
     resumo["vistas"] = vistas
+    resumo["exportou"] = quem_exportou(linhas, jogadores)
+    resumo["problemas"] = conferir(jogadores, eventos, resumo, linhas)
+    resumo["digital"] = impressao_digital(jogadores, resumo)
     return {"jogadores": jogadores, "eventos": eventos, "nao_lidas": nao_lidas, "resumo": resumo}
+
+
+def quem_exportou(linhas, jogadores):
+    """De quem é o log, sem precisar do nick.
+
+    O jogo só mostra o nome das cartas compradas por quem exportou ("Fulano drew Rare Candy.")
+    e só lista a mão inicial dele; as compras do adversário aparecem como "drew a card".
+    (Ideia do Full Bench, github.com/heatfireash/FullBench, licença MIT.)
+    """
+    if len(jogadores) != 2:
+        return None
+    pontos = {j: 0 for j in jogadores}
+    abriu = None  # jogador cuja mão inicial acabou de ser anunciada
+    for bruta in linhas:
+        efeito = bruta.strip().startswith("- ")  # linha de efeito: cartas buscadas aparecem para os dois
+        linha = limpar_linha(bruta)
+        if linha.startswith("•"):
+            if abriu:
+                pontos[abriu] += 3  # mão inicial com as cartas listadas: só a de quem exportou
+            abriu = None
+            continue
+        if re.match(r"^\d+ drawn cards?\.?$", linha):
+            continue  # "- 7 drawn cards." fica entre o anúncio da mão e a lista
+        abriu = None
+        m = re.match(r"^(.+?) drew (.+?)\.$", linha)
+        if not m or m.group(1) not in pontos:
+            continue
+        o_que = m.group(2)
+        if o_que.endswith("for the opening hand"):
+            abriu = m.group(1)
+        elif not efeito and not re.match(r"^(a card|\d+ (more )?cards?)\b", o_que) and " and played " not in o_que:
+            pontos[m.group(1)] += 1  # compra do turno com o nome da carta
+    a, b = sorted(pontos.items(), key=lambda kv: -kv[1])
+    return a[0] if a[1] > 0 and a[1] >= 3 * b[1] else None
+
+
+def conferir(jogadores, eventos, resumo, linhas):
+    """Sinais de log cortado ou estranho. A partida é gravada mesmo assim, com um aviso."""
+    problemas = []
+    if len(jogadores) != 2:
+        problemas.append("não achei os dois jogadores")
+    vitorias = [e for e in eventos if e["tipo"] == "vitoria"]
+    if not vitorias and not resumo["vencedor"]:
+        problemas.append("falta a linha final com o resultado (o log foi copiado inteiro?)")
+    maos = sum(1 for l in linhas if "drew 7 cards for the opening hand" in l)
+    if jogadores and maos < 2:
+        problemas.append("falta a mão inicial de um dos jogadores")
+    if any(p["premios"] > PREMIOS_PARTIDA for p in resumo["por_jogador"].values()):
+        problemas.append("mais de 6 prêmios para um jogador")
+    if resumo["turnos"] > 80:
+        problemas.append("número de turnos fora do normal")
+    return problemas
+
+
+def impressao_digital(jogadores, resumo):
+    """A mesma partida vista pelos dois lados gera logs diferentes (cada um vê as próprias compras).
+
+    Esta "impressão digital" usa só o que os dois logs têm em comum: vencedor, perdedor, turnos,
+    motivo e prêmios. Serve para não contar duas vezes um jogo entre você e um amigo.
+    """
+    import hashlib
+    v = resumo["vencedor"]
+    if len(jogadores) != 2 or v not in jogadores:
+        return None
+    perdedor = next(j for j in jogadores if j != v)
+    pj = resumo["por_jogador"]
+    chave = "|".join(str(x) for x in (v.lower(), perdedor.lower(), resumo["turnos"], resumo["motivo"],
+                                      pj[v]["premios"], pj[perdedor]["premios"]))
+    return hashlib.sha256(chave.encode("utf-8")).hexdigest()[:20]
 
 
 def resumir(jogadores, eventos, texto):
@@ -246,8 +322,18 @@ def resumir(jogadores, eventos, texto):
             s.append(acc)
         serie[j] = s
 
+    # Regras do Standard (base de regras): quem joga o turno 1 é quem começou, e quem pega o
+    # último dos 6 prêmios vence na hora. Valem quando o log não traz a linha de cara/coroa
+    # ou a linha final com o vencedor.
+    if not primeiro:
+        primeiro = next((e["jogador"] for e in eventos if e["tipo"] == "turno" and e["jogador"]), None)
+    if not vencedor:
+        completos = [j for j in jogadores if por[j]["premios"] >= PREMIOS_PARTIDA]
+        if len(completos) == 1:
+            vencedor = completos[0]
+
     baixo = texto.lower()
-    if vencedor and por.get(vencedor, {}).get("premios", 0) >= 6:
+    if vencedor and por.get(vencedor, {}).get("premios", 0) >= PREMIOS_PARTIDA:
         motivo = "Pegou todos os prêmios"
     elif "conceded" in baixo:
         motivo = "Desistência"

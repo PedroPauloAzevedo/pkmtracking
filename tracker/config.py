@@ -26,11 +26,20 @@ CONFIG_PADRAO = {
     "intervalo_coletor": 1.0,      # segundos entre cada checagem
     "modo_automatico": False,      # clicar sozinho em "Battle Log" e "Exportar" (experimental)
     "confianca_imagem": 0.85,      # quão parecida a tela precisa estar com as imagens de modelo
+    "cobrir_continuar": True,      # modo automático: cobrir o botão Continue enquanto copia o log
+    "escala_modelos": {},          # modo automático: tamanho dos botões no seu monitor (descoberto sozinho)
+    "modelos_prontos": [],         # botões que usam as imagens prontas do Full Bench
+    "abrir_em": "janela",          # painel numa janela própria ("janela") ou numa aba do navegador ("navegador")
+    "guia_visto": False,           # já passou pelo primeiro uso guiado
     "porta": 8765,                 # endereço do painel: http://127.0.0.1:8765
     "sincronizar_auto": True,      # procurar e importar torneios novos do Limitless sozinho
     "sincronizar_horas": 6,        # de quantas em quantas horas verificar
     "sincronizar_dias": 45,        # importar torneios que começaram nos últimos N dias
     "listas_top": 64,              # quantas listas do topo baixar em cada torneio
+    "online_ativo": True,          # importar também torneios online Standard (play.limitlesstcg.com)
+    "online_min_jogadores": 64,    # só torneios online com pelo menos tantos jogadores
+    "online_dias": 21,             # torneios online dos últimos N dias
+    "online_por_vez": 40,          # no máximo tantos torneios online por verificação (a API limita os pedidos)
     "github_repo": "",             # de onde baixar atualizações (usuario/repositorio); vazio = repositorio.txt
     "github_ramo": "main",
     "github_token": "",            # só para repositório privado (token de leitura)

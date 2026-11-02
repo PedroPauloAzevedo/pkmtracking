@@ -41,10 +41,14 @@ def placar(v, d, e=0):
 # ================================================================== pessoal
 
 def descobrir_eu(partidas, nick):
-    """Seu nick: o configurado ou, sem ele, o jogador que mais aparece nas SUAS partidas (não nas dos amigos)."""
+    """Seu nick: o configurado; sem ele, quem exportou a maioria dos SEUS logs (o jogo só mostra
+    o nome das cartas compradas por quem exporta); por último, o jogador que mais aparece neles."""
     if nick:
         return nick
     partidas = [p for p in partidas if not p.get("dono")]
+    exportou = Counter(p["resumo"].get("exportou") for p in partidas if p["resumo"].get("exportou"))
+    if exportou:
+        return exportou.most_common(1)[0][0]
     contagem = Counter(j for p in partidas for j in p["jogadores"])
     if len(partidas) >= 2 and contagem:
         nome, qtd = contagem.most_common(1)[0]
@@ -54,8 +58,27 @@ def descobrir_eu(partidas, nick):
 
 
 def perspectiva(p, eu):
-    """De quem é o ponto de vista da partida: o amigo que mandou o log, ou você."""
-    return p.get("dono") or eu
+    """De quem é o ponto de vista da partida: quem exportou o log (se o log mostrar); senão,
+    o amigo que mandou o log, ou você. Assim uma segunda conta sua também é lida do seu lado."""
+    exportou = p["resumo"].get("exportou")
+    dono = p.get("dono")
+    if dono:  # log de amigo: o nick dele; se não estiver no log (outra conta), quem exportou
+        return dono if dono in p["jogadores"] else (exportou or dono)
+    return exportou or eu
+
+
+def sem_repetidas(partidas):
+    """Um jogo entre você e um amigo chega duas vezes (o seu log e o dele). Na visão "Todos os
+    jogadores", conta uma vez só: a partida com a mesma impressão digital (ver leitor) fica com o seu log."""
+    vistas, saida = set(), []
+    for p in sorted(partidas, key=lambda p: bool(p.get("dono"))):
+        d = p["resumo"].get("digital")
+        if d and d in vistas:
+            continue
+        if d:
+            vistas.add(d)
+        saida.append(p)
+    return sorted(saida, key=lambda p: p["capturada_em"] or "", reverse=True)
 
 
 def do_jogador(p, jogador):
@@ -75,8 +98,15 @@ def jogadores(nick):
     return saida
 
 
+_memoria_listas = {"t": 0.0, "v": {}}
+
+
 def _listas():
-    return {d["id"]: d for d in banco.consultar("SELECT id, nome, arquetipo FROM meus_decks")}
+    """Listas de Meus decks por id. Guardada por 5 s: uma análise pede isto 2 vezes por partida."""
+    import time
+    if time.time() - _memoria_listas["t"] > 5:
+        _memoria_listas.update(t=time.time(), v={d["id"]: d for d in banco.consultar("SELECT id, nome, arquetipo FROM meus_decks")})
+    return _memoria_listas["v"]
 
 
 def _arquetipo_lista(deck_id):
@@ -118,7 +148,7 @@ def visao(p, eu):
         "primeiro_ko_meu": (r["primeiro_nocaute"] == eu_) if r["primeiro_nocaute"] else None,
         "mulligan_eu": pj.get(eu_, {}).get("mulligans", 0) > 0,
         "tags": p["tags"], "notas": p["notas"], "qtd_nao_lidas": p["qtd_nao_lidas"], "conhecido": sou,
-        "dono": p.get("dono") or "",
+        "dono": p.get("dono") or "", "problemas": r.get("problemas") or [],
     }
 
 
@@ -135,7 +165,10 @@ def _agrupar(linhas, chave):
 def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, adv=None, jogador=""):
     partidas = banco.listar_partidas()
     eu = descobrir_eu(partidas, nick)
-    todas = [visao(p, perspectiva(p, eu)) for p in partidas if do_jogador(p, jogador)]
+    escolhidas = [p for p in partidas if do_jogador(p, jogador)]
+    if jogador == "*":
+        escolhidas = sem_repetidas(escolhidas)
+    todas = [visao(p, perspectiva(p, eu)) for p in escolhidas]
     linhas = [l for l in todas
               if l["resultado"]
               and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
@@ -189,9 +222,26 @@ def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, ad
 
 # ================================================================== campeonatos
 
+FONTES = {"grandes": "Grandes eventos", "online": "Torneios online", "todos": "Todos"}
+
+
+def torneios_da_fonte(fonte="todos"):
+    """Ids dos torneios que entram nas contas: só Standard (confirmado ou ainda não confirmado).
+    fonte: 'grandes' (Limitless Labs), 'online' (play.limitlesstcg.com) ou 'todos'."""
+    sql = "SELECT id FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')"
+    if fonte == "grandes":
+        sql += " AND COALESCE(fonte, 'labs') = 'labs'"
+    elif fonte == "online":
+        sql += " AND fonte = 'online'"
+    return [r["id"] for r in banco.consultar(sql)]
+
+
 def _filtro_torneios(torneios):
+    """None = todos os torneios Standard; lista vazia = nenhum."""
+    if torneios is None:
+        torneios = torneios_da_fonte("todos")
     if not torneios:
-        return "", ()
+        return " AND 0", ()
     return f" AND torneio IN ({','.join('?' * len(torneios))})", tuple(torneios)
 
 
@@ -266,17 +316,31 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
             "jogadores_considerados": len(conhecidos), "sem_deck": len(jogadores) - len(conhecidos), "corte": corte}
 
 
-def tendencia(k=8):
-    """Participação dos principais decks em cada torneio, em ordem de data."""
-    torneios = banco.listar_torneios()[::-1]
-    geral = Counter(j["arquetipo"] for j in _jogadores(None) if j["arquetipo"])
-    principais = [a for a, _ in geral.most_common(k)]
+def tendencia(k=8, torneios=None):
+    """Participação dos principais decks em cada torneio, em ordem de data.
+    Com muitos torneios (os online são dezenas por semana), cada ponto vira uma semana."""
+    from datetime import date as _date, timedelta
+    escolhidos = set(torneios if torneios is not None else torneios_da_fonte("todos"))
+    lista = [t for t in banco.listar_torneios()[::-1] if t["id"] in escolhidos]
+    jogs = [j for j in _jogadores(sorted(escolhidos)) if j["arquetipo"]]
+    principais = [a for a, _ in Counter(j["arquetipo"] for j in jogs).most_common(k)]
+    por_semana = len(lista) > 20
+    grupos = {}  # chave -> (nome, data, [ids])
+    for t in lista:
+        if por_semana and t["data"]:
+            seg = _date.fromisoformat(t["data"][:10])
+            seg -= timedelta(days=seg.weekday())
+            chave = seg.isoformat()
+            g = grupos.setdefault(chave, [f"Semana de {seg.strftime('%d/%m')}", chave, []])
+        else:
+            g = grupos.setdefault(t["id"], [t["nome"], t["data"], []])
+        g[2].append(t["id"])
+    ids_por_grupo = {chave: set(g[2]) for chave, g in grupos.items()}
     pontos = []
-    for t in torneios:
-        js = [j for j in _jogadores([t["id"]]) if j["arquetipo"]]
-        c = Counter(j["arquetipo"] for j in js)
-        tot = len(js) or 1
-        pontos.append({"torneio": t["id"], "nome": t["nome"], "data": t["data"],
+    for chave, (nome, data, ids) in grupos.items():
+        c = Counter(j["arquetipo"] for j in jogs if j["torneio"] in ids_por_grupo[chave])
+        tot = sum(c.values()) or 1
+        pontos.append({"torneio": chave, "nome": nome + (f" ({len(ids)} torneios)" if por_semana else ""), "data": data,
                        "pct": {a: round(100 * c.get(a, 0) / tot, 1) for a in principais}})
     return {"series": [{"arquetipo": a, "nome": nome_de_slug(a)} for a in principais], "torneios": pontos}
 
@@ -321,14 +385,19 @@ def perfil(arq, torneios=None):
         "spread": spread,
         "taxa_esperada": round(esperado_num / esperado_den, 1) if esperado_den else None,
         "listas": len({(l["torneio"], l["labs_id"]) for l in listas}), "esqueleto": esqueleto[:60],
-        "por_torneio": _participacao_por_torneio(arq),
+        "por_torneio": _participacao_por_torneio(arq, torneios),
     }
 
 
-def _participacao_por_torneio(arq):
+def _participacao_por_torneio(arq, torneios=None):
+    escolhidos = sorted(set(torneios if torneios is not None else torneios_da_fonte("todos")))
+    por = defaultdict(list)
+    for j in _jogadores(escolhidos):
+        if j["arquetipo"]:
+            por[j["torneio"]].append(j)
     saida = []
     for t in banco.listar_torneios()[::-1]:
-        js = [j for j in _jogadores([t["id"]]) if j["arquetipo"]]
+        js = por.get(t["id"])
         if js:
             q = sum(1 for j in js if j["arquetipo"] == arq)
             saida.append({"torneio": t["id"], "nome": t["nome"], "data": t["data"], "pct": round(100 * q / len(js), 1), "jogadores": q})
@@ -336,7 +405,63 @@ def _participacao_por_torneio(arq):
 
 
 def _uso_cartas(listas, jogadores_por_chave):
-    """Por carta: % das listas que usam, média de cópias, distribuição e taxa de vitória com/sem."""
+    """Por carta: % das listas que usam, média de cópias, distribuição e taxa de vitória com/sem.
+
+    Uma passada só pelas linhas das listas: para cada carta, soma as vitórias/derrotas/empates das
+    listas que a usam (por número de cópias); "sem a carta" = total menos "com a carta".
+    Mesmo resultado da versão anterior (_uso_cartas_lento), muito mais rápido com milhares de listas
+    (ver testes/experimentos/e4_desempenho.py)."""
+    por_lista = defaultdict(dict)
+    nomes = {}
+    for l in listas:
+        chave = l.get("carta_id") or l["carta"]
+        nomes.setdefault(chave, (l.get("carta_base") or l["carta"], l.get("carta_id") or ""))
+        por_lista[(l["torneio"], l["labs_id"])][chave] = por_lista[(l["torneio"], l["labs_id"])].get(chave, 0) + l["qtd"]
+    n_listas = len(por_lista)
+    if not n_listas:
+        return []
+
+    def placar_lista(ch):
+        j = jogadores_por_chave.get(ch)
+        return (j["v"], j["d"], j["e"]) if j and j["v"] is not None else (0, 0, 0)
+
+    def taxa(vde):
+        v, d, e = vde
+        return round(100 * v / (v + d + e), 1) if (v + d + e) else None
+
+    total = [0, 0, 0]
+    por_carta = defaultdict(lambda: defaultdict(lambda: [0, 0, 0, 0]))  # carta -> cópias -> [listas, v, d, e]
+    for ch, lista in por_lista.items():
+        vde = placar_lista(ch)
+        for i in range(3):
+            total[i] += vde[i]
+        for carta, q in lista.items():
+            g = por_carta[carta][q]
+            g[0] += 1
+            g[1] += vde[0]
+            g[2] += vde[1]
+            g[3] += vde[2]
+    saida = []
+    for carta, grupos in sorted(por_carta.items(), key=lambda kv: -sum(g[0] for g in kv[1].values())):
+        qtd = sum(g[0] for g in grupos.values())
+        com = [sum(g[i] for g in grupos.values()) for i in (1, 2, 3)]
+        sem = [total[i] - com[i] for i in range(3)]
+        por_copias = {q: {"listas": grupos[q][0], "taxa": taxa(grupos[q][1:])} for q in sorted(grupos)}
+        if qtd < n_listas:
+            por_copias = {0: {"listas": n_listas - qtd, "taxa": taxa(sem)}, **por_copias}
+        soma_copias = sum(q * g[0] for q, g in grupos.items())
+        saida.append({
+            "chave": carta, "por_copias": por_copias,
+            "carta": nomes[carta][0], "carta_id": nomes[carta][1], "listas": qtd, "pct": round(100 * qtd / n_listas, 1),
+            "media_copias": round(soma_copias / qtd, 2),
+            "distribuicao": {q: grupos[q][0] for q in sorted(grupos)},
+            "taxa_com": taxa(com), "taxa_sem": taxa(sem) if qtd < n_listas else None,
+        })
+    return saida
+
+
+def _uso_cartas_lento(listas, jogadores_por_chave):
+    """Versão anterior de _uso_cartas (mantida para conferir que a nova dá o mesmo resultado)."""
     # Agrupa pela arte básica (conversor): artes alternativas da mesma carta contam juntas.
     por_lista = defaultdict(dict)
     nomes = {}
@@ -458,28 +583,37 @@ def cartas_matchups(arq, chave_carta, torneios=None, k=8, min_partidas=5):
 
 # ================================================================== analista de decisões
 
-def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3, jogador=""):
+def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3, jogador="", ordem=""):
     """
     O que nas SUAS partidas anda junto com vencer ou perder. Tudo vem dos logs:
-      - aberturas: cartas que você jogou nos seus 2 primeiros turnos e a taxa de vitória;
+      - aberturas: cartas que você jogou nos seus 2 primeiros turnos e a taxa de vitória,
+        separadas por quem começou (regra do Standard: quem começa não ataca nem joga Apoiador
+        no 1º turno, e ninguém evolui no próprio 1º turno; então as aberturas são jogos diferentes);
       - corrida de prêmios: primeiro prêmio, viradas e o turno em que você perdeu o controle;
-      - ritmo: em que turno você atacou e pegou o primeiro prêmio, nas vitórias e nas derrotas;
+      - ritmo: em que turno você atacou e pegou o primeiro prêmio, nas vitórias e nas derrotas,
+        também separado por quem começou;
       - cartas jogadas: taxa de vitória quando a carta saiu na partida e quando não saiu.
+    ordem: '' = todas, 'primeiro' = só quando você começou, 'segundo' = só quando foi em segundo.
     São correlações: mostram padrões para investigar, não provam causa.
     """
     base = analise_pessoal(nick, de, ate, deck, None, lista, adv, jogador)
     eu = base["eu"]
+    quer = {"primeiro": True, "segundo": False}.get(ordem)
     linhas = [l for l in base["partidas"] if l["resultado"]
               and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
               and (not deck or slug(l["meu_deck"]) == slug(deck))
               and (not lista or str(l["deck_id"]) == str(lista))
-              and (not adv or slug(l["deck_adv"]) == slug(adv))]
+              and (not adv or slug(l["deck_adv"]) == slug(adv))
+              and (quer is None or l["comecei"] is quer)]
     abertura = defaultdict(lambda: [0, 0])     # carta -> [vitórias, partidas]
+    abertura_ordem = {True: defaultdict(lambda: [0, 0]), False: defaultdict(lambda: [0, 0])}
+    totais_ordem = {True: [0, 0], False: [0, 0]}  # [vitórias, partidas] começando / indo em segundo
     jogadas = defaultdict(lambda: [0, 0])
     primeiro_premio = defaultdict(lambda: [0, 0])
     viradas = {"perdendo_e_venceu": 0, "perdendo": 0, "ganhando_e_perdeu": 0, "ganhando": 0}
     perdeu_controle = Counter()                # turno (seu) em que o adversário passou à frente de vez
     ritmo = {"V": {"ataque": [], "premio": []}, "D": {"ataque": [], "premio": []}}
+    ritmo_ordem = {o: {"V": {"ataque": [], "premio": []}, "D": {"ataque": [], "premio": []}} for o in (True, False)}
     total_v = sum(1 for l in linhas if l["resultado"] == "V")
 
     for l in linhas:
@@ -487,6 +621,7 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
         venceu = l["resultado"] == "V"
         adv_nome = l["adversario"]
         eu = l["eu"]  # ponto de vista desta partida (você ou o amigo que mandou o log)
+        comecei = l["comecei"]
         # meus turnos numerados (1º turno meu, 2º turno meu...)
         meus_turnos = {}
         for e in p["eventos"]:
@@ -509,14 +644,21 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
         for c in cartas_abertura:
             abertura[c][1] += 1
             abertura[c][0] += venceu
+            if comecei is not None:
+                abertura_ordem[comecei][c][1] += 1
+                abertura_ordem[comecei][c][0] += venceu
+        if comecei is not None:
+            totais_ordem[comecei][1] += 1
+            totais_ordem[comecei][0] += venceu
         for c in cartas_partida:
             jogadas[c][1] += 1
             jogadas[c][0] += venceu
         k = "V" if venceu else "D"
-        if primeiro_ataque:
-            ritmo[k]["ataque"].append(primeiro_ataque)
-        if primeiro_premio_turno:
-            ritmo[k]["premio"].append(primeiro_premio_turno)
+        for alvo in ([ritmo] + ([ritmo_ordem[comecei]] if comecei is not None else [])):
+            if primeiro_ataque:
+                alvo[k]["ataque"].append(primeiro_ataque)
+            if primeiro_premio_turno:
+                alvo[k]["premio"].append(primeiro_premio_turno)
 
         # corrida de prêmios turno a turno
         s_eu = p["resumo"]["serie"].get(eu) or []
@@ -548,26 +690,35 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
                 meu_n = max((v for tt, v in meus_turnos.items() if tt <= ultimo), default=1)
                 perdeu_controle[meu_n] += 1
 
-    def tabela(dic):
+    def tabela(dic, n_total, v_total):
         saida = []
         for c, (v, n) in dic.items():
             if n < min_partidas:
                 continue
-            sem_n, sem_v = len(linhas) - n, total_v - v
+            sem_n, sem_v = n_total - n, v_total - v
             com = placar(v, n - v)
             saida.append({"carta": c, **com, "taxa_sem": round(100 * sem_v / sem_n, 1) if sem_n else None, "sem_n": sem_n,
                           "diferenca": round(com["taxa"] - 100 * sem_v / sem_n, 1) if sem_n and com["taxa"] is not None else None})
         return sorted(saida, key=lambda x: (-(x["n"]), x["carta"]))
 
     media = lambda xs: round(sum(xs) / len(xs), 1) if xs else None
+    resumo_ritmo = lambda r: {k: {"ataque": media(v["ataque"]), "premio": media(v["premio"]), "n": len(v["ataque"])} for k, v in r.items()}
+    por_ordem = {}
+    for chave, o in (("primeiro", True), ("segundo", False)):
+        v_o, n_o = totais_ordem[o]
+        por_ordem[chave] = {"partidas": n_o, "vitorias": v_o, **placar(v_o, n_o - v_o),
+                            "aberturas": tabela(abertura_ordem[o], n_o, v_o), "ritmo": resumo_ritmo(ritmo_ordem[o])}
     return {
-        "eu": base["eu"], "jogador": jogador or "", "partidas": len(linhas), "vitorias": total_v, "min_partidas": min_partidas,
-        "aberturas": tabela(abertura),
-        "cartas_jogadas": tabela(jogadas),
+        "eu": base["eu"], "jogador": jogador or "", "ordem": ordem or "", "partidas": len(linhas), "vitorias": total_v,
+        "min_partidas": min_partidas,
+        "aberturas": tabela(abertura, len(linhas), total_v),
+        "por_ordem": por_ordem,
+        "sem_ordem": sum(1 for l in linhas if l["comecei"] is None),
+        "cartas_jogadas": tabela(jogadas, len(linhas), total_v),
         "primeiro_premio": [{"grupo": g, **placar(v, n - v)} for g, (v, n) in primeiro_premio.items()],
         "viradas": {**viradas,
                     "taxa_virada": round(100 * viradas["perdendo_e_venceu"] / viradas["perdendo"], 1) if viradas["perdendo"] else None,
                     "taxa_entregou": round(100 * viradas["ganhando_e_perdeu"] / viradas["ganhando"], 1) if viradas["ganhando"] else None},
         "perdeu_controle": [{"turno": t, "derrotas": q} for t, q in sorted(perdeu_controle.items())],
-        "ritmo": {k: {"ataque": media(v["ataque"]), "premio": media(v["premio"]), "n": len(v["ataque"])} for k, v in ritmo.items()},
+        "ritmo": resumo_ritmo(ritmo),
     }

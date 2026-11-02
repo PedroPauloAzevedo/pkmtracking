@@ -51,6 +51,7 @@ ARQ_MANUAIS = PASTA / "manuais.json"
 # Séries baixadas: Escarlate e Violeta (sv) e Mega Evolução (me) cobrem o formato Padrão atual.
 SERIES = ("sv", "me")
 VERSAO_BUSCA = 2  # aumente quando mudar a forma de buscar coleções: força uma nova verificação
+VERSAO_INDICE = 2  # aumente quando o índice ganhar campos novos: ele é remontado a partir dos sets já baixados
 
 # Códigos de coleção usados pelo Limitless/TCG Live. Quando o TCGdex informa o código, ele vale;
 # esta tabela é só reserva. Códigos desconhecidos são aprendidos comparando nome + número.
@@ -154,6 +155,10 @@ def montar_indice():
                 "tem_img": bool(c.get("image")),
                 "tipos": c.get("types") or [], "chave": chave_funcional(c),
                 "estagio": c.get("stage") or "", "ps": c.get("hp"),
+                # marca de regulamento (H, I, J...): decide se a impressão vale no Standard
+                "marca": re.sub(r"[^A-Z]", "", (c.get("regulationMark") or "").upper().replace("NONE", "")),
+                "tipo_treinador": c.get("trainerType") or "", "tipo_energia": c.get("energyType") or "",
+                "ace_spec": "ace spec" in (c.get("rarity") or "").lower(),
             }
             cartas[e["id"]] = e
             if codigo:
@@ -198,11 +203,12 @@ def montar_indice():
         chaves.sort(key=lambda k: max(cartas[i]["data"] for i in grupos[k]), reverse=True)
 
     indice = {"cartas": cartas, "por_codigo": por_codigo, "basica": basica, "por_nome": por_nome, "grupos": grupos,
-              "montado_em": datetime.now().isoformat(timespec="seconds")}
+              "montado_em": datetime.now().isoformat(timespec="seconds"), "versao": VERSAO_INDICE}
     _gravar_json(ARQ_INDICE, indice)
     global _indice
     with _trava:
         _indice = indice
+        _legal.clear()
     return indice
 
 
@@ -211,7 +217,96 @@ def indice():
     with _trava:
         if _indice is None:
             _indice = _ler_json(ARQ_INDICE, {"cartas": {}, "por_codigo": {}, "basica": {}, "por_nome": {}})
-        return _indice
+        ind = _indice
+    if ind.get("cartas") and ind.get("versao") != VERSAO_INDICE and PASTA_SETS.exists():
+        try:
+            return montar_indice()   # índice de uma versão antiga do programa: remonta com os campos novos
+        except Exception:
+            pass
+    return ind
+
+
+def ace_spec():
+    """(ids, nomes normalizados) das cartas ACE SPEC da biblioteca (raridade "ACE SPEC Rare" no TCGdex).
+    Os nomes servem de reserva: uma impressão nova sem raridade ainda é reconhecida pelo nome."""
+    from .leitor import normalizar_nome_carta
+    ind = indice()
+    chave = (ind.get("montado_em"), len(ind.get("cartas", {})))  # muda quando o índice é remontado
+    if _ace.get("chave") != chave:
+        ids = {i for i, e in ind.get("cartas", {}).items() if e.get("ace_spec")}
+        nomes = {normalizar_nome_carta(ind["cartas"][i]["nome"]) for i in ids}
+        _ace.update(chave=chave, ids=ids, nomes=nomes)
+    return _ace["ids"], _ace["nomes"]
+
+
+_ace = {}
+
+
+# ------------------------------------------------------------------ Standard: marcas de regulamento
+
+_legal = {}  # cache: (marcas, chave funcional) -> True / False / None
+
+
+ENERGIAS_BASICAS = {f"{t.lower()} energy" for t in TIPOS_ENERGIA if t not in ("Dragon", "Colorless")}
+
+
+def eh_energia_basica(nome):
+    """'Fire Energy' e 'Basic Fire Energy' são Energia Básica. (Pelo nome: o TCGdex marca várias
+    Energias Especiais novas como "Normal".)"""
+    return re.sub(r"^basic ", "", normalizar(nome)) in ENERGIAS_BASICAS
+
+
+def _marca_vale(e, marcas):
+    """True/False para a impressão; None quando o TCGdex ainda não informa a marca."""
+    if e.get("set") == "manual":
+        return None   # imagem adicionada à mão: não sabemos a marca
+    m = e.get("marca") or ""
+    if m:
+        return m in marcas
+    if (e.get("categoria") or "").lower() == "energy" and eh_energia_basica(e.get("nome")):
+        return True   # Energia Básica não tem marca e vale sempre
+    return None
+
+
+def legal_chave(chave):
+    """A carta (funcional) vale no Standard? Regra de reimpressão: basta uma impressão com marca
+    válida e o mesmo nome e texto. True / False / None (marca desconhecida)."""
+    from . import regras_jogo
+    marcas = regras_jogo.marcas_standard()
+    versao_base = regras_jogo.base()["atualizada_em"]
+    if _legal.get("_base") != versao_base:  # base de regras nova: refaz o cache
+        _legal.clear()
+        _legal["_base"] = versao_base
+        # promos antigos liberados pela Play! Pokémon (ex.: Professor's Research SWSH152), lidos da base
+        _legal["_promos"] = {normalizar(n) for n in regras_jogo.promos_liberados()}
+    k = (marcas, chave)
+    if k in _legal:
+        return _legal[k]
+    ind = indice()
+    valores = [_marca_vale(ind["cartas"][i], marcas) for i in ind.get("grupos", {}).get(chave, []) if i in ind["cartas"]]
+    if (chave or "").split("|")[0] in _legal["_promos"]:
+        valores.append(True)
+    r = True if True in valores else (None if (None in valores or not valores) else False)
+    _legal[k] = r
+    return r
+
+
+def legal_carta(id_):
+    e = indice()["cartas"].get(id_)
+    return legal_chave(e["chave"]) if e else None
+
+
+def _preferir_standard(chaves):
+    """Ordena versões de cartas com o mesmo nome: primeiro as que valem no Standard, depois as de marca
+    desconhecida e por último as que não valem (mantendo a ordem da mais recente para a mais antiga)."""
+    peso = {True: 0, None: 1, False: 2}
+    return sorted(chaves, key=lambda k: peso[legal_chave(k)])
+
+
+def grupo(chave):
+    """Todas as impressões de uma carta funcional."""
+    ind = indice()
+    return [ind["cartas"][i] for i in ind.get("grupos", {}).get(chave, []) if i in ind["cartas"]]
 
 
 def _basica_de(id_):
@@ -230,7 +325,8 @@ def por_nome(nome):
     for t in tentativas:
         chaves = ind["por_nome"].get(t)
         if chaves:
-            return ind["cartas"].get(ind["basica"][chaves[0]])
+            # várias cartas com o mesmo nome: no Standard só as de marca válida podem estar em jogo
+            return ind["cartas"].get(ind["basica"][_preferir_standard(chaves)[0]])
     if ind["cartas"]:
         nao_encontradas[nome] = nao_encontradas.get(nome, 0) + 1
     return None
@@ -264,7 +360,9 @@ def converter(codigo, numero, nome=None):
 def info_publica(e):
     if not e:
         return None
-    return {k: e[k] for k in ("id", "nome", "codigo", "numero", "set_nome", "raridade", "categoria", "tipos", "estagio", "ps")}
+    saida = {k: e.get(k) for k in ("id", "nome", "codigo", "numero", "set_nome", "raridade", "categoria", "tipos", "estagio", "ps", "marca")}
+    saida["standard"] = legal_chave(e["chave"]) if e.get("chave") else None
+    return saida
 
 
 # ------------------------------------------------------------------ imagens

@@ -2,6 +2,10 @@
 dados/
 .venv/
 __pycache__/
+# Montagem do instalador (instalador/montar.py)
+build/
+dist/
+instalador/cache/
 *.pyc
 *.log
 # Arquivos do sistema

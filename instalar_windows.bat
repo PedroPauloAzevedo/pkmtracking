@@ -19,5 +19,7 @@ echo.
 set /p AUTO=Instalar tambem o modo automatico (reconhece e clica nos botoes do jogo)? [s/N]
 if /i "%AUTO%"=="s" pip install -r requirements-auto.txt
 echo.
-echo Pronto! Para abrir o programa, use iniciar_windows.bat
+python app.py --criar-atalho
+echo Pronto! Para abrir o programa, use o atalho "Coletor TCG Live" na Area de Trabalho
+echo (ou o iniciar_windows.bat).
 pause

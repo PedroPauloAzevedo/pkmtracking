@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coletor de Partidas TCG Live</title>
+<link rel="icon" href="/icone.ico">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: barra lateral de navegação + área de conteúdo; vira barra superior no celular. */
@@ -46,6 +47,7 @@ h1 { font-size: 1.6rem; font-weight: 800; } h2 { font-size: 1.15rem; font-weight
 .sub { color: var(--muted); margin: 2px 0 0; max-width: 70ch; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .grow { flex: 1 1 200px; }
@@ -119,6 +121,21 @@ nav details.programa a { display: block; padding-left: 34px; }
 .deck-capa .lapis { position: absolute; bottom: 6px; right: 8px; background: none; border: none; font-size: .95rem; color: var(--muted); padding: 2px 6px; opacity: .55; }
 .deck-card:hover .lapis, .deck-capa .lapis:focus { opacity: 1; }
 .deck-capa .corrigido { position: absolute; bottom: 8px; left: 10px; font-size: .68rem; color: var(--muted); }
+/* primeiro uso guiado e busca rápida */
+.guia-passos { display: flex; gap: 6px; margin: 4px 0 12px; }
+.guia-passos span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.guia-passos span.feito { background: var(--accent); }
+.guia ol, .guia ul { margin: 6px 0; padding-left: 20px; }
+.guia .ok { color: var(--good); font-weight: 600; }
+nav .busca-btn { display: flex; align-items: center; gap: 8px; margin: 0 2px 10px; color: var(--muted); background: var(--sunken); justify-content: flex-start; }
+nav .busca-btn kbd { margin-left: auto; font: 500 .7rem var(--f-mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.busca { width: min(620px, 100%); align-self: start; margin-top: 10vh; padding: 10px; }
+.busca input { width: 100%; font-size: 1rem; padding: 10px 12px; }
+.busca ul { list-style: none; margin: 8px 0 0; padding: 0; max-height: 56vh; overflow-y: auto; }
+.busca li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 7px; cursor: pointer; }
+.busca li[aria-selected="true"] { background: var(--sunken); box-shadow: inset 3px 0 0 var(--accent); }
+.busca li .b-tipo { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); width: 92px; flex: none; }
+.busca li .extra { margin-left: auto; color: var(--muted); font-size: .8rem; white-space: nowrap; }
 .janela-fundo { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 50; padding: 16px; }
 .janela { background: var(--surface); color: var(--ink); border-radius: 12px; padding: 18px; width: min(440px, 100%); box-shadow: 0 10px 40px rgba(0,0,0,.3); }
 .janela .previa { display: flex; justify-content: center; gap: 10px; min-height: 76px; margin: 10px 0; }
@@ -176,9 +193,19 @@ nav details.programa a { display: block; padding-left: 34px; }
 .teste { background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-family: var(--f-mono); font-size: 0.78rem; white-space: pre-wrap; min-height: 40px; }
 .regras input[type=text] { width: 100%; font-family: var(--f-mono); font-size: 0.76rem; }
 /* áreas da navegação */
-.areas { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--sunken); padding: 4px; border-radius: 9px; margin: 0 2px 10px; }
-.areas button { border: none; background: transparent; padding: 7px 6px; font-size: 0.82rem; color: var(--muted); }
-.areas button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+nav a.secao { font-size: 0.95rem; padding: 9px 10px; }
+/* abas internas de cada seção (Minhas partidas, Meta e torneios) */
+.abas { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.abas a { padding: 8px 12px; color: var(--muted); text-decoration: none; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.abas a:hover { color: var(--ink); }
+.abas a[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+/* quadro "estado da captura" no Início */
+.captura { flex-direction: row; align-items: center; gap: 14px; flex-wrap: wrap; }
+.captura .luz { width: 12px; height: 12px; margin: 0; flex: none; }
+.captura .txt { flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px; }
+.captura .txt b { font-size: 1rem; }
+details.manual summary { cursor: pointer; font-weight: 600; }
+details.manual[open] summary { margin-bottom: 10px; }
 .trilha { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 img.ico { width: 34px; height: 28px; object-fit: contain; vertical-align: middle; margin-right: 2px; flex: none; }
 .deck-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
@@ -235,36 +262,118 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
   .app { grid-template-columns: 1fr; background: none; }
   nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; }
   nav .grupo, nav .estado { display: none; }
-  .areas { width: 100%; }
+  nav details.programa { flex-basis: 100%; margin-top: 4px; }
   main { padding: 18px 16px 48px; }
   .grid2, .grid3 { grid-template-columns: 1fr; }
+  .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* ---- Regras do Standard */
+.rg-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 18px; align-items: start; }
+.rg-indice { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; display: flex; flex-direction: column; gap: 1px; font-size: .84rem; padding: 12px; }
+.rg-indice button { background: none; border: none; text-align: left; padding: 4px 8px; border-radius: 6px; color: var(--muted); font-weight: 500; display: block; width: 100%; }
+.rg-indice button:hover { color: var(--ink); background: var(--sunken); }
+.rg-indice button.n2 { color: var(--ink); font-weight: 600; margin-top: 6px; }
+.rg-indice button.n3 { padding-left: 18px; font-size: .8rem; }
+.rg-doc { max-width: 82ch; line-height: 1.6; }
+.rg-doc h1 { display: none; }
+.rg-doc h2 { font-size: 1.25rem; margin: 26px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); scroll-margin-top: 12px; }
+.rg-doc section:first-child h2 { border-top: none; margin-top: 0; padding-top: 0; }
+.rg-doc h3 { font-size: 1rem; margin: 18px 0 6px; scroll-margin-top: 12px; }
+.rg-doc p { margin: 0 0 10px; }
+.rg-doc ul, .rg-doc ol { margin: 0 0 10px; padding-left: 22px; }
+.rg-doc li { margin: 3px 0; }
+.rg-doc .tabela { margin: 6px 0 12px; }
+.rg-doc th { white-space: normal; }
+.rg-doc td { vertical-align: top; }
+.rg-doc a { color: var(--p1); }
+.rg-doc mark { background: color-mix(in srgb, var(--accent) 55%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; }
+.rg-usa { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.rg-usa > div { background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: .84rem; }
+.rg-usa b { display: block; font: 700 1.05rem var(--f-display); margin-bottom: 2px; }
+.marcas-reg { display: inline-flex; gap: 4px; } .marcas-reg span { font: 700 .8rem var(--f-mono); border: 1.5px solid currentColor; border-radius: 4px; padding: 0 5px; }
+@media (max-width: 900px) { .rg-layout { grid-template-columns: 1fr; } .rg-indice { position: static; max-height: 260px; } }
+/* ---- Decisões: aberturas por quem começou */
+.ordem-cab { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+.ordem-cab h3 { font-size: 1rem; }
+/* ---- Lista oficial (folha de papel, sempre clara) */
+.lo-barra { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
+.folha-wrap { overflow-x: auto; padding-bottom: 6px; }
+.folha { --tinta: #111; --linha-cor: #9aa1ab; --fundo-cab: #e9ecf1; --h-linha: 6.2mm;
+  width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; color: var(--tinta); box-shadow: 0 2px 14px rgba(0,0,0,.18);
+  padding: 9mm 10mm; font: 10pt/1.25 "IBM Plex Sans", Arial, sans-serif; display: flex; flex-direction: column; gap: 3.2mm; color-scheme: light; }
+.folha.carta { width: 215.9mm; min-height: 279.4mm; }
+.folha.apertada { --h-linha: 5.2mm; } .folha.muito-apertada { --h-linha: 4.4mm; font-size: 9pt; }
+.folha input { font: inherit; color: var(--tinta); background: transparent; border: none; border-bottom: 1px solid var(--linha-cor); border-radius: 0; padding: 0 2px; min-width: 0; }
+.folha input:focus { outline: none; background: #fff6d6; }
+.folha .topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 6mm; border-bottom: 2px solid var(--tinta); padding-bottom: 2.5mm; }
+.folha .topo h2 { font: 800 15pt "Bricolage Grotesque", Arial, sans-serif; color: var(--tinta); }
+.folha .topo .temporada { font-size: 9pt; color: #333; margin-top: 1mm; }
+.folha .formato { font-size: 9.5pt; white-space: nowrap; text-align: right; }
+.folha .caixa { display: inline-block; width: 3.4mm; height: 3.4mm; border: 1.2px solid var(--tinta); vertical-align: -0.5mm; margin: 0 1.2mm 0 3mm; position: relative; background: #fff; }
+.folha .caixa.x::after { content: "✕"; position: absolute; inset: -1.2mm 0 0 0; text-align: center; font-size: 9pt; font-weight: 700; line-height: 5mm; }
+.folha .jogador { display: grid; grid-template-columns: 1.5fr 1fr 1.25fr; gap: 4mm; font-size: 9.5pt; }
+.folha .jogador label { display: flex; gap: 1.5mm; align-items: baseline; white-space: nowrap; }
+.folha .jogador input { flex: 1; }
+.folha .nasc input { width: 8mm; text-align: center; flex: none; } .folha .nasc input.ano { width: 12mm; }
+.folha .divisoes { display: flex; flex-wrap: wrap; gap: 1mm 5mm; font-size: 8.8pt; align-items: center; }
+.folha .divisoes button { background: none; border: none; padding: 0; font: inherit; color: var(--tinta); cursor: pointer; display: inline-flex; align-items: center; }
+.folha .corpo { display: grid; grid-template-columns: 52mm minmax(0, 1fr); gap: 5mm; flex: 1; }
+.folha .legenda-sets { font-size: 7.6pt; display: flex; flex-direction: column; gap: 2.4mm; }
+.folha .legenda-sets h4 { font: 700 7.8pt "IBM Plex Sans", Arial, sans-serif; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 .8mm; border-bottom: 1px solid var(--tinta); padding-bottom: .5mm; }
+.folha .legenda-sets .sets { display: grid; grid-template-columns: 11mm 1fr; gap: .4mm 1.5mm; }
+.folha .legenda-sets .sets b { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+.folha .marcas-std { display: flex; gap: 2mm; } .folha .marcas-std span { font: 700 11pt "IBM Plex Mono", monospace; border: 1.5px solid var(--tinta); border-radius: 1.2mm; padding: .2mm 1.6mm; }
+.folha .admin { margin-top: auto; border: 1.5px solid var(--tinta); min-height: 30mm; padding: 1.5mm 2mm; font: 700 7.5pt "IBM Plex Sans", Arial, sans-serif; letter-spacing: .05em; }
+.folha .secoes { display: flex; flex-direction: column; gap: 3mm; }
+.folha table { width: 100%; border-collapse: collapse; font-size: inherit; table-layout: fixed; }
+.folha th { position: static; background: var(--fundo-cab); color: var(--tinta); font: 700 8pt "IBM Plex Sans", Arial, sans-serif; letter-spacing: .03em; text-transform: uppercase; padding: 1mm 1.5mm; border: 1px solid var(--tinta); white-space: nowrap; }
+.folha th.sec { background: var(--tinta); color: #fff; text-align: left; font-size: 9pt; text-transform: none; letter-spacing: 0; }
+.folha th.sec small { float: right; font-weight: 500; }
+.folha td { border: 1px solid var(--linha-cor); padding: 0 1mm; height: var(--h-linha); vertical-align: middle; background: #fff; }
+.folha td input { width: 100%; border: none; height: calc(var(--h-linha) - 1px); }
+.folha td.qtd input, .folha td.num input, .folha td.reg input, .folha td.set input { text-align: center; }
+.folha td.tira { width: 6mm; border: none; padding: 0; background: transparent; }
+.folha td.tira button { border: none; background: none; color: #b33; font-size: 10pt; padding: 0 1mm; opacity: .45; cursor: pointer; }
+.folha tr:hover td.tira button { opacity: 1; }
+.folha .mais { font-size: 8pt; padding: 1mm 2.5mm; margin-top: 1mm; background: #f2f4f7; color: #222; border-color: #c9ced6; }
+.folha .rodape { font-size: 7.4pt; color: #333; border-top: 1px solid var(--tinta); padding-top: 1.5mm; display: flex; justify-content: space-between; gap: 6mm; }
+.folha .rodape b { font-size: 9pt; color: var(--tinta); white-space: nowrap; }
+.lo-validacao ul { margin: 4px 0 0; padding-left: 20px; }
+.lo-validacao.ok { border-left-color: var(--good); }
+.lo-salvo { font-size: .82rem; }
+@media print {
+  @page { margin: 8mm; }
+  html, body { background: #fff !important; }
+  body.imprimindo .app > nav, body.imprimindo .no-print, body.imprimindo #toast, body.imprimindo .janela-fundo { display: none !important; }
+  body.imprimindo .app { display: block; background: none; min-height: 0; }
+  body.imprimindo main { padding: 0; max-width: none; display: block; }
+  body.imprimindo main > *:not(.folha-wrap) { display: none !important; }
+  body.imprimindo .folha-wrap { overflow: visible; padding: 0; }
+  body.imprimindo .folha { box-shadow: none; width: auto; min-height: 0; padding: 0; margin: 0; gap: 2.4mm; --h-linha: 4.9mm; }
+  body.imprimindo .folha.apertada { --h-linha: 4.4mm; } body.imprimindo .folha.muito-apertada { --h-linha: 3.9mm; }
+  body.imprimindo .folha .secoes { gap: 2mm; } body.imprimindo .folha input:focus { background: transparent; }
+  body.imprimindo .folha input { border-bottom-color: transparent; }
+  body.imprimindo .folha .jogador input, body.imprimindo .folha .nasc input { border-bottom-color: #555; }
+  body.imprimindo .folha td.tira, body.imprimindo .folha .mais { display: none; }
+  .folha th, .folha .marcas-std span, .folha th.sec { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 </style>
 </head>
 <body>
 <div class="app">
   <nav>
     <div class="marca">Coletor TCG Live<small>Partidas e campeonatos</small></div>
-    <div class="areas">
-      <button data-ir="meu" aria-pressed="true">Minhas partidas</button>
-      <button data-ir="geral" aria-pressed="false">Geral</button>
-    </div>
-    <a href="#painel" data-area="meu">Painel</a>
-    <a href="#partidas" data-area="meu">Partidas</a>
-    <a href="#desempenho" data-area="meu">Desempenho</a>
-    <a href="#decisoes" data-area="meu">Decisões</a>
-    <a href="#decks" data-area="meu">Meus decks</a>
-    <a href="#meta" data-area="geral">Meta</a>
-    <a href="#matchups" data-area="geral">Matchups</a>
-    <a href="#deck" data-area="geral">Perfil de deck</a>
-    <a href="#cartas" data-area="geral">Uso de cartas</a>
-    <a href="#cartas-mu" data-area="geral">Cartas x matchups</a>
-    <a href="#torneios" data-area="geral">Torneios</a>
+    <button class="busca-btn" id="abrir-busca" type="button">Buscar<kbd>Ctrl K</kbd></button>
+    <a href="#painel" data-secao="inicio" class="secao">Início</a>
+    <a href="#partidas" data-secao="partidas" class="secao">Minhas partidas</a>
+    <a href="#decks" data-secao="decks" class="secao">Meus decks</a>
+    <a href="#meta" data-secao="meta" class="secao">Meta e torneios</a>
     <details class="programa" id="nav-programa">
       <summary><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Programa<span class="seta">›</span></summary>
+      <a href="#regras-standard">Regras do Standard</a>
       <a href="#ajustes">Ajustes e captura</a>
       <a href="#amigos">Amigos (trocar logs)</a>
       <a href="#biblioteca">Biblioteca de cartas</a>
@@ -289,9 +398,9 @@ const fmt = (x, d = 1) => x == null ? '–' : Number(x).toLocaleString('pt-BR', 
 const pct = x => x == null ? '–' : fmt(x) + '%';
 const CORES = ['--c1','--c2','--c3','--c4','--c5','--c6','--c7','--c8'].map(v => `var(${v})`);
 
-const AJUDA_CONEXAO = 'Não consegui falar com o programa. Confira: 1) a janela preta do Coletor está aberta (abra pelo iniciar_windows.bat); 2) o endereço no navegador é http://127.0.0.1:8765, e não um arquivo aberto com dois cliques; 3) se você clicou dentro da janela preta, aperte Esc nela. Depois recarregue esta página (F5).';
+const AJUDA_CONEXAO = 'Não consegui falar com o programa. Confira: 1) o Coletor está aberto: o ícone dele aparece perto do relógio do Windows (se não estiver, abra pelo atalho Coletor TCG Live da Área de Trabalho ou pelo iniciar_windows.bat); 2) o endereço no navegador é http://127.0.0.1:8765, e não um arquivo aberto com dois cliques; 3) se o Coletor estiver com a janela preta aberta e você clicou dentro dela, aperte Esc nela. Depois recarregue esta página (F5).';
 async function api(url, opts = {}) {
-  if (location.protocol === 'file:') throw new Error('Esta página foi aberta como arquivo. Ela só funciona pelo programa: rode o iniciar_windows.bat e use o endereço http://127.0.0.1:8765.');
+  if (location.protocol === 'file:') throw new Error('Esta página foi aberta como arquivo. Ela só funciona pelo programa: abra pelo atalho Coletor TCG Live (ou pelo iniciar_windows.bat) e use o endereço http://127.0.0.1:8765.');
   let r;
   try { r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts }); }
   catch (e) { throw new Error(AJUDA_CONEXAO); }
@@ -354,21 +463,41 @@ function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', alt
   return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${g}${linhas}</svg></div>
     <div class="legenda">${series.map((s, k) => `<span><i style="background:${s.cor || CORES[k % CORES.length]}"></i>${esc(s.nome)}</span>`).join('')}</div>`;
 }
+// Fonte dos dados de campeonato: grandes eventos (Limitless Labs), torneios online (play.limitlesstcg.com) ou todos.
+// Só entram torneios Standard: os que o Limitless marca com outro formato ficam de fora das contas.
+try { S.fonte = localStorage.getItem('fonte') || 'grandes'; } catch (e) { S.fonte = 'grandes'; }
+const FONTES = [['grandes', 'Grandes eventos'], ['online', 'Torneios online'], ['todos', 'Todos']];
+const ehStandard = t => !t.formato || t.formato === 'standard';
+const daFonte = t => ehStandard(t) && (S.fonte === 'todos' || (S.fonte === 'online') === (t.fonte === 'online'));
 function seletorTorneios() {
   if (!S.torneios || !S.torneios.length) return `<div class="aviso">Nenhum torneio importado ainda. Vá em <a href="#torneios">Importar torneios</a>.</div>`;
-  return `<div class="row"><span class="label">Torneios</span>
-    <div class="chips">${S.torneios.map(t => `<button class="chip ch-torneio" data-id="${t.id}" aria-pressed="${!S.selTorneios.length || S.selTorneios.includes(t.id)}">${esc(t.nome)}</button>`).join('')}</div></div>`;
+  const lista = S.torneios.filter(daFonte);
+  const fontes = `<div class="row"><span class="label">Fonte</span><div class="chips">${FONTES.map(([k, n]) =>
+    `<button class="chip ch-fonte" data-fonte="${k}" aria-pressed="${S.fonte === k}">${n}</button>`).join('')}</div></div>`;
+  if (!lista.length) return fontes + `<div class="aviso">Nenhum torneio desta fonte ainda.${S.fonte !== 'grandes' ? ' Os torneios online chegam pela atualização automática em <a href="#torneios">Torneios</a>.' : ''}</div>`;
+  if (S.fonte !== 'grandes') {  // dezenas de torneios por semana: mostra um resumo em vez de um botão para cada
+    const datas = lista.map(t => t.data).filter(Boolean).sort();
+    const jog = lista.reduce((a, t) => a + (t.jogadores || 0), 0);
+    return fontes + `<p class="muted" style="font-size:.85rem">${lista.length} torneios${datas.length ? `, de ${fmtData(datas[0])} a ${fmtData(datas[datas.length - 1])}` : ''}, ${jog.toLocaleString('pt-BR')} jogadores.</p>`;
+  }
+  return fontes + `<div class="row"><span class="label">Torneios</span>
+    <div class="chips">${lista.map(t => `<button class="chip ch-torneio" data-id="${t.id}" aria-pressed="${!S.selTorneios.length || S.selTorneios.includes(t.id)}">${esc(t.nome)}</button>`).join('')}</div></div>`;
 }
 function ligarSeletor(recarregar) {
+  document.querySelectorAll('.ch-fonte').forEach(b => b.onclick = () => {
+    S.fonte = b.dataset.fonte; S.selTorneios = [];
+    try { localStorage.setItem('fonte', S.fonte); } catch (e) {}
+    recarregar();
+  });
   document.querySelectorAll('.ch-torneio').forEach(b => b.onclick = () => {
-    const id = b.dataset.id;
-    let sel = S.selTorneios.length ? [...S.selTorneios] : S.torneios.map(t => t.id);
+    const id = b.dataset.id, todos = S.torneios.filter(daFonte).map(t => t.id);
+    let sel = S.selTorneios.length ? [...S.selTorneios] : todos;
     sel = sel.includes(id) ? sel.filter(x => x !== id) : [...sel, id];
-    S.selTorneios = sel.length === S.torneios.length ? [] : sel;
+    S.selTorneios = sel.length === todos.length ? [] : sel;
     recarregar();
   });
 }
-const qsTorneios = () => S.selTorneios.length ? `torneios=${S.selTorneios.join(',')}` : '';
+const qsTorneios = () => `fonte=${S.fonte}` + (S.fonte === 'grandes' && S.selTorneios.length ? `&torneios=${S.selTorneios.join(',')}` : '');
 async function carregarTorneios() { S.torneios = await api('/api/torneios'); }
 
 /* ---------------- status (canto da navegação) ---------------- */
@@ -387,11 +516,14 @@ async function atualizarStatus() {
       ${st.atualizacao?.disponivel ? `<div class="aviso-versao">Nova versão ${esc(st.atualizacao.remota)} disponível<button onclick="location.hash='ajustes'">Ver atualização</button></div>` : ''}
       ${st.importacao.ativo ? `<span><span class="luz warn"></span>Importando ${esc(st.importacao.torneio)}: ${st.importacao.pct}%</span>` : ''}`;
     if (c.ultima && S.ultimaVista !== null && c.ultima.id !== S.ultimaVista) {
-      if (c.ultima.nao_lidas) toast(`Nova partida registrada (#${c.ultima.id}) com ${c.ultima.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
+      if (c.ultima.problemas?.length) toast(`Partida #${c.ultima.id} registrada, mas o log parece incompleto: ${c.ultima.problemas.join('; ')}.`, 'partida-' + c.ultima.id, 'Ver');
+      else if (c.ultima.nao_lidas) toast(`Nova partida registrada (#${c.ultima.id}) com ${c.ultima.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
       else toast(`Nova partida registrada (#${c.ultima.id})`);
       if (['painel', 'partidas', 'desempenho'].includes(aba())) render();
     }
     S.ultimaVista = c.ultima ? c.ultima.id : S.ultimaVista ?? 0;
+    if (st.aviso && S.avisoVisto !== undefined && st.aviso.id !== S.avisoVisto) toast(st.aviso.texto);
+    S.avisoVisto = st.aviso ? st.aviso.id : null;
     if (aba() === 'torneios') { atualizarProgresso(st.importacao); atualizarSync(st.sincronizacao); }
     const bd = $('#badge-revisao'); bd.hidden = !st.linhas_pendentes; bd.textContent = st.linhas_pendentes || '';
     if (anterior && anterior.importacao.ativo && !st.importacao.ativo) {
@@ -407,34 +539,37 @@ const ROTAS = { painel: renderPainel, partidas: renderPartidas, desempenho: rend
   matchups: renderMatchups, deck: renderDeck, cartas: renderCartas, torneios: renderTorneios, ajustes: renderAjustes,
   regras: renderRegras, biblioteca: renderBiblioteca,
   decks: renderMeusDecks, partida: () => renderDetalhe(rota().id), replay: () => renderReplay(rota().id),
-  meudeck: () => renderMeuDeck(rota().id), decisoes: renderDecisoes, amigos: renderAmigos, 'cartas-mu': renderCartasMatchups, revisao: renderRevisao };
-// Cada aba pertence a uma área: "meu" (suas partidas) ou "geral" (campeonatos e meta).
-const AREA = { painel: 'meu', partidas: 'meu', desempenho: 'meu', decisoes: 'meu', partida: 'meu', replay: 'meu', decks: 'meu', meudeck: 'meu',
-  meta: 'geral', matchups: 'geral', deck: 'geral', cartas: 'geral', 'cartas-mu': 'geral', torneios: 'geral' };
-const INICIO_AREA = { meu: 'painel', geral: 'meta' };
-S.area = 'meu';
+  meudeck: () => renderMeuDeck(rota().id), decisoes: renderDecisoes, amigos: renderAmigos, 'cartas-mu': renderCartasMatchups, revisao: renderRevisao,
+  'regras-standard': renderRegrasStandard, lista: () => renderListaOficial(rota().id) };
+// Cada tela pertence a uma seção do menu; as seções com várias telas mostram abas no topo (trilha()).
+const SECAO = { painel: 'inicio', partidas: 'partidas', desempenho: 'partidas', decisoes: 'partidas', partida: 'partidas', replay: 'partidas',
+  decks: 'decks', meudeck: 'decks', lista: 'decks',
+  meta: 'meta', matchups: 'meta', deck: 'meta', cartas: 'meta', 'cartas-mu': 'meta', torneios: 'meta' };
+const NOME_SECAO = { partidas: 'Minhas partidas', decks: 'Meus decks', meta: 'Meta e torneios', programa: 'Programa' };
+const ABAS = {
+  partidas: [['partidas', 'Partidas'], ['desempenho', 'Desempenho'], ['decisoes', 'Decisões']],
+  meta: [['meta', 'Meta'], ['matchups', 'Matchups'], ['deck', 'Perfil de deck'], ['cartas', 'Uso de cartas'], ['cartas-mu', 'Cartas x matchups'], ['torneios', 'Torneios']],
+};
 function rota() {
   const h = location.hash.slice(1);
-  const m = h.match(/^(partida|replay|meudeck)-(\d+)$/);
+  const m = h.match(/^(partida|replay|meudeck|lista)-(\d+)$/);
   if (m) return { nome: m[1], id: Number(m[2]) };
-  return { nome: (h in ROTAS && !['partida', 'replay', 'meudeck'].includes(h)) ? h : 'painel' };
+  return { nome: (h in ROTAS && !['partida', 'replay', 'meudeck', 'lista'].includes(h)) ? h : 'painel' };
 }
 const aba = () => rota().nome;
 async function render() {
   const r = aba();
-  S.area = AREA[r] || S.area;
-  document.querySelectorAll('.areas button').forEach(b => b.setAttribute('aria-pressed', b.dataset.ir === S.area));
-  document.querySelectorAll('nav a[data-area]').forEach(a => a.hidden = a.dataset.area !== S.area);
-  const marcar = ['partida', 'replay'].includes(r) ? 'partidas' : r === 'meudeck' ? 'decks' : r;
-  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('ativo', a.getAttribute('href') === '#' + marcar));
-  if (['ajustes', 'amigos', 'biblioteca', 'regras', 'revisao'].includes(r)) $('#nav-programa').open = true;
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('ativo',
+    a.dataset.secao ? a.dataset.secao === SECAO[r] : a.getAttribute('href') === '#' + r));
+  $('#nav-programa').open = ['ajustes', 'amigos', 'biblioteca', 'regras', 'revisao', 'regras-standard'].includes(r);
+  document.body.classList.toggle('rota-lista', r === 'lista');
+  if (S.lo && r !== 'lista') S.lo = null;
   if (S.rp?.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
   document.querySelectorAll('.janela-fundo').forEach(j => j.remove());
   try { await ROTAS[r](); }
   catch (e) { main.innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; }
 }
 window.addEventListener('hashchange', render);
-document.querySelectorAll('.areas button').forEach(b => b.onclick = () => { S.area = b.dataset.ir; location.hash = INICIO_AREA[b.dataset.ir]; });
 const imgNome = (nome, alta) => `/cartas/imagem?nome=${encodeURIComponent(nome || '')}${alta ? '&q=high' : ''}`;
 const imgId = (id, nome) => id ? `/cartas/imagem?id=${encodeURIComponent(id)}` : imgNome(nome);
 // ---- decks: nome do Limitless + ícone do Pokémon (PokémonDB)
@@ -503,21 +638,34 @@ function ligarSeletorJogador(aoMudar) {
   const el = $('#sel-jogador'); if (!el) return;
   el.onchange = e => { S.jogador = e.target.value; try { localStorage.setItem('jogador', S.jogador); } catch (er) {} aoMudar(); };
 }
-function trilha() { return `<span class="trilha">${S.area === 'geral' ? 'Geral' : 'Minhas partidas'}</span>`; }
+function trilha() {
+  const r = aba(), sec = SECAO[r] || 'programa', abas = ABAS[sec];
+  if (abas && abas.some(([k]) => k === r))
+    return `<div class="abas" role="tablist">${abas.map(([k, n]) => `<a href="#${k}" role="tab" aria-selected="${k === r}">${esc(n)}</a>`).join('')}</div>`;
+  return NOME_SECAO[sec] ? `<span class="trilha">${NOME_SECAO[sec]}</span>` : '';
+}
 async function renderPainel() {
   await carregarJogadores();
   const [d, st] = await Promise.all([api(comJog('/api/partidas')), api('/api/status')]); const cfg = st.config || {};
   const pend = S.status?.linhas_pendentes || 0;
-  const boasVindas = cfg.nick ? '' : `<section class="panel" style="border-left:3px solid var(--accent)"><h2>Bem-vindo! Primeiro passo</h2>
-    <p>Digite seu nick do TCG Live <b>exatamente como aparece no jogo</b> (maiúsculas e minúsculas contam). É assim que o programa sabe quais partidas são vitórias suas.</p>
+  const boasVindas = cfg.nick || d.eu ? '' : `<section class="panel" style="border-left:3px solid var(--accent)"><h2>Bem-vindo! Primeiro passo</h2>
+    <p>Digite seu nick do TCG Live <b>exatamente como aparece no jogo</b> (maiúsculas e minúsculas contam). É assim que o programa sabe quais partidas são vitórias suas. Se preferir, deixe em branco: ele descobre sozinho na primeira partida capturada.</p>
     <div class="row"><input id="bv-nick" placeholder="Seu nick no TCG Live" style="width:260px"><button class="primary" id="bv-salvar">Salvar</button></div>
-    <p class="muted" style="font-size:.85rem">Depois: deixe esta janela aberta, jogue com o jogo em <b>inglês</b> e, no fim de cada partida, clique em Battle Log e no botão de exportar. A partida aparece aqui sozinha.</p></section>`;
+    <p class="muted" style="font-size:.85rem">Depois: deixe o programa aberto, jogue com o jogo em <b>inglês</b> e, no fim de cada partida, clique em Battle Log e no botão de exportar. A partida aparece aqui sozinha.</p></section>`;
   const t = d.total, ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
-  const ult = d.partidas.slice(0, 8);
+  const ult = d.partidas.slice(0, 8), c = st.coletor;
+  const captura = `<section class="panel captura"><span class="luz ${c.ativo ? 'on' : 'off'}"></span>
+    <div class="txt"><b>${c.ativo ? 'Pronto para capturar' : 'Captura desligada'}</b>
+      <span class="muted">${c.ativo ? 'No fim da partida, clique em Battle Log e no botão de exportar: a partida entra aqui sozinha.'
+        + (c.ultima ? ` Última captura às ${esc(c.ultima.quando)}.` : '') : 'As partidas exportadas no TCG Live não estão sendo guardadas.'}
+      ${st.bandeja ? ' O Coletor continua rodando no ícone perto do relógio, mesmo com esta aba fechada.' : ''}</span></div>
+    ${c.ativo ? '' : '<button class="primary" id="in-ligar">Ligar captura</button>'}</section>`;
   main.innerHTML = `
-    ${trilha()}<header><h1>Painel</h1><p class="sub">${S.jogador ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${trilha()}<header><h1>Início</h1><p class="sub">${S.jogador ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
     ${variosJogadores() ? `<div class="row">${seletorJogador()}</div>` : ''}
     ${boasVindas}
+    ${captura}
+    <div id="in-atalho"></div>
     ${pend ? `<div class="aviso">${pend} partida(s) com linhas que o leitor não reconheceu. <a href="#revisao">Revisar agora</a></div>` : ''}
     <div class="kpis">
       <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${d.sem_resultado ? `${d.sem_resultado} sem resultado identificado` : 'com resultado'}</span></div>
@@ -529,23 +677,45 @@ async function renderPainel() {
       <div class="row"><h2 class="grow">Últimas partidas</h2><a class="btn" href="#partidas">Ver todas</a></div>
       ${ult.length ? tabelaPartidas(ult) : '<p class="vazio">Nenhuma partida ainda. Jogue uma partida e exporte o Battle Log, ou cole um log abaixo.</p>'}
     </section>
-    <section class="panel">
-      <h2>Adicionar log manualmente</h2>
+    <details class="panel manual">
+      <summary>Colar um log à mão</summary>
       <p class="sub">Para logs antigos ou copiados no celular. Logs repetidos são ignorados.</p>
       <textarea id="manual" rows="5" placeholder="Cole aqui o log (Setup, Turn # 1 - ...)"></textarea>
       <div class="row"><button class="primary" id="btn-manual">Registrar partida</button></div>
-    </section>`;
+    </details>`;
   ligarLinhasPartidas();
   ligarSeletorJogador(renderPainel);
+  if ($('#in-ligar')) $('#in-ligar').onclick = async () => {
+    await api('/api/config', { method: 'POST', body: JSON.stringify({ coletor_ativo: true }) }); toast('Captura ligada');
+    setTimeout(() => { atualizarStatus(); render(); }, 600); };
+  sugerirAtalho(st);
   if ($('#bv-salvar')) $('#bv-salvar').onclick = async () => { const n = $('#bv-nick').value.trim(); if (!n) return;
     await api('/api/config', { method: 'POST', body: JSON.stringify({ nick: n }) }); toast('Nick salvo'); render(); };
   $('#btn-manual').onclick = async () => {
     try { const r = await api('/api/partidas', { method: 'POST', body: JSON.stringify({ texto: $('#manual').value }) });
-      if (r.nova && r.nao_lidas) toast(`Partida #${r.id} registrada com ${r.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
+      if (r.nova && r.problemas?.length) toast(`Partida #${r.id} registrada, mas o log parece incompleto: ${r.problemas.join('; ')}. Confira se copiou o log inteiro.`, 'partida-' + r.id, 'Ver');
+      else if (r.nova && r.nao_lidas) toast(`Partida #${r.id} registrada com ${r.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
       else toast(r.nova ? `Partida #${r.id} registrada` : 'Esse log já estava registrado');
       render(); }
     catch (e) { toast(e.message); }
   };
+}
+
+// Sugere (uma vez) o atalho na Área de Trabalho, para abrir o programa com dois cliques.
+async function sugerirAtalho(st) {
+  let dispensado = false;
+  try { dispensado = localStorage.getItem('atalho-dispensado') === '1'; } catch (e) {}
+  if (!st.windows || dispensado) return;
+  if (!S.atalhos) { try { S.atalhos = await api('/api/atalhos'); } catch (e) { return; } }
+  const el = $('#in-atalho');
+  if (!el || S.atalhos.area) return;
+  el.innerHTML = `<div class="aviso row" style="gap:10px"><span class="grow">Abra o Coletor com dois cliques: crie o atalho <b>Coletor TCG Live</b> na Área de Trabalho.</span>
+    <button class="primary" id="in-criar-atalho">Criar atalho</button><button id="in-dispensar">Agora não</button></div>`;
+  $('#in-criar-atalho').onclick = async () => {
+    try { S.atalhos = await api('/api/atalhos', { method: 'POST', body: JSON.stringify({ area: true }) }); el.innerHTML = ''; toast('Atalho criado na Área de Trabalho'); }
+    catch (e) { toast(e.message); }
+  };
+  $('#in-dispensar').onclick = () => { try { localStorage.setItem('atalho-dispensado', '1'); } catch (e) {} el.innerHTML = ''; };
 }
 
 function tabelaPartidas(lista) {
@@ -553,7 +723,7 @@ function tabelaPartidas(lista) {
   return `<div class="tabela alta"><table><thead><tr><th>Data</th>${cj ? '<th>Jogador</th>' : ''}<th>Resultado</th><th>Adversário</th><th>${cj ? 'Deck do jogador' : 'Seu deck'}</th><th>Deck do adversário</th><th class="n">Prêmios</th><th class="n">Turnos</th><th>Ordem</th><th>Motivo</th></tr></thead><tbody>
     ${lista.map(l => `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
       <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>${cj ? `<td>${l.dono ? esc(l.dono) : '<b>Eu</b>'}</td>` : ''}
-      <td>${l.resultado === 'V' ? '<span class="pill v">Vitória</span>' : l.resultado === 'D' ? '<span class="pill d">Derrota</span>' : '<span class="pill n">?</span>'}</td>
+      <td>${l.resultado === 'V' ? '<span class="pill v">Vitória</span>' : l.resultado === 'D' ? '<span class="pill d">Derrota</span>' : '<span class="pill n">?</span>'}${l.problemas?.length ? ` <span class="pill n" title="${esc(l.problemas.join('; '))}">⚠ incompleto?</span>` : ''}</td>
       <td>${esc(l.adversario)}</td><td>${deckHtml(l.meu_deck)}${l.lista_nome ? `<div class="muted" style="font-size:.74rem">lista: ${esc(l.lista_nome)}</div>` : ''}</td><td>${deckHtml(l.deck_adv)}</td>
       <td class="n">${l.premios_eu}–${l.premios_adv}</td><td class="n">${l.turnos}</td>
       <td>${l.comecei == null ? '' : l.comecei ? '1º' : '2º'}</td><td class="muted">${esc(l.motivo)}</td></tr>`).join('')}
@@ -615,6 +785,7 @@ async function renderDetalhe(id) {
   const linhas = [['Prêmios pegos','premios'],['Nocautes causados','nocautes'],['Dano total','dano'],['Ataques','ataques'],['Cartas jogadas','jogadas'],['Energias ligadas','energias'],['Evoluções','evolucoes'],['Mulligans','mulligans']];
   main.innerHTML = `
     <div class="row"><button id="voltar">← Partidas</button><a class="btn primary" href="#replay-${p.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">▶ Ver replay</a><span class="grow"></span><span class="muted num">#${p.id} · ${fmtData(p.capturada_em, true)} · origem: ${esc(p.origem)}${p.dono ? ` · partida de <b>${esc(p.dono)}</b>` : ''}</span></div>
+    ${r.problemas?.length ? `<div class="aviso erro">Este log parece incompleto: ${esc(r.problemas.join('; '))}. Se você ainda tem o log no jogo, copie de novo; senão, apague esta partida ou deixe assim (ela fica fora das contas se faltar o resultado).</div>` : ''}
     <section class="panel">
       <div class="resultado">
         <div class="lado"><span class="label">${a === r.primeiro ? 'Começou' : 'Segundo'}</span><span class="nome p1">${esc(a)}</span>${pill(a)}</div>
@@ -725,9 +896,9 @@ async function renderDesempenho() {
    ===================================================================== */
 async function renderMeta() {
   await carregarTorneios();
-  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Meta</h1></header>${seletorTorneios()}`; return; }
+  if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Meta</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}&top=${S.top}&corte=${S.corte}`);
-  const tend = await api('/api/tendencia?k=8');
+  const tend = await api(`/api/tendencia?k=8&${qsTorneios()}`);
   const maxPct = Math.max(...m.divisao.map(d => d.pct), 1);
   main.innerHTML = `
     ${trilha()}<header><h1>Meta</h1><p class="sub">Quanto cada deck aparece, quanto vence (sem contar mirrors) e quanto converte para o topo.</p></header>
@@ -750,16 +921,60 @@ async function renderMeta() {
     </section>
     <section class="panel"><h2>Tendência do meta</h2><p class="sub">Participação dos 8 decks mais jogados em cada torneio importado, em ordem de data.</p>
       ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5) }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
-    </section>`;
+    </section>
+    <section class="panel" id="qual-deck"><h2>Qual deck jogar?</h2><p class="muted">Calculando…</p></section>`;
   ligarSeletor(renderMeta);
+  desenharQualDeck();
   $('#m-top').onchange = e => { S.top = Number(e.target.value); renderMeta(); };
   $('#m-corte').onchange = e => { S.corte = Number(e.target.value); renderMeta(); };
   document.querySelectorAll('tr[data-arq]').forEach(tr => tr.onclick = () => { S.deck = tr.dataset.arq; location.hash = 'deck'; });
 }
 
+// Meta > "Qual deck jogar?": taxa esperada contra o campo e equilíbrio do meta (tracker/estrategia.py).
+async function desenharQualDeck() {
+  const el = $('#qual-deck'); if (!el) return;
+  let q; try { q = await api(`/api/qual-deck?${qsTorneios()}`); } catch (e) { el.innerHTML = `<h2>Qual deck jogar?</h2><p class="aviso erro">${esc(e.message)}</p>`; return; }
+  if (!q.decks.length) { el.innerHTML = '<h2>Qual deck jogar?</h2><p class="muted">Sem partidas com os dois decks conhecidos nesta fonte.</p>'; return; }
+  el.innerHTML = `<h2>Qual deck jogar?</h2>
+    <p class="sub">Para os ${q.decks.length} decks mais jogados, a taxa de vitória esperada contra o campo atual (cada confronto pesado pela presença do adversário).
+      Confrontos com poucos jogos são completados pela força geral de cada deck, para não confiar em 3 ou 4 partidas. ${q.partidas.toLocaleString('pt-BR')} partidas.</p>
+    <div class="tabela alta"><table><thead><tr><th>Deck</th><th class="n">% do campo</th><th class="n">Esperada contra o campo</th><th>Pior confronto</th>
+      <th class="n" title="Mistura de decks que nenhum outro consegue explorar (teoria dos jogos)">No equilíbrio</th><th class="n" title="Taxa esperada se o campo jogasse a mistura de equilíbrio">Contra o equilíbrio</th></tr></thead><tbody>
+      ${q.decks.map(d => `<tr class="clicavel" data-arq="${esc(d.arquetipo)}"><td><span class="cel-carta">${icones(d.arquetipo)}<b>${esc(nomeDeck(d.arquetipo))}</b></span></td>
+        <td class="n">${pct(d.campo)}</td><td class="n" style="${corTaxa(d.esperada)}"><b>${pct(d.esperada)}</b></td>
+        <td>${d.pior ? `${deckHtml(d.pior)} <span class="muted">${pct(d.pior_p)} · ${d.pior_n} jogos</span>` : ''}</td>
+        <td class="n">${d.equilibrio ? pct(d.equilibrio) : '<span class="muted">0%</span>'}</td><td class="n">${pct(d.contra_equilibrio)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="muted" style="font-size:.85rem">"No equilíbrio" mostra a mistura de decks que nenhum outro deck consegue explorar. Um deck muito jogado com 0% ali está sendo superestimado pelo campo; um pouco jogado com peso alto pode ser uma boa surpresa. São estimativas a partir dos campeonatos importados, não garantias.</p>`;
+  el.querySelectorAll('tr[data-arq]').forEach(tr => tr.onclick = () => { S.deck = tr.dataset.arq; location.hash = 'deck'; });
+}
+
+// Perfil de deck > Versões pela ACE SPEC (tracker/variantes.py): tabela de cada ACE SPEC e as versões do deck.
+async function desenharVariantes(arq) {
+  const alvo = $('#variantes') || (() => { const s = document.createElement('section'); s.className = 'panel'; s.id = 'variantes'; main.appendChild(s); return s; })();
+  alvo.innerHTML = '<h2>ACE SPEC e versões</h2><p class="muted">Separando as listas…</p>';
+  let v; try { v = await api(`/api/variantes/${encodeURIComponent(arq)}?${qsTorneios()}`); } catch (e) { alvo.innerHTML = `<h2>ACE SPEC e versões</h2><p class="aviso erro">${esc(e.message)}</p>`; return; }
+  if (S.deck !== arq || !$('#variantes')) return;
+  if (!v.listas) { alvo.innerHTML = '<h2>ACE SPEC e versões</h2><p class="muted">Nenhuma lista importada deste deck.</p>'; return; }
+  const marca = g => g.diferenca ? ` <span class="pill ${g.taxa >= (v.aces.reduce((a, x) => a + x.v, 0) / Math.max(1, v.aces.reduce((a, x) => a + x.n, 0)) * 100) ? 'v' : 'd'}" title="A taxa desta escolha é diferente do resto do deck com p = ${g.p_valor}: dificilmente é sorte">diferença provável</span>` : '';
+  alvo.innerHTML = `<h2>ACE SPEC e versões</h2>
+    <p class="sub">Cada deck leva 1 ACE SPEC, e essa escolha costuma definir a versão. ${v.listas} listas deste deck.</p>
+    <div class="tabela"><table><thead><tr><th>ACE SPEC</th><th class="n">Listas</th><th class="n">% do deck</th><th>Taxa de vitória</th><th class="n">V–D–E</th></tr></thead><tbody>
+      ${v.aces.map(a => `<tr><td><b>${esc(a.ace)}</b>${marca(a)}</td><td class="n">${a.listas}</td><td class="n">${pct(a.pct)}</td><td>${taxaHtml(a)}</td><td class="n">${a.v}–${a.d}–${a.e}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${v.grupos.length ? `<h3>Versões</h3>
+      <p class="muted" style="font-size:.85rem">ACE SPEC usadas por poucas listas entram na versão com o resto da lista mais parecido; duas ACE SPEC com listas quase iguais viram uma versão só.</p>
+      <div class="grid2">${v.grupos.map(g => `<div class="panel" style="padding:12px;gap:6px">
+        <div class="row"><b class="grow">${esc(g.aces[0].ace)}${g.aces.length > 1 ? ` <span class="muted" style="font-weight:400">+ ${g.aces.slice(1).map(a => `${esc(a.ace)} (${a.listas})`).join(', ')}</span>` : ''}</b><span class="muted">${g.listas} listas</span></div>
+        <div>${taxaHtml(g)} <span class="muted">${g.v}–${g.d}–${g.e}</span>${marca(g)}</div>
+        <ul style="margin:0;padding-left:18px;font-size:.88rem">${g.marcas.map(m => `<li>${esc(m.carta)}: <b>${fmt(m.media, 1)}</b> cópias <span class="muted">(média do deck ${fmt(m.geral, 1)})</span></li>`).join('')}</ul></div>`).join('')}</div>`
+      : `<p class="muted">${v.aces.length > 1 ? 'Uma versão principal: as outras ACE SPEC são usadas por poucas listas (veja a tabela acima).' : 'Todas as listas usam a mesma ACE SPEC.'}</p>`}
+    <p class="muted" style="font-size:.85rem">"Diferença provável": a taxa daquela escolha é diferente da do resto do deck com menos de 5% de chance de ser só sorte. Com várias ACE SPEC comparadas ao mesmo tempo, uma ou outra pode aparecer por acaso; confira o número de jogos.</p>`;
+}
+
 async function renderMatchups() {
   await carregarTorneios();
-  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Matchups</h1></header>${seletorTorneios()}`; return; }
+  if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Matchups</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   S.k = S.k || 12; S.minMu = S.minMu ?? 10;
   const m = await api(`/api/meta?${qsTorneios()}&top=${S.top}&k=${S.k}&min=${S.minMu}`);
   main.innerHTML = `
@@ -767,22 +982,28 @@ async function renderMatchups() {
     ${seletorTorneios()}
     <div class="row">
       <label class="label" for="mu-k">Decks na tabela</label><select id="mu-k">${[6,8,10,12,15,20].map(v => `<option ${S.k == v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <label class="label" for="mu-tipo">Mostrar</label><select id="mu-tipo"><option value="real" ${S.muTipo !== 'ajustada' ? 'selected' : ''}>Taxa real</option>
+        <option value="ajustada" ${S.muTipo === 'ajustada' ? 'selected' : ''}>Taxa ajustada (estimativa)</option></select>
       <label class="label" for="mu-min">Mínimo de partidas</label><select id="mu-min">${[0,5,10,20,50].map(v => `<option ${S.minMu == v ? 'selected' : ''}>${v}</option>`).join('')}</select>
       <span class="grow"></span><a class="btn" href="/exportar/torneios.csv">Baixar partidas dos torneios</a>
     </div>
+    ${S.muTipo === 'ajustada' ? '<p class="muted" style="font-size:.85rem">Taxa ajustada: com muitos jogos vale o resultado real do confronto; com poucos, ele é completado pela força geral de cada deck contra todo o campo. Prevê os torneios seguintes melhor que a taxa real (testado). Passe o mouse para ver a taxa real.</p>' : ''}
     <section class="panel"><div class="tabela"><table class="matriz">
       <thead><tr><th></th>${m.colunas.map(c => `<th>${icones(c.arquetipo)}<br>${esc(c.nome)}</th>`).join('')}</tr></thead>
       <tbody>${m.matriz.map(l => `<tr><td class="cab"><span class="cel-carta">${icones(l.arquetipo)}${esc(l.nome)}</span></td>${l.celulas.map((c, i) => c.espelho ? '<td class="espelho">mirror</td>'
-        : `<td class="${c.pouco ? 'pouco' : ''}" style="${c.n ? corTaxa(c.taxa) : ''}" title="${esc(l.nome)} contra ${esc(m.colunas[i].nome)}: ${c.v}-${c.d}-${c.e} (${c.n} partidas)">${c.n ? pct(c.taxa) : '–'}<small>${c.n || ''}</small></td>`).join('')}</tr>`).join('')}</tbody>
+        : S.muTipo === 'ajustada'
+          ? `<td style="${corTaxa(c.ajustada)}" title="${esc(l.nome)} contra ${esc(m.colunas[i].nome)}: ajustada ${pct(c.ajustada)}; real ${c.n ? pct(c.taxa) : '–'} em ${c.n} partidas (${c.v}-${c.d}-${c.e})">${pct(c.ajustada)}<small>${c.n || ''}</small></td>`
+          : `<td class="${c.pouco ? 'pouco' : ''}" style="${c.n ? corTaxa(c.taxa) : ''}" title="${esc(l.nome)} contra ${esc(m.colunas[i].nome)}: ${c.v}-${c.d}-${c.e} (${c.n} partidas)">${c.n ? pct(c.taxa) : '–'}<small>${c.n || ''}</small></td>`).join('')}</tr>`).join('')}</tbody>
     </table></div></section>`;
   ligarSeletor(renderMatchups);
   $('#mu-k').onchange = e => { S.k = Number(e.target.value); renderMatchups(); };
   $('#mu-min').onchange = e => { S.minMu = Number(e.target.value); renderMatchups(); };
+  $('#mu-tipo').onchange = e => { S.muTipo = e.target.value; renderMatchups(); };
 }
 
 async function renderDeck() {
   await carregarTorneios();
-  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Perfil de deck</h1></header>${seletorTorneios()}`; return; }
+  if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Perfil de deck</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}`);
   if (!S.deck || !m.divisao.some(d => d.arquetipo === S.deck)) S.deck = m.divisao[0]?.arquetipo || '';
   const p = S.deck ? await api(`/api/deck/${encodeURIComponent(S.deck)}?${qsTorneios()}`) : null;
@@ -806,8 +1027,8 @@ async function renderDeck() {
       </tbody></table></div></section>
     <div class="grid2">
       <section class="panel"><h2>Melhores colocações</h2>
-        <table><thead><tr><th class="n">Pos.</th><th>Jogador</th><th>Torneio</th><th class="n">V–D–E</th></tr></thead><tbody>
-        ${p.melhores.map(j => `<tr><td class="n">${j.posicao}</td><td>${esc(j.nome)}</td><td class="muted">${esc((S.torneios.find(t => t.id === j.torneio) || {}).nome || j.torneio)}</td><td class="n">${j.v}–${j.d}–${j.e}</td></tr>`).join('')}
+        <table><thead><tr><th class="n">Pos.</th><th>Jogador</th><th>Torneio</th><th>ACE SPEC</th><th class="n">V–D–E</th></tr></thead><tbody>
+        ${p.melhores.map(j => `<tr><td class="n">${j.posicao}</td><td>${esc(j.nome)}</td><td class="muted">${esc((S.torneios.find(t => t.id === j.torneio) || {}).nome || j.torneio)}</td><td>${j.ace_spec == null ? '<span class="muted">sem lista</span>' : j.ace_spec ? esc(j.ace_spec) : '<span class="muted">nenhuma</span>'}</td><td class="n">${j.v}–${j.d}–${j.e}</td></tr>`).join('')}
         </tbody></table></section>
       <section class="panel"><h2>Presença por torneio</h2>
         ${p.por_torneio.length > 1 ? graficoLinhas([{ nome: p.nome, valores: p.por_torneio.map(t => t.pct), cor: 'var(--p1)' }], p.por_torneio.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...p.por_torneio.map(t => t.pct)) / 5) * 5) }) : '<p class="muted">Importe mais torneios para ver a evolução.</p>'}
@@ -818,6 +1039,7 @@ async function renderDeck() {
       ${p.esqueleto.length ? tabelaCartas(p.esqueleto) : '<p class="muted">Nenhuma lista importada para este deck. Ao importar um torneio, escolha quantas listas do topo baixar.</p>'}
     </section>` : ''}`;
   ligarSeletor(renderDeck);
+  if (S.deck) desenharVariantes(S.deck);
   $('#p-deck').onchange = e => { S.deck = e.target.value; renderDeck(); };
 }
 
@@ -831,7 +1053,7 @@ function tabelaCartas(cartas) {
 
 async function renderCartas() {
   await carregarTorneios();
-  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Cartas</h1></header>${seletorTorneios()}`; return; }
+  if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Cartas</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}`);
   const c = await api(`/api/cartas?${qsTorneios()}&arq=${encodeURIComponent(S.deckCartas || '')}`);
   const com = S.torneios.filter(t => t.qtd_listas);
@@ -867,7 +1089,7 @@ async function renderCartas() {
 
 async function renderCartasMatchups() {
   await carregarTorneios();
-  if (!S.torneios.length) { main.innerHTML = `${trilha()}<header><h1>Cartas x matchups</h1></header>${seletorTorneios()}`; return; }
+  if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Cartas x matchups</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}`);
   S.cmuDeck = S.cmuDeck && m.divisao.some(d => d.arquetipo === S.cmuDeck) ? S.cmuDeck : (m.divisao[0]?.arquetipo || '');
   const uso = S.cmuDeck ? await api(`/api/cartas?${qsTorneios()}&arq=${encodeURIComponent(S.cmuDeck)}`) : { cartas: [] };
@@ -899,13 +1121,19 @@ async function renderCartasMatchups() {
   $('#cmu-min').onchange = e => { S.minMu = Number(e.target.value); renderCartasMatchups(); };
 }
 
+function seloFormato(t) {
+  if (t.formato === 'standard') return '<span class="pill v" title="O Limitless marca este torneio como Standard">Standard ✓</span>';
+  if (t.formato) return `<span class="pill d" title="Fica fora das contas: o programa só usa Standard">${esc(t.formato)}: fora das contas</span>`;
+  return '<span class="pill n" title="Ainda não deu para confirmar o formato no Limitless; entra nas contas">formato não confirmado</span>';
+}
 async function renderTorneios() {
   await carregarTorneios();
+  const grandes = S.torneios.filter(t => t.fonte !== 'online'), online = S.torneios.filter(t => t.fonte === 'online');
   const st = await api('/api/status');
   S.status = st;
   const imp = st.importacao, cfg = st.config;
   main.innerHTML = `
-    ${trilha()}<header><h1>Importar torneios</h1><p class="sub">Classificação, decks e listas vêm do Limitless Labs; o resultado de cada mesa vem do RK9, a fonte oficial que o Labs também usa. Um Regional grande leva alguns minutos.</p></header>
+    ${trilha()}<header><h1>Importar torneios</h1><p class="sub">Grandes eventos: classificação, decks e listas vêm do Limitless Labs; o resultado de cada mesa vem do RK9, a fonte oficial que o Labs também usa. Um Regional grande leva alguns minutos.</p></header>
     <section class="panel"><h2>Atualização automática</h2>
       <p class="sub">O RK9 e o Limitless Labs não avisam quando sai um torneio novo. Por isso o programa verifica sozinho enquanto estiver aberto, importa os torneios que faltam e atualiza os que foram importados antes do resultado final.</p>
       <div class="row">
@@ -916,6 +1144,14 @@ async function renderTorneios() {
         <select id="s-dias">${[15, 30, 45, 90, 180, 365].map(v => `<option value="${v}" ${cfg.sincronizar_dias == v ? 'selected' : ''}>${v} dias</option>`).join('')}</select>
         <span class="grow"></span><button id="s-agora">Verificar agora</button>
       </div>
+      <div class="row">
+        <label class="row" style="gap:6px"><input type="checkbox" id="s-online" ${cfg.online_ativo !== false ? 'checked' : ''}> Importar também torneios online Standard do Limitless</label>
+        <label class="label" for="s-online-min">com pelo menos</label>
+        <select id="s-online-min">${[32, 64, 128, 256].map(v => `<option value="${v}" ${(cfg.online_min_jogadores ?? 64) == v ? 'selected' : ''}>${v} jogadores</option>`).join('')}</select>
+        <label class="label" for="s-online-dias">dos últimos</label>
+        <select id="s-online-dias">${[7, 14, 21, 30, 45].map(v => `<option value="${v}" ${(cfg.online_dias ?? 21) == v ? 'selected' : ''}>${v} dias</option>`).join('')}</select>
+      </div>
+      <p class="muted" style="font-size:.85rem">Os torneios online (play.limitlesstcg.com) são dezenas por semana, com o deck, a lista e o resultado de cada mesa. O site limita os pedidos, então eles chegam aos poucos, até ${cfg.online_por_vez ?? 40} por verificação. Nas telas de Meta, escolha a <b>Fonte</b>: grandes eventos, torneios online ou todos.</p>
       <p class="muted" id="s-info"></p>
     </section>
     <section class="panel"><h2>Importar um torneio específico</h2>
@@ -935,16 +1171,26 @@ async function renderTorneios() {
       </div>
       <div id="t-lista"></div>
     </section>
-    <section class="panel"><h2>Torneios importados</h2>
-      ${S.torneios.length ? `<div class="tabela"><table><thead><tr><th>Torneio</th><th>Data</th><th class="n">Jogadores</th><th class="n">Partidas</th><th class="n">Listas</th><th>Importado em</th><th></th></tr></thead><tbody>
-        ${S.torneios.map(t => `<tr><td><b>${esc(t.nome)}</b> <span class="muted mono">${t.id}</span></td><td class="num">${fmtData(t.data)}</td><td class="n">${t.jogadores ?? ''}</td><td class="n">${t.qtd_partidas}</td><td class="n">${t.qtd_listas}</td><td class="muted num">${esc((t.importado_em || '').replace('T', ' ').slice(0, 16))}</td>
+    <section class="panel"><h2>Grandes eventos importados</h2>
+      ${grandes.length ? `<div class="tabela"><table><thead><tr><th>Torneio</th><th>Data</th><th class="n">Jogadores</th><th class="n">Partidas</th><th class="n">Listas</th><th>Importado em</th><th></th></tr></thead><tbody>
+        ${grandes.map(t => `<tr><td><b>${esc(t.nome)}</b> <span class="muted mono">${t.id}</span> ${seloFormato(t)}</td><td class="num">${fmtData(t.data)}</td><td class="n">${t.jogadores ?? ''}</td><td class="n">${t.qtd_partidas}</td><td class="n">${t.qtd_listas}</td><td class="muted num">${esc((t.importado_em || '').replace('T', ' ').slice(0, 16))}</td>
           <td class="row" style="flex-wrap:nowrap"><button data-reimp="${t.id}">Atualizar</button><button class="perigo" data-del="${t.id}">Apagar</button></td></tr>`).join('')}
       </tbody></table></div>` : '<p class="vazio">Nenhum torneio importado ainda.</p>'}
+    </section>
+    <section class="panel"><h2>Torneios online importados</h2>
+      ${online.length ? `<p class="muted">${online.length} torneios, ${online.reduce((a, t) => a + (t.jogadores || 0), 0).toLocaleString('pt-BR')} jogadores, ${online.reduce((a, t) => a + (t.qtd_partidas || 0), 0).toLocaleString('pt-BR')} partidas.</p>
+        <details><summary class="label" style="cursor:pointer">Ver a lista</summary><div class="tabela alta"><table><thead><tr><th>Torneio</th><th>Data</th><th class="n">Jogadores</th><th class="n">Partidas</th><th class="n">Listas</th><th></th></tr></thead><tbody>
+        ${online.map(t => `<tr><td>${esc(t.nome)}</td><td class="num">${fmtData(t.data)}</td><td class="n">${t.jogadores ?? ''}</td><td class="n">${t.qtd_partidas}</td><td class="n">${t.qtd_listas}</td>
+          <td><button class="perigo" data-del="${t.id}">Apagar</button></td></tr>`).join('')}</tbody></table></div></details>`
+        : '<p class="vazio">Nenhum ainda. Eles chegam pela atualização automática (ou em Verificar agora).</p>'}
     </section>`;
   const salvarCfg = obj => api('/api/config', { method: 'POST', body: JSON.stringify(obj) }).then(() => setTimeout(renderTorneios, 300));
   $('#s-toggle').onclick = () => salvarCfg({ sincronizar_auto: !cfg.sincronizar_auto });
   $('#s-horas').onchange = e => salvarCfg({ sincronizar_horas: Number(e.target.value) });
   $('#s-dias').onchange = e => salvarCfg({ sincronizar_dias: Number(e.target.value) });
+  $('#s-online').onchange = e => salvarCfg({ online_ativo: e.target.checked });
+  $('#s-online-min').onchange = e => salvarCfg({ online_min_jogadores: Number(e.target.value) });
+  $('#s-online-dias').onchange = e => salvarCfg({ online_dias: Number(e.target.value) });
   $('#t-listas').onchange = e => api('/api/config', { method: 'POST', body: JSON.stringify({ listas_top: Number(e.target.value) || 0 }) });
   $('#s-agora').onclick = async () => {
     try { await api('/api/sincronizar', { method: 'POST' }); toast('Verificando torneios novos…'); setTimeout(atualizarStatus, 800); }
@@ -990,6 +1236,25 @@ function atualizarProgresso(imp) {
 /* =====================================================================
    PROGRAMA
    ===================================================================== */
+// Ajustes > Como abrir o programa: atalho na Área de Trabalho e abrir junto com o Windows.
+async function desenharAtalhos() {
+  const el = $('#a-atalhos'); if (!el) return;
+  try { S.atalhos = await api('/api/atalhos'); } catch (e) { el.innerHTML = `<span class="aviso erro">${esc(e.message)}</span>`; return; }
+  const a = S.atalhos;
+  el.innerHTML = `
+    <span><span class="luz ${a.area ? 'on' : ''}"></span>Atalho na Área de Trabalho</span>
+    <button id="at-area">${a.area ? 'Refazer atalho' : 'Criar atalho'}</button>
+    <span style="margin-left:12px"><span class="luz ${a.inicializar ? 'on' : ''}"></span>Abrir sozinho quando o Windows liga</span>
+    <button id="at-ini">${a.inicializar ? 'Desligar' : 'Ligar'}</button>`;
+  const mudar = async (corpo, msg) => {
+    try { await api('/api/atalhos', { method: 'POST', body: JSON.stringify(corpo) }); toast(msg); }
+    catch (e) { toast(e.message); }
+    desenharAtalhos();
+  };
+  $('#at-area').onclick = () => mudar({ area: true }, 'Atalho criado na Área de Trabalho');
+  $('#at-ini').onclick = () => mudar({ inicializar: !a.inicializar }, a.inicializar ? 'O Coletor não abre mais com o Windows' : 'O Coletor vai abrir sozinho quando o Windows ligar');
+}
+
 async function renderAjustes() {
   const st = await api('/api/status');
   const cfg = st.config, a = st.automatico;
@@ -1009,18 +1274,22 @@ async function renderAjustes() {
     <section class="panel"><h2>Modo automático <span class="pill n">experimental</span></h2>
       <p>O programa reconhece a tela de resultado e clica em <b>Battle Log</b> e em <b>exportar</b> por você. Ele não lê a memória do jogo nem joga por você, mas é automação de cliques no cliente do jogo: use por sua conta e risco.</p>
       <ol class="sub" style="margin:0;padding-left:20px">
-        <li>Instale o extra: <span class="mono">pip install -r requirements-auto.txt</span> (o instalador pergunta).</li>
-        <li>Na tela de resultado, recorte só o botão "Battle Log" (Windows: Win+Shift+S) e salve como <span class="mono">modelos/botao_battle_log.png</span>.</li>
-        <li>Abra o Battle Log, recorte o botão de exportar e salve como <span class="mono">modelos/botao_exportar.png</span>.</li>
-        <li>Opcional: o botão de fechar o log, como <span class="mono">modelos/botao_fechar.png</span>.</li>
+        <li>Instale o extra: <span class="mono">pip install -r requirements-auto.txt</span> (o instalador pergunta; no instalador .exe já vem).</li>
+        <li>Clique em <b>Usar imagens prontas</b>: baixa as imagens dos botões do projeto Full Bench (licença MIT), que servem em qualquer resolução. As suas, se houver, ficam guardadas em <span class="mono">modelos/minhas</span>.</li>
+        <li>Ou recorte as suas (Windows: Win+Shift+S) e envie abaixo: o botão "Battle Log", o botão de exportar do log e, se quiser, o "Continue" e o de fechar o log.</li>
       </ol>
+      <p class="muted" style="font-size:.85rem">Enquanto copia, um quadrinho vermelho cobre o botão Continue por um ou dois segundos (clique nele para liberar). Se o log não chegar, o programa tenta de novo e, se não der, avisa para você copiar à mão antes de continuar.</p>
       <div class="row">
         <button class="${cfg.modo_automatico ? '' : 'primary'}" id="a-auto">${cfg.modo_automatico ? 'Desligar modo automático' : 'Ligar modo automático'}</button>
         <label class="label" for="a-conf">Precisão</label>
         <select id="a-conf">${[0.75, 0.8, 0.85, 0.9, 0.95].map(v => `<option value="${v}" ${cfg.confianca_imagem == v ? 'selected' : ''}>${Math.round(v * 100)}%</option>`).join('')}</select>
-        <span class="muted">Status: ${esc(a.status)} · ${a.cliques} exportações automáticas</span>
+        <span class="muted">Status: ${esc(a.status)} · ${a.cliques} exportações automáticas${a.perdidas ? ` · <b style="color:var(--bad)">${a.perdidas} perdida(s)</b>` : ''}</span>
       </div>
-      <div class="grid3">${[['battle_log', 'Botão "Battle Log" (obrigatório)'], ['exportar', 'Botão de exportar (obrigatório)'], ['fechar', 'Botão de fechar (opcional)']].map(([k, rot]) => `
+      <div class="row">
+        <button id="a-prontas">Usar imagens prontas</button>
+        <label class="row" style="gap:6px"><input type="checkbox" id="a-cobrir" ${cfg.cobrir_continuar !== false ? 'checked' : ''}> Cobrir o botão Continue enquanto copia</label>
+      </div>
+      <div class="grid4">${[['battle_log', 'Botão "Battle Log" (obrigatório)'], ['exportar', 'Botão de exportar (obrigatório)'], ['continuar', 'Botão "Continue" (recomendado)'], ['fechar', 'Botão de fechar o log (opcional)']].map(([k, rot]) => `
         <div class="panel" style="padding:12px;gap:8px"><span class="label">${rot}</span>
           <img src="/modelos/${k}?t=${Date.now()}" alt="" style="max-height:60px;max-width:100%;object-fit:contain;align-self:flex-start" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'muted',textContent:'Ainda não enviada'}))">
           <label class="btn" style="position:relative;overflow:hidden;align-self:flex-start">Enviar PNG<input type="file" accept="image/png" data-modelo="${k}" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label></div>`).join('')}</div>
@@ -1046,10 +1315,21 @@ async function renderAjustes() {
         <span class="muted">Instalada: ${esc(st.versao)}${st.atualizacao?.remota ? ` · No GitHub: ${esc(st.atualizacao.remota)}` : ''}${st.atualizacao?.verificado_em ? ` · verificado ${esc(st.atualizacao.verificado_em)}` : ''}</span></div>
       ${st.atualizacao?.erro ? `<p class="aviso erro">${esc(st.atualizacao.erro)}</p>` : ''}
       ${st.atualizacao?.mensagem ? `<p class="aviso">${esc(st.atualizacao.mensagem)}</p>` : ''}
+      ${st.atualizacao?.disponivel && st.atualizacao.novidades?.length ? `<div class="panel" style="background:var(--sunken)">
+        ${st.atualizacao.novidades.map(x => `<h3>Versão ${esc(x.versao)}: ${esc(x.titulo || '')}</h3>
+          ${x.mudancas?.length ? `<ul style="margin:0;padding-left:20px">${x.mudancas.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}
+          ${x.como_atualizar?.length ? `<p class="label" style="margin-top:6px">Como atualizar</p><ol style="margin:0;padding-left:20px">${x.como_atualizar.map(m => `<li>${esc(m)}</li>`).join('')}</ol>` : ''}`).join('')}</div>` : ''}
+      <div class="row"><button id="u-novidades">Ver as novidades de cada versão</button></div>
     </section>
-    <section class="panel"><h2>Abrir junto com o Windows</h2>
-      <p class="sub">Rode <span class="mono">iniciar_com_o_windows.bat</span> uma vez: o coletor passa a abrir sozinho, sem janela, quando o computador liga. Capturas e torneios seguem automáticos; o painel continua em <span class="mono">http://127.0.0.1:8765</span>. Para desfazer, <span class="mono">nao_iniciar_com_o_windows.bat</span>.</p>
-      <div class="row"><button class="perigo" id="a-encerrar">Encerrar o programa</button></div>
+    <section class="panel"><h2>Como abrir o programa</h2>
+      ${st.windows ? `<p class="sub">${st.bandeja ? 'O Coletor está rodando com o ícone perto do relógio. Clique nele para abrir o painel; com o botão direito, você liga ou desliga a captura e fecha o programa.'
+        : 'O Coletor está rodando com a janela preta. Se o ícone perto do relógio não aparece, atualize o programa ou rode o instalar_windows.bat de novo.'}</p>
+      <div id="a-atalhos" class="row"><span class="muted">Conferindo os atalhos…</span></div>`
+      : '<p class="sub">Abra pelo <span class="mono">iniciar_mac.command</span>. Deixe a janela do Terminal aberta enquanto joga.</p>'}
+      ${st.janela_propria ? `<div class="row"><label class="label" for="a-abrir-em">Abrir o painel</label>
+        <select id="a-abrir-em"><option value="janela" ${cfg.abrir_em !== 'navegador' ? 'selected' : ''}>Numa janela própria</option>
+        <option value="navegador" ${cfg.abrir_em === 'navegador' ? 'selected' : ''}>Numa aba do navegador</option></select></div>` : ''}
+      <div class="row"><button id="a-guia">Refazer o primeiro uso</button><button class="perigo" id="a-encerrar">Encerrar o programa</button></div>
     </section>`;
   const salvar = async obj => { await api('/api/config', { method: 'POST', body: JSON.stringify(obj) }); setTimeout(() => { atualizarStatus(); renderAjustes(); }, 400); };
   $('#u-salvar').onclick = () => salvar({ github_repo: $('#u-repo').value.trim(), github_token: $('#u-token').value.trim() }).then(() => toast('Salvo'));
@@ -1060,10 +1340,18 @@ async function renderAjustes() {
     toast('Atualizando… a página recarrega sozinha');
     const espera = setInterval(async () => { try { const s = await api('/api/status'); if (s.versao === st.atualizacao.remota) { clearInterval(espera); location.reload(); } } catch (e) {} }, 3000);
   };
+  $('#u-novidades').onclick = () => mostrarNovidades(true);
   $('#a-salvar-nick').onclick = () => salvar({ nick: $('#a-nick').value.trim() }).then(() => toast('Nick salvo'));
   $('#a-coletor').onclick = () => salvar({ coletor_ativo: !cfg.coletor_ativo });
   $('#a-auto').onclick = () => salvar({ modo_automatico: !cfg.modo_automatico });
   $('#a-conf').onchange = e => salvar({ confianca_imagem: Number(e.target.value) });
+  $('#a-cobrir').onchange = e => salvar({ cobrir_continuar: e.target.checked });
+  $('#a-prontas').onclick = async () => {
+    if (!confirm('Baixar as imagens prontas dos botões (projeto Full Bench, licença MIT)? Suas imagens atuais ficam guardadas em modelos/minhas.')) return;
+    try { await api('/api/modelos-prontos', { method: 'POST' }); toast('Imagens prontas salvas em modelos/'); }
+    catch (e) { toast(e.message); }
+    renderAjustes();
+  };
   document.querySelectorAll('[data-modelo]').forEach(inp => inp.onchange = async () => {
     const fd = new FormData(); fd.append('arquivo', inp.files[0]);
     const r = await fetch('/api/modelos/' + inp.dataset.modelo, { method: 'POST', body: fd });
@@ -1071,10 +1359,13 @@ async function renderAjustes() {
     toast(r.ok ? 'Imagem salva em modelos/' + j.arquivo : (j.erro || 'Não consegui salvar a imagem'));
     renderAjustes();
   });
+  if (st.windows) desenharAtalhos();
+  if ($('#a-abrir-em')) $('#a-abrir-em').onchange = e => salvar({ abrir_em: e.target.value }).then(() => toast('Vale na próxima vez que o painel abrir'));
+  $('#a-guia').onclick = () => mostrarGuia();
   $('#a-encerrar').onclick = async () => {
     if (!confirm('Encerrar o coletor? As partidas deixam de ser capturadas até você abrir o programa de novo.')) return;
     await api('/api/encerrar', { method: 'POST' }).catch(() => {});
-    main.innerHTML = '<p class="vazio">Programa encerrado. Abra pelo iniciar_windows.bat quando quiser.</p>';
+    main.innerHTML = '<p class="vazio">Programa encerrado. Abra pelo atalho Coletor TCG Live na Área de Trabalho quando quiser.</p>';
   };
   $('#a-diag').onclick = async () => {
     $('#a-diag-out').innerHTML = '<p class="muted">Procurando… pode levar um minuto.</p>';
@@ -1344,7 +1635,7 @@ async function renderMeusDecks() {
         const dias = Math.max(0, Math.round((Date.now() - new Date(d.criado_em)) / 864e5));
         return `<a class="deck-card ${d.ativo ? '' : 'arquivado'}" href="#meudeck-${d.id}" data-nome="${esc((d.nome + ' ' + (d.nome_arquetipo || '')).toLowerCase())}">
           <div class="deck-capa">
-            <span class="selo">${d.ativo ? 'Standard' : 'Arquivado'}</span>
+            <span class="selo" ${d.ativo && !d.standard_ok ? 'style="color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)" title="A lista não passa nas regras do Standard: abra o deck para ver o motivo"' : ''}>${!d.ativo ? 'Arquivado' : d.standard_ok ? 'Standard ✓' : 'Fora do Standard'}</span>
             <button class="estrela ${d.favorito ? 'on' : ''}" data-fav="${d.id}" title="${d.favorito ? 'Tirar dos favoritos' : 'Favoritar'}">${d.favorito ? '★' : '☆'}</button>
             <div class="icones-grandes">${ics.map(i => `<img src="/icone/${encodeURIComponent(i)}" alt="${esc(i)}" title="${esc(i)}">`).join('')}</div>
             ${d.icones_corrigidos ? '<span class="corrigido">ícones corrigidos por você</span>' : ''}
@@ -1402,9 +1693,9 @@ async function editarIcones(d, aoSalvar) {
 
 /* ---- DECISÕES: o que anda junto com vencer nas suas partidas (só a partir dos logs) */
 async function renderDecisoes() {
-  const f = S.filtroDec || (S.filtroDec = { de: '', ate: '', deck: '', lista: '', adv: '', periodo: 0, min: 3 });
+  const f = S.filtroDec || (S.filtroDec = { de: '', ate: '', deck: '', lista: '', adv: '', periodo: 0, min: 3, ordem: '' });
   if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
-  const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, lista: f.lista, adv: f.adv, min: f.min }).filter(([, v]) => v !== '' && v != null)).toString();
+  const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, lista: f.lista, adv: f.adv, min: f.min, ordem: f.ordem || '' }).filter(([, v]) => v !== '' && v != null)).toString();
   await carregarJogadores();
   const [r, todos, listas] = await Promise.all([api(comJog('/api/decisoes?' + qs)), api(comJog('/api/partidas')), api('/api/decks')]);
   const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
@@ -1417,6 +1708,20 @@ async function renderDecisoes() {
       ${l.map(c => `<tr><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td><td class="n">${c.n}</td><td class="n">${c.v}–${c.d}</td><td>${taxaHtml(c)}</td>
         <td>${pct(c.taxa_sem)} <span class="ic">${c.sem_n} partidas</span></td><td>${dif(c.diferenca)}</td></tr>`).join('')}</tbody></table></div>`;
   };
+  // versão compacta para as duas colunas (começando × indo em segundo)
+  const tabelaCompacta = (lista, vazio) => {
+    const l = lista.filter(c => c.n >= f.min && c.sem_n > 0);
+    if (!l.length) return `<p class="muted" style="font-size:.85rem">${vazio}</p>`;
+    return `<div class="tabela"><table><thead><tr><th>Carta</th><th class="n">Partidas</th><th>Vitória quando jogou</th><th>Diferença</th></tr></thead><tbody>
+      ${l.map(c => `<tr><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td><td class="n">${c.n}</td><td>${taxaHtml(c)}</td><td title="sem ela: ${pct(c.taxa_sem)} em ${c.sem_n} partidas">${dif(c.diferenca)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  const po = r.por_ordem || {};
+  const ROT_ORDEM = { primeiro: 'Começando', segundo: 'Indo em segundo' };
+  const colunaOrdem = k => { const o = po[k] || { partidas: 0, aberturas: [], ritmo: {} };
+    return `<div class="panel" style="padding:12px;gap:8px;background:var(--sunken)">
+      <div class="ordem-cab"><h3>${ROT_ORDEM[k]}</h3><span class="muted" style="font-size:.85rem">${o.partidas} partida${o.partidas === 1 ? '' : 's'}${o.partidas ? ` · vitória ${pct(o.taxa)}` : ''}</span></div>
+      ${o.partidas ? `<p class="muted" style="font-size:.8rem">Seu turno do 1º prêmio, vitórias × derrotas: <b>${fmt(o.ritmo.V?.premio)} × ${fmt(o.ritmo.D?.premio)}</b> · 1º ataque: ${fmt(o.ritmo.V?.ataque)} × ${fmt(o.ritmo.D?.ataque)}</p>` : ''}
+      ${tabelaCompacta(o.aberturas, `Nenhuma carta de abertura com pelo menos ${f.min} partidas ${ROT_ORDEM[k].toLowerCase()} (e alguma partida sem ela).`)}</div>`; };
   const vi = r.viradas, rv = r.ritmo, pc = r.perdeu_controle;
   const maxPc = Math.max(1, ...pc.map(x => x.derrotas));
   main.innerHTML = `
@@ -1424,6 +1729,7 @@ async function renderDecisoes() {
     <div class="aviso">São <b>correlações</b>, não causas: uma carta pode aparecer mais nas vitórias porque você só consegue jogá-la quando a partida já está boa. Use como pista para revisar replays. Com poucas partidas, a faixa provável (passe o mouse na taxa) é larga.</div>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, rt]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${rt}</button>`).join('')}</div>
+      <div class="chips-periodo" role="group" aria-label="Quem começou">${[['', 'Todas'], ['primeiro', 'Começando'], ['segundo', 'Indo em segundo']].map(([v, rt]) => `<button data-ordem="${v}" aria-pressed="${(f.ordem || '') === v}">${rt}</button>`).join('')}</div>
       <label class="label" for="x-de">De</label><input type="date" id="x-de" value="${f.de}">
       <label class="label" for="x-ate">Até</label><input type="date" id="x-ate" value="${f.ate}">
       <span class="grow"></span>
@@ -1447,9 +1753,11 @@ async function renderDecisoes() {
         ${pc.length ? pc.map(x => `<div class="row" style="gap:8px;margin:4px 0"><span style="width:70px">${x.turno}º turno</span><div style="flex:1;background:rgba(127,127,127,.15);border-radius:4px;height:14px"><div style="width:${100 * x.derrotas / maxPc}%;background:var(--bad);height:100%;border-radius:4px"></div></div><span class="n" style="width:80px;text-align:right">${x.derrotas} derrota${x.derrotas === 1 ? '' : 's'}</span></div>`).join('') : '<p class="muted">Sem derrotas com placar de prêmios nesse filtro.</p>'}
       </section>
     </div>
-    <section class="panel"><h2>Aberturas (seus 2 primeiros turnos)</h2>
-      <p class="muted" style="font-size:.85rem">Cartas que você jogou, ligou ou evoluiu nos dois primeiros turnos. Diferença = taxa quando jogou − taxa quando não jogou.</p>
-      ${tabelaCartas(r.aberturas, `Nenhuma carta de abertura com pelo menos ${f.min} partidas (e alguma partida sem ela).`)}</section>
+    <section class="panel"><h2>${f.ordem ? `Aberturas ${ROT_ORDEM[f.ordem].toLowerCase()}` : 'Aberturas por quem começou'} <span class="muted" style="font-weight:400;font-size:.85rem">(seus 2 primeiros turnos)</span></h2>
+      <p class="muted" style="font-size:.85rem">Cartas que você jogou, ligou ou evoluiu nos seus dois primeiros turnos. Regra do Standard: quem começa não ataca nem joga Apoiador no 1º turno, e ninguém evolui no próprio 1º turno. Por isso a abertura de quem começa é outro jogo, e cada lado só compara partidas com a mesma ordem. Diferença = taxa quando jogou − taxa quando não jogou.</p>
+      ${f.ordem ? tabelaCartas(r.aberturas, `Nenhuma carta de abertura com pelo menos ${f.min} partidas (e alguma partida sem ela).`)
+        : `<div class="grid2">${colunaOrdem('primeiro')}${colunaOrdem('segundo')}</div>`}
+      ${r.sem_ordem && !f.ordem ? `<p class="muted" style="font-size:.8rem">${r.sem_ordem} partida(s) sem a informação de quem começou ficaram fora da separação.</p>` : ''}</section>
     <section class="panel"><h2>Cartas jogadas em qualquer momento</h2>
       ${tabelaCartas(r.cartas_jogadas, `Nenhuma carta com pelo menos ${f.min} partidas (e alguma partida sem ela).`)}</section>`}`;
   const re = () => renderDecisoes();
@@ -1461,6 +1769,7 @@ async function renderDecisoes() {
   $('#x-de').onchange = e => { f.de = e.target.value; f.periodo = 0; re(); };
   $('#x-ate').onchange = e => { f.ate = e.target.value; f.periodo = 0; re(); };
   document.querySelectorAll('[data-periodo]').forEach(b => b.onclick = () => { f.periodo = Number(b.dataset.periodo); if (!f.periodo) { f.de = ''; f.ate = ''; } re(); });
+  document.querySelectorAll('[data-ordem]').forEach(b => b.onclick = () => { f.ordem = b.dataset.ordem; re(); });
 }
 
 /* ---- AMIGOS: mandar os seus logs e receber os deles */
@@ -1560,6 +1869,17 @@ async function renderAmigos() {
   });
 }
 
+// Conferência da lista com as regras do Standard (60 cartas, 4 cópias, ACE SPEC, Básico, marcas)
+function conferenciaStandard(v, compacta) {
+  if (!v) return '';
+  const ok = !v.problemas.length;
+  return `<div class="aviso lo-validacao ${ok ? 'ok' : 'erro'}">
+    <b>${ok ? `✓ Lista válida no Standard: ${v.total} cartas, marcas ${v.marcas.join(', ')}.` : `A lista não vale no Standard (${v.problemas.length} problema${v.problemas.length === 1 ? '' : 's'}):`}</b>
+    ${v.problemas.length ? `<ul>${v.problemas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${v.avisos.length ? `${compacta ? '' : `<p style="margin-top:6px">Para conferir:</p>`}<ul class="muted">${v.avisos.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+  </div>`;
+}
+
 async function renderMeuDeck(id) {
   const d = await api('/api/decks/' + id);
   const a = d.analise, t = a.total;
@@ -1570,7 +1890,8 @@ async function renderMeuDeck(id) {
     <div class="row"><a class="btn" href="#decks">← Meus decks</a></div>
     ${trilha()}<header class="row" style="gap:10px"><span class="cel-carta">${(d.icones || []).map(i => `<img class="ico" src="/icone/${encodeURIComponent(i)}" alt="">`).join('')}</span><div><h1>${esc(d.nome)}</h1>
       <p class="sub">${esc(d.nome_arquetipo || 'Deck não identificado')} · criado em ${fmtData(d.criado_em)}${d.ativo ? '' : ' · arquivado'}${d.notas ? ` · ${esc(d.notas)}` : ''}</p></div></header>
-    <div class="row"><button id="editar">Editar</button><button id="ed-icones">Corrigir ícones</button><button id="versao">Criar nova versão</button><button id="arquivar">${d.ativo ? 'Arquivar' : 'Reativar'}</button><span class="grow"></span><button class="perigo" id="apagar-deck">Apagar</button></div>
+    <div class="row"><a class="btn primary" href="#lista-${d.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">Lista oficial (PDF)</a><button id="editar">Editar</button><button id="ed-icones">Corrigir ícones</button><button id="versao">Criar nova versão</button><button id="arquivar">${d.ativo ? 'Arquivar' : 'Reativar'}</button><span class="grow"></span><button class="perigo" id="apagar-deck">Apagar</button></div>
+    ${conferenciaStandard(d.standard)}
     <div id="area-form"></div>
     <div class="kpis">
       <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${t.v} vitórias</span></div>
@@ -1582,13 +1903,52 @@ async function renderMeuDeck(id) {
     <section class="panel"><h2>Lista (${d.cartas.reduce((s, c) => s + c.qtd, 0)} cartas)</h2>
       ${secoes.map(([s, cs]) => `<h3>${s} (${cs.reduce((x, c) => x + c.qtd, 0)})</h3><div class="deck-cards">${cs.map(c => `<figure title="${esc(c.nome)} ${esc(c.set_code)} ${esc(c.numero)}"><img src="${imgId(c.carta_id, c.nome)}" alt="${esc(c.nome)}" loading="lazy"><span class="qtd">${c.qtd}</span><figcaption>${esc(c.nome)}</figcaption></figure>`).join('')}</div>`).join('')}
     </section>
+    <section class="panel" id="consistencia"><h2>Consistência</h2><p class="muted">Calculando…</p></section>
     <section class="panel"><h2>Partidas com esta lista</h2>${minhas.length ? tabelaPartidas(minhas) : '<p class="muted">Nenhuma partida ligada ainda. Elas são ligadas sozinhas quando as cartas reveladas batem com a lista, ou escolha a lista na tela da partida.</p>'}</section>`;
   ligarLinhasPartidas();
+  desenharConsistencia(id);
   $('#editar').onclick = () => { $('#area-form').innerHTML = formularioDeck(d); ligarFormularioDeck(d, () => renderMeuDeck(id)); };
   $('#ed-icones').onclick = () => editarIcones(d, () => renderMeuDeck(id));
   $('#versao').onclick = () => { $('#area-form').innerHTML = formularioDeck({ ...d, id: null, nome: d.nome + ' (nova versão)', versao_de: d.id }); ligarFormularioDeck({ versao_de: d.id }, nid => { location.hash = 'meudeck-' + nid; }); };
   $('#arquivar').onclick = async () => { await api('/api/decks/' + id, { method: 'PUT', body: JSON.stringify({ ativo: !d.ativo }) }); renderMeuDeck(id); };
   $('#apagar-deck').onclick = async () => { if (!confirm('Apagar este deck? As partidas continuam, só perdem o vínculo com a lista.')) return; await api('/api/decks/' + id, { method: 'DELETE' }); location.hash = 'decks'; };
+}
+
+// Meus decks > deck: probabilidades exatas da lista (tracker/probabilidades.py).
+async function desenharConsistencia(id) {
+  const el = $('#consistencia'); if (!el) return;
+  let r; try { r = await api(`/api/decks/${id}/consistencia`); } catch (e) { el.innerHTML = `<h2>Consistência</h2><p class="aviso erro">${esc(e.message)}</p>`; return; }
+  const p = x => fmt(100 * x, 1) + '%';
+  const ob = r.observado;
+  const esperadoComMull = r.mulligan;  // chance de pelo menos 1 mulligan na partida = chance da 1ª mão sem Básico
+  const ordenadas = [...r.cartas].sort((a, b) => b.qtd - a.qtd || a.nome.localeCompare(b.nome));
+  el.innerHTML = `<h2>Consistência</h2>
+    <p class="sub">Contas exatas com as regras do Standard: mão de 7, mulligan sem Pokémon Básico, 6 prêmios e 1 compra por turno (quem começa também compra). Valem igual começando ou indo em segundo.</p>
+    ${r.deck !== 60 ? `<p class="aviso">A lista tem ${r.deck} cartas; as contas usam esse total.</p>` : ''}
+    ${r.sem_estagio ? `<p class="aviso">${r.sem_estagio} Pokémon sem o estágio na biblioteca de cartas: o mulligan pode estar errado. Atualize a biblioteca em Programa &gt; Biblioteca de cartas.</p>` : ''}
+    <div class="kpis">
+      <div class="kpi"><span class="label">Pokémon Básicos</span><span class="v">${r.basicos}</span><span class="d">na lista de ${r.deck}</span></div>
+      <div class="kpi"><span class="label">Chance de mulligan</span><span class="v">${p(r.mulligan)}</span><span class="d">${fmt(r.mulligans_esperados, 2)} mulligans por partida, em média</span></div>
+      <div class="kpi"><span class="label">Suas partidas com mulligan</span><span class="v">${ob.partidas ? p(ob.com_mulligan / ob.partidas) : '–'}</span><span class="d">${ob.partidas ? `${ob.com_mulligan} de ${ob.partidas} (esperado ${p(esperadoComMull)})` : 'nenhuma partida ligada ainda'}</span></div>
+    </div>
+    <div class="tabela alta"><table><thead><tr><th>Carta</th><th class="n">Cópias</th><th class="n">Na mão inicial</th><th class="n">Até o 1º turno</th><th class="n">Até o 2º</th><th class="n">Até o 3º</th><th class="n">Alguma nos prêmios</th><th class="n">Todas nos prêmios</th></tr></thead><tbody>
+      ${ordenadas.map(c => `<tr><td>${esc(c.nome)}${c.basico ? ' <span class="pill n">Básico</span>' : ''}</td><td class="n">${c.qtd}</td>
+        <td class="n">${p(c.na_mao)}</td>${c.ate_turno.map(x => `<td class="n">${p(x)}</td>`).join('')}
+        <td class="n">${p(c.alguma_premio)}</td><td class="n" style="${c.todas_premio >= 0.05 ? 'color:var(--bad);font-weight:600' : ''}">${p(c.todas_premio)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <h3>Duas cartas juntas</h3>
+    <div class="row"><select id="cb-a">${ordenadas.map(c => `<option>${esc(c.nome)}</option>`).join('')}</select>
+      <span>e</span><select id="cb-b">${ordenadas.map((c, i) => `<option ${i === 1 ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
+      <span id="cb-res" class="muted"></span></div>`;
+  const combo = async () => {
+    const a = $('#cb-a').value, b = $('#cb-b').value;
+    if (a === b) { $('#cb-res').textContent = 'Escolha duas cartas diferentes.'; return; }
+    try { const c = await api(`/api/decks/${id}/combo?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
+      $('#cb-res').innerHTML = `Na mão inicial: <b>${p(c.turnos[0])}</b> · até o 1º turno: <b>${p(c.turnos[1])}</b> · 2º: <b>${p(c.turnos[2])}</b> · 3º: <b>${p(c.turnos[3])}</b>`; }
+    catch (e) { $('#cb-res').textContent = e.message; }
+  };
+  $('#cb-a').onchange = combo; $('#cb-b').onchange = combo;
+  if (ordenadas.length > 1) combo();
 }
 
 /* =====================================================================
@@ -1670,13 +2030,435 @@ async function renderBiblioteca() {
   if (pr.ativo) setTimeout(() => { if (aba() === 'biblioteca') renderBiblioteca(); }, 2000);
 }
 
+/* =====================================================================
+   LISTA OFICIAL: o formulário Deck List da Play! Pokémon (Standard), editável e em PDF
+   ===================================================================== */
+const MIN_LINHAS = { pokemon: 12, trainer: 20, energy: 7 };
+const SEC_LO = [['pokemon', 'Pokémon'], ['trainer', 'Trainer'], ['energy', 'Energy']];
+function papelSalvo() { try { return localStorage.getItem('papel') || 'a4'; } catch (e) { return 'a4'; } }
+async function renderListaOficial(id) {
+  const r = await api('/api/decks/' + id + '/lista-oficial');
+  S.lo = { id, r, linhas: JSON.parse(JSON.stringify(r.linhas)), jogador: { ...r.jogador }, divisao: '', papel: papelSalvo(), salvo: r.salvo_em };
+  desenharListaOficial();
+}
+function divisaoAuto(L) {
+  const ano = (L.jogador.nascimento || '').split('-')[0], dv = L.r.divisoes;
+  if (!/^\d{4}$/.test(ano)) return '';
+  return Number(ano) >= dv.junior ? 'junior' : Number(ano) >= dv.senior[0] ? 'senior' : 'masters';
+}
+function divisoesHtml(L) {
+  const dv = L.r.divisoes, marcada = L.divisao || divisaoAuto(L);
+  const anos = []; for (let a = dv.senior[0]; a <= dv.senior[1]; a++) anos.push(a);
+  const op = [['junior', `Junior Division (born in ${dv.junior} or later)`], ['senior', `Senior Division (born in ${anos.slice(0, -1).join(', ')}, or ${anos[anos.length - 1]})`],
+              ['masters', `Masters Division (born in ${dv.masters} or earlier)`]];
+  return `<span><b>Age Division</b> (check one):</span>${op.map(([k, t]) => `<button type="button" data-div="${k}"><span class="caixa ${marcada === k ? 'x' : ''}"></span>${t}</button>`).join('')}`;
+}
+function desenharListaOficial() {
+  const L = S.lo, r = L.r;
+  const [ano, mes, dia] = (L.jogador.nascimento || '').split('-');
+  const linhasSec = k => { const ls = L.linhas[k] || (L.linhas[k] = []); const extra = Math.max(0, MIN_LINHAS[k] - ls.length);
+    return [...ls.map((c, i) => [c, i]), ...Array.from({ length: extra }, (_, j) => [null, ls.length + j])]; };
+  const nLinhas = SEC_LO.reduce((a, [k]) => a + Math.max(MIN_LINHAS[k], (L.linhas[k] || []).length), 0);
+  const aperto = nLinhas > 50 ? 'muito-apertada' : nLinhas > 42 ? 'apertada' : '';
+  const linha = (k, c, i) => {
+    c = c || {};
+    const campo = (nome, cls, rot) => `<td class="${cls}"><input data-sec="${k}" data-i="${i}" data-campo="${nome}" value="${esc(c[nome] ?? '')}" aria-label="${rot}"${nome === 'qtd' ? ' inputmode="numeric"' : ''}></td>`;
+    return `<tr>${campo('qtd', 'qtd', 'Quantidade')}${campo('nome', 'nm', 'Nome')}${k === 'pokemon' ? campo('set', 'set', 'Coleção') + campo('numero', 'num', 'Número') + campo('reg', 'reg', 'Marca') : ''}
+      <td class="tira"><button type="button" data-tirar="${k}:${i}" title="Apagar esta linha" tabindex="-1">×</button></td></tr>`;
+  };
+  const tabela = (k, rot) => `<div><table><colgroup><col style="width:11mm"><col>${k === 'pokemon' ? '<col style="width:15mm"><col style="width:16mm"><col style="width:11mm">' : ''}<col style="width:6mm"></colgroup>
+      <thead><tr><th class="sec" colspan="${k === 'pokemon' ? 5 : 2}">${rot}<small data-soma="${k}"></small></th><th style="background:none;border:none"></th></tr>
+      <tr><th>QTY</th><th style="text-align:left">NAME</th>${k === 'pokemon' ? '<th>SET</th><th>COLL. #</th><th>REG</th>' : ''}<th style="background:none;border:none"></th></tr></thead>
+      <tbody>${linhasSec(k).map(([c, i]) => linha(k, c, i)).join('')}</tbody></table>
+      <button type="button" class="mais" data-mais="${k}">+ linha</button></div>`;
+  const grupos = {}; r.colecoes.forEach(c => (grupos[c.grupo] = grupos[c.grupo] || []).push(c));
+  const dv = r.divisoes;
+  main.innerHTML = `
+    <div class="lo-barra no-print"><div class="row">
+      <a class="btn" href="#meudeck-${L.id}">← ${esc(r.deck.nome)}</a>
+      <span class="grow"></span>
+      <span class="muted lo-salvo" id="lo-salvo">${L.salvo ? `Edições salvas ${fmtData(L.salvo, true)}` : 'Gerada a partir do deck'}</span>
+      ${r.editada ? '<button id="lo-refazer" title="Descarta as suas edições e gera de novo a partir da lista do deck">Refazer a partir do deck</button>' : ''}
+      <label class="label" for="lo-papel">Papel</label><select id="lo-papel"><option value="a4" ${L.papel === 'a4' ? 'selected' : ''}>A4</option><option value="carta" ${L.papel === 'carta' ? 'selected' : ''}>Carta (EUA)</option></select>
+      <button class="primary" id="lo-pdf">Salvar em PDF</button></div></div>
+    <header class="no-print"><h1>Lista oficial</h1><p class="sub">O formulário de lista de deck da Play! Pokémon, só Standard. Clique em qualquer campo da folha para editar: tudo fica salvo sozinho neste deck. Para o PDF, clique em <b>Salvar em PDF</b> e, na janela de impressão, escolha <b>Salvar como PDF</b> em Destino. Nome, Player ID e data de nascimento ficam só neste computador.</p></header>
+    ${r.deck_mudou ? '<div class="aviso no-print">A lista do deck mudou depois que você editou esta lista oficial. Use "Refazer a partir do deck" se quiser trazer as cartas novas.</div>' : ''}
+    <div id="lo-validacao" class="no-print">${conferenciaStandard(r.validacao, true)}</div>
+    <div class="folha-wrap"><div class="folha ${L.papel === 'carta' ? 'carta' : ''} ${aperto}" id="folha">
+      <div class="topo">
+        <div><h2>Pokémon TCG Deck List</h2><div class="temporada">${dv.temporada_inicio}–${dv.temporada_inicio + 1} Tournament Season${r.ultima_colecao ? ` · through ${esc(r.ultima_colecao)}` : ''}</div></div>
+        <div class="formato"><b>Format</b> (check one):<span class="caixa x"></span>Standard<span class="caixa"></span>Expanded</div>
+      </div>
+      <div class="jogador">
+        <label>Player Name:<input data-jog="nome" value="${esc(L.jogador.nome)}" aria-label="Nome do jogador"></label>
+        <label>Player ID:<input data-jog="id" value="${esc(L.jogador.id)}" aria-label="Player ID"></label>
+        <label class="nasc">Date of Birth (MM/DD/YYYY):<input data-jog="mes" value="${esc(mes || '')}" maxlength="2" inputmode="numeric" aria-label="Mês de nascimento">/<input data-jog="dia" value="${esc(dia || '')}" maxlength="2" inputmode="numeric" aria-label="Dia de nascimento">/<input class="ano" data-jog="ano" value="${esc(ano || '')}" maxlength="4" inputmode="numeric" aria-label="Ano de nascimento"></label>
+      </div>
+      <div class="divisoes" id="lo-div">${divisoesHtml(L)}</div>
+      <div class="corpo">
+        <div class="legenda-sets">
+          <div><h4>Standard Format Regulation Marks</h4><div class="marcas-std">${r.validacao.marcas.map(m => `<span>${esc(m)}</span>`).join('')}</div></div>
+          ${Object.entries(grupos).map(([g, cs]) => `<div><h4>${esc(g)}</h4><div class="sets">${cs.map(c => `<b>${esc(c.codigo)}</b><span>${esc(c.nome)}</span>`).join('')}</div></div>`).join('')}
+          <div class="admin">ADMINISTRATIVE USE ONLY</div>
+        </div>
+        <div class="secoes">${SEC_LO.map(([k, rot]) => tabela(k, rot)).join('')}</div>
+      </div>
+      <div class="rodape"><span>List the set abbreviation, collector number and regulation mark of every Pokémon; Trainer and Energy cards need only quantity and name. For a Pokémon from an older set that was reprinted in a listed set, write NA as the set. The list must match the deck exactly.</span>
+        <b>TOTAL CARDS: <span data-soma="total"></span></b></div>
+    </div></div>`;
+  atualizarSomasLO();
+  ligarListaOficial();
+}
+function atualizarSomasLO() {
+  const L = S.lo; if (!L) return;
+  const soma = k => (L.linhas[k] || []).reduce((a, c) => a + (c && c.nome && c.nome.trim() ? Number(c.qtd) || 0 : 0), 0);
+  let total = 0;
+  SEC_LO.forEach(([k]) => { const v = soma(k); total += v; const el = document.querySelector(`[data-soma="${k}"]`); if (el) el.textContent = v ? `${v} carta${v === 1 ? '' : 's'}` : ''; });
+  const t = document.querySelector('[data-soma="total"]'); if (t) { t.textContent = total; t.style.color = total === 60 ? '' : '#c0392b'; }
+}
+function ligarListaOficial() {
+  const L = S.lo, r = L.r;
+  let tSalvar, tValidar;
+  const salvar = async () => {
+    clearTimeout(tSalvar);
+    $('#lo-salvo') && ($('#lo-salvo').textContent = 'Salvando…');
+    try {
+      const x = await api('/api/decks/' + L.id + '/lista-oficial', { method: 'PUT', body: JSON.stringify({ linhas: L.linhas, jogador: L.jogador }) });
+      L.salvo = x.salvo_em; L.r.editada = true;
+      if (S.lo === L && $('#lo-salvo')) $('#lo-salvo').textContent = `Edições salvas ${fmtData(x.salvo_em, true).replace(/<[^>]+>/g, '')}`;
+    } catch (e) { if ($('#lo-salvo')) $('#lo-salvo').textContent = 'Não consegui salvar: ' + e.message; }
+  };
+  const validar = async () => {
+    try { const v = await api('/api/lista-oficial/validar', { method: 'POST', body: JSON.stringify({ linhas: L.linhas }) });
+      if (S.lo === L) $('#lo-validacao').innerHTML = conferenciaStandard(v, true); } catch (e) {}
+  };
+  L.salvarJa = salvar;
+  const mudou = () => { atualizarSomasLO(); clearTimeout(tSalvar); clearTimeout(tValidar); tSalvar = setTimeout(salvar, 900); tValidar = setTimeout(validar, 400); };
+  document.querySelectorAll('.folha [data-campo]').forEach(inp => inp.oninput = () => {
+    const k = inp.dataset.sec, i = Number(inp.dataset.i), ls = L.linhas[k];
+    while (ls.length <= i) ls.push(k === 'pokemon' ? { qtd: '', nome: '', set: '', numero: '', reg: '' } : { qtd: '', nome: '' });
+    ls[i][inp.dataset.campo] = inp.dataset.campo === 'qtd' ? inp.value.replace(/\D/g, '').slice(0, 2) : inp.value;
+    if (inp.dataset.campo === 'qtd' && inp.value !== ls[i].qtd) inp.value = ls[i].qtd;
+    mudou();
+  });
+  document.querySelectorAll('.folha [data-jog]').forEach(inp => inp.oninput = () => {
+    const campo = inp.dataset.jog;
+    if (['nome', 'id'].includes(campo)) L.jogador[campo] = inp.value;
+    else {
+      inp.value = inp.value.replace(/\D/g, '');
+      const v = Object.fromEntries(['ano', 'mes', 'dia'].map(c => [c, document.querySelector(`.folha [data-jog="${c}"]`).value]));
+      L.jogador.nascimento = [v.ano, v.mes, v.dia].join('-').replace(/^-+$/, '');
+      $('#lo-div').innerHTML = divisoesHtml(L); ligarDivisoes();
+    }
+    clearTimeout(tSalvar); tSalvar = setTimeout(salvar, 900);
+  });
+  const ligarDivisoes = () => document.querySelectorAll('[data-div]').forEach(b => b.onclick = () => {
+    L.divisao = (L.divisao || divisaoAuto(L)) === b.dataset.div && L.divisao ? '' : b.dataset.div; $('#lo-div').innerHTML = divisoesHtml(L); ligarDivisoes(); });
+  ligarDivisoes();
+  document.querySelectorAll('[data-tirar]').forEach(b => b.onclick = () => {
+    const [k, i] = b.dataset.tirar.split(':'); const ls = L.linhas[k];
+    if (Number(i) < ls.length) ls.splice(Number(i), 1);
+    desenharListaOficial(); mudou();
+  });
+  document.querySelectorAll('[data-mais]').forEach(b => b.onclick = () => {
+    const k = b.dataset.mais, ls = L.linhas[k];
+    const alvo = Math.max(ls.length, MIN_LINHAS[k]) + 1;
+    while (ls.length < alvo) ls.push(k === 'pokemon' ? { qtd: '', nome: '', set: '', numero: '', reg: '' } : { qtd: '', nome: '' });
+    desenharListaOficial();
+    const ins = document.querySelectorAll(`.folha [data-sec="${k}"][data-campo="qtd"]`); ins[ins.length - 1]?.focus();
+  });
+  $('#lo-papel').onchange = e => { L.papel = e.target.value; try { localStorage.setItem('papel', L.papel); } catch (er) {} $('#folha').classList.toggle('carta', L.papel === 'carta'); };
+  if ($('#lo-refazer')) $('#lo-refazer').onclick = async () => {
+    if (!confirm('Descartar as suas edições e gerar a lista oficial de novo a partir do deck? Nome, Player ID e data de nascimento continuam.')) return;
+    await api('/api/decks/' + L.id + '/lista-oficial', { method: 'DELETE' }); toast('Lista refeita a partir do deck'); renderListaOficial(L.id);
+  };
+  $('#lo-pdf').onclick = async () => {
+    if (tSalvar) await salvar();
+    let st = document.getElementById('estilo-pagina');
+    if (!st) { st = document.createElement('style'); st.id = 'estilo-pagina'; document.head.appendChild(st); }
+    st.textContent = `@page { size: ${L.papel === 'carta' ? 'letter' : 'A4'} portrait; margin: 8mm; }`;
+    const titulo = document.title;
+    document.title = `Lista oficial - ${r.deck.nome}`;
+    document.activeElement?.blur();
+    document.body.classList.add('imprimindo');
+    const fim = () => { document.body.classList.remove('imprimindo'); document.title = titulo; window.removeEventListener('afterprint', fim); };
+    window.addEventListener('afterprint', fim);
+    window.print();
+  };
+}
+
+/* =====================================================================
+   REGRAS DO STANDARD: a base de regras (markdown) com índice e busca
+   ===================================================================== */
+const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+function mdInline(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (m, txt, url) => `<a href="${url}" target="_blank" rel="noopener">${txt}</a>`);
+}
+function mdTabela(linhas) {
+  const cel = r => r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+  const temSep = linhas[1] && /^\s*\|?\s*:?-{2,}/.test(linhas[1]);
+  const cab = cel(linhas[0]), corpo = linhas.slice(temSep ? 2 : 1).map(cel);
+  return `<div class="tabela"><table><thead><tr>${cab.map(c => `<th>${mdInline(c)}</th>`).join('')}</tr></thead>
+    <tbody>${corpo.map(r => `<tr>${r.map(c => `<td>${mdInline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function mdLista(linhas) {
+  let h = ''; const pilha = [];
+  for (const l of linhas) {
+    const m = l.match(/^(\s*)([-*]|\d+\.)\s+(.*)$/);
+    if (!m) { h += ' ' + mdInline(l.trim()); continue; }
+    const ind = m[1].length, tag = /\d/.test(m[2]) ? 'ol' : 'ul';
+    while (pilha.length && ind < pilha[pilha.length - 1].ind) h += `</li></${pilha.pop().tag}>`;
+    if (!pilha.length || ind > pilha[pilha.length - 1].ind) { h += `<${tag}>`; pilha.push({ ind, tag }); } else h += '</li>';
+    h += `<li>${mdInline(m[3])}`;
+  }
+  while (pilha.length) h += `</li></${pilha.pop().tag}>`;
+  return h;
+}
+// Markdown simples (títulos, parágrafos, listas, tabelas, negrito e links), em seções para a busca.
+function mdHtml(md) {
+  const L = String(md || '').replace(/\r/g, '').split('\n'), out = [], indice = [];
+  const ehLista = l => /^\s*([-*]|\d+\.)\s+/.test(l);
+  let i = 0, aberta = false, n = 0;
+  while (i < L.length) {
+    const l = L[i];
+    if (!l.trim()) { i++; continue; }
+    const t = l.match(/^(#{1,4})\s+(.*)$/);
+    if (t) {
+      const nivel = t[1].length, id = 'rg-' + (++n);
+      if (nivel <= 3) { if (aberta) out.push('</section>'); out.push(`<section class="rg-sec" data-nivel="${nivel}">`); aberta = true; }
+      if (nivel >= 2) indice.push({ nivel, texto: t[2], id });
+      out.push(`<h${nivel} id="${id}">${mdInline(t[2])}</h${nivel}>`); i++; continue;
+    }
+    if (l.trim().startsWith('|')) { const rs = []; while (i < L.length && L[i].trim().startsWith('|')) rs.push(L[i++]); out.push(mdTabela(rs)); continue; }
+    if (ehLista(l)) { const it = []; while (i < L.length && (ehLista(L[i]) || (/^\s{2,}\S/.test(L[i])))) it.push(L[i++]); out.push(mdLista(it)); continue; }
+    const par = [];
+    while (i < L.length && L[i].trim() && !/^#{1,4}\s/.test(L[i]) && !L[i].trim().startsWith('|') && !ehLista(L[i])) par.push(L[i++].trim());
+    out.push(`<p>${mdInline(par.join(' '))}</p>`);
+  }
+  if (aberta) out.push('</section>');
+  return { html: out.join('\n'), indice };
+}
+// destaca as ocorrências (sem diferenciar acentos e maiúsculas) dentro de um elemento
+function destacar(el, termo) {
+  const alvo = semAcento(termo); if (!alvo) return 0;
+  let total = 0;
+  const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('mark,script,style') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const nos = []; while (w.nextNode()) nos.push(w.currentNode);
+  for (const no of nos) {
+    const txt = no.nodeValue; let norm = '', mapa = [];
+    for (let k = 0; k < txt.length; k++) { const c = semAcento(txt[k]); for (let q = 0; q < c.length; q++) { norm += c[q]; mapa.push(k); } }
+    let pos = norm.indexOf(alvo); if (pos < 0) continue;
+    const frag = document.createDocumentFragment(); let ult = 0;
+    while (pos >= 0) {
+      const ini = mapa[pos], fim = mapa[pos + alvo.length - 1] + 1;
+      frag.append(txt.slice(ult, ini)); const mk = document.createElement('mark'); mk.textContent = txt.slice(ini, fim); frag.append(mk);
+      ult = fim; total++; pos = norm.indexOf(alvo, pos + alvo.length);
+    }
+    frag.append(txt.slice(ult)); no.replaceWith(frag);
+  }
+  return total;
+}
+async function renderRegrasStandard() {
+  const r = await api('/api/regras-standard');
+  const g = r.regras, est = r.estado || {};
+  if (!r.texto) { main.innerHTML = `${trilha()}<header><h1>Regras do Standard</h1></header><div class="aviso erro">A base de regras não foi encontrada na pasta docs do programa. Atualize o programa em Ajustes.</div>`; return; }
+  const { html, indice } = mdHtml(r.texto);
+  const data = r.atualizada_em ? fmtData(r.atualizada_em) : 'sem data';
+  main.innerHTML = `
+    ${trilha()}<header><h1>Regras do Standard</h1><p class="sub">Resumo em português das regras oficiais da Play! Pokémon, só do formato Standard (o único que o programa analisa). Atualizada em <b>${data}</b>${r.fonte === 'baixada' ? ' (baixada do GitHub)' : ''}. A base é revisada todo mês e chega aqui sozinha, sem precisar atualizar o programa.</p></header>
+    <section class="panel"><h2>O que o programa usa destas regras</h2>
+      <div class="rg-usa">
+        <div><b><span class="marcas-reg">${g.marcas.map(m => `<span>${esc(m)}</span>`).join('')}</span></b>Marcas de regulamento válidas hoje. Com cartas de mesmo nome, o leitor e o replay escolhem a versão que vale no Standard.</div>
+        <div><b>${g.tamanho_deck} cartas · até ${g.max_copias} · ${g.max_ace_spec} ACE SPEC</b>Conferência de cada lista em Meus decks e na Lista oficial (versões diferentes com o mesmo nome somam).</div>
+        <div><b>${g.premios} prêmios</b>Quem pega o último vence: o leitor usa isso quando o log não traz a linha final. ex vale 2 e Mega ex vale 3.</div>
+        <div><b>1º turno</b>Quem começa não ataca nem joga Apoiador, e ninguém evolui no próprio 1º turno. Por isso as Decisões separam as aberturas por quem começou, e o replay não evolui um Pokémon que acabou de entrar.</div>
+      </div>
+      <div class="row"><input id="rg-busca" placeholder="Buscar nas regras (ex.: mulligan, empate, Apoiador)" style="flex:1;min-width:240px"><span class="muted" id="rg-cont"></span>
+        <button id="rg-atualizar">Procurar atualização</button><a class="btn" href="${esc(r.pagina_oficial)}" target="_blank" rel="noopener">Documentos oficiais ↗</a></div>
+      ${est.erro ? `<div class="aviso erro">${esc(est.erro)}</div>` : est.mensagem ? `<p class="muted" style="font-size:.85rem">${esc(est.mensagem)}</p>` : ''}
+      ${est.verificado_em ? `<p class="muted" style="font-size:.8rem">Última verificação no GitHub: ${fmtData(est.verificado_em, true)}</p>` : ''}
+    </section>
+    <div class="rg-layout">
+      <aside class="panel rg-indice" aria-label="Índice das regras">${indice.map(x => `<button class="n${x.nivel}" data-alvo="${x.id}">${esc(x.texto)}</button>`).join('')}</aside>
+      <article class="panel rg-doc" id="rg-doc">${html}</article>
+    </div>`;
+  document.querySelectorAll('[data-alvo]').forEach(b => b.onclick = () => document.getElementById(b.dataset.alvo)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  const doc = $('#rg-doc'), original = doc.innerHTML;
+  let t;
+  $('#rg-busca').oninput = e => { clearTimeout(t); t = setTimeout(() => {
+    const q = e.target.value.trim();
+    doc.innerHTML = original;
+    if (q.length < 2) { $('#rg-cont').textContent = ''; return; }
+    let achados = 0, secoes = 0;
+    doc.querySelectorAll('.rg-sec').forEach(sec => { const n = destacar(sec, q); sec.hidden = !n; achados += n; secoes += n ? 1 : 0; });
+    $('#rg-cont').textContent = achados ? `${achados} ocorrência${achados === 1 ? '' : 's'} em ${secoes} trecho${secoes === 1 ? '' : 's'}` : 'Nada encontrado';
+    doc.querySelector('mark')?.scrollIntoView({ block: 'center' });
+  }, 200); };
+  $('#rg-atualizar').onclick = async () => {
+    $('#rg-atualizar').disabled = true;
+    const x = await api('/api/regras-standard/atualizar', { method: 'POST' }).catch(e => ({ estado: { erro: e.message } }));
+    toast(x.estado?.erro || x.estado?.mensagem || 'Verificado'); renderRegrasStandard();
+  };
+}
+
+/* ---------------- novidades depois de atualizar ---------------- */
+async function mostrarNovidades(todas) {
+  let n; try { n = await api('/api/novidades'); } catch (e) { return; }
+  const lista = todas ? n.todas : n.pendentes;
+  if (!lista.length) { if (todas) toast('Nenhuma novidade registrada ainda'); return; }
+  const fundo = document.createElement('div');
+  fundo.className = 'janela-fundo';
+  fundo.innerHTML = `<div class="janela" role="dialog" aria-label="Novidades" style="width:min(640px,100%);max-height:86vh;overflow-y:auto">
+    <h2 style="margin-top:0">${todas ? 'Novidades de cada versão' : `Programa atualizado: versão ${esc(n.versao)}`}</h2>
+    ${lista.map(x => `<section style="margin-top:12px"><h3>${esc(x.versao)}${x.titulo ? ` · ${esc(x.titulo)}` : ''}</h3>
+      ${x.mudancas?.length ? `<p class="label" style="margin-top:8px">O que mudou</p><ul style="margin:4px 0;padding-left:20px">${x.mudancas.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}
+      ${x.passos?.length ? `<p class="label" style="margin-top:8px">O que fazer agora</p><ol style="margin:4px 0;padding-left:20px">${x.passos.map(m => `<li>${esc(m)}</li>`).join('')}</ol>` : ''}</section>`).join('')}
+    <div class="row" style="margin-top:14px"><span class="grow"></span><button class="primary" id="nv-ok">Entendi</button></div></div>`;
+  document.body.appendChild(fundo);
+  const fechar = async () => { fundo.remove(); if (!todas) await api('/api/novidades/vista', { method: 'POST' }).catch(() => {}); };
+  fundo.querySelector('#nv-ok').onclick = fechar;
+  fundo.onclick = e => { if (e.target === fundo) fechar(); };
+  fundo.querySelector('#nv-ok').focus();
+}
+
+/* ---------------- primeiro uso guiado ---------------- */
+async function copiarTexto(texto) {
+  try { await navigator.clipboard.writeText(texto); return true; } catch (e) {}
+  const ta = Object.assign(document.createElement('textarea'), { value: texto });
+  ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+  const ok = document.execCommand('copy'); ta.remove(); return ok;
+}
+async function mostrarGuia() {
+  const st = await api('/api/status'), cfg = st.config;
+  let atalhos = null;
+  if (st.windows) { try { atalhos = await api('/api/atalhos'); } catch (e) {} }
+  let passo = 0, nick = cfg.nick || '';
+  const fundo = document.createElement('div');
+  fundo.className = 'janela-fundo';
+  document.body.appendChild(fundo);
+  const passos = [
+    () => `<h2 style="margin-top:0">Quem é você no TCG Live?</h2>
+      <p>Digite seu nick <b>exatamente como aparece no jogo</b>. É assim que o programa separa suas vitórias e derrotas.</p>
+      <div class="row"><input id="g-nick" value="${esc(nick)}" placeholder="Seu nick no TCG Live" style="flex:1"></div>
+      <p class="muted" style="font-size:.85rem">Pode deixar em branco: o programa descobre sozinho na primeira partida, porque o log mostra o nome das cartas que <i>você</i> comprou.</p>`,
+    () => `<h2 style="margin-top:0">No jogo</h2>
+      <ol><li>Deixe o Pokémon TCG Live em <b>inglês</b>: Settings &gt; Language &gt; English. Em português o log não é lido.</li>
+        <li>No fim de cada partida, clique em <b>Battle Log</b> e no botão de <b>exportar</b> (canto superior direito). O Coletor pega o log sozinho.</li>
+        <li>Quer que o programa clique por você? Depois, veja o <b>Modo automático</b> em Programa &gt; Ajustes e captura.</li></ol>
+      ${atalhos && !atalhos.area ? `<div class="row" style="margin-top:8px"><button id="g-atalho">Criar o atalho na Área de Trabalho</button><span class="muted" id="g-atalho-ok"></span></div>` : ''}`,
+    () => `<h2 style="margin-top:0">Teste a captura</h2>
+      <p>Clique no botão: ele copia um log de exemplo, como o jogo faz. Se o Coletor perceber, está tudo pronto.</p>
+      <div class="row"><button class="primary" id="g-testar">Copiar um log de exemplo</button><span id="g-teste"></span></div>
+      <p class="muted" style="font-size:.85rem">O log de exemplo não entra nas suas partidas.</p>`,
+  ];
+  const desenhar = () => {
+    fundo.innerHTML = `<div class="janela guia" role="dialog" aria-label="Primeiro uso" style="width:min(560px,100%)">
+      <div class="guia-passos">${passos.map((_, i) => `<span class="${i <= passo ? 'feito' : ''}"></span>`).join('')}</div>
+      <p class="label" style="margin:0 0 4px">Passo ${passo + 1} de ${passos.length}</p>
+      ${passos[passo]()}
+      <div class="row" style="margin-top:16px"><button id="g-pular" style="border:none;background:none;color:var(--muted)">Pular</button><span class="grow"></span>
+        ${passo ? '<button id="g-voltar">Voltar</button>' : ''}
+        <button class="primary" id="g-seguir">${passo === passos.length - 1 ? 'Concluir' : 'Próximo'}</button></div></div>`;
+    const guardarNick = () => { if ($('#g-nick')) nick = $('#g-nick').value.trim(); };
+    const terminar = async () => {
+      await api('/api/config', { method: 'POST', body: JSON.stringify({ guia_visto: true, ...(nick ? { nick } : {}) }) }).catch(() => {});
+      fundo.remove();
+    };
+    $('#g-seguir').onclick = async () => {
+      guardarNick();
+      if (passo < passos.length - 1) { passo++; desenhar(); return; }
+      await terminar(); toast('Tudo pronto. Boas partidas!'); render();
+    };
+    if ($('#g-voltar')) $('#g-voltar').onclick = () => { guardarNick(); passo--; desenhar(); };
+    $('#g-pular').onclick = () => { guardarNick(); terminar(); };
+    if ($('#g-atalho')) $('#g-atalho').onclick = async () => {
+      try { atalhos = await api('/api/atalhos', { method: 'POST', body: JSON.stringify({ area: true }) }); $('#g-atalho').remove(); $('#g-atalho-ok').innerHTML = '<span class="ok">✓ Atalho criado</span>'; }
+      catch (e) { toast(e.message); }
+    };
+    if ($('#g-testar')) $('#g-testar').onclick = async () => {
+      const saida = $('#g-teste');
+      saida.textContent = 'Copiando…';
+      const antes = (await api('/api/status')).coletor.teste_em;
+      const texto = await fetch('/api/exemplo-log').then(r => r.text());
+      if (!await copiarTexto(texto)) { saida.innerHTML = '<span style="color:var(--bad)">Não consegui copiar. Tente de novo.</span>'; return; }
+      saida.textContent = 'Esperando o Coletor perceber…';
+      for (let i = 0; i < 12; i++) {
+        await new Promise(r => setTimeout(r, 700));
+        const s2 = await api('/api/status').catch(() => null);
+        if (s2 && s2.coletor.teste_em > antes) { saida.innerHTML = '<span class="ok">✓ A captura está funcionando.</span>'; return; }
+      }
+      saida.innerHTML = `<span style="color:var(--bad)">O Coletor não percebeu a cópia.</span> ${st.coletor.ativo ? 'Feche e abra o programa e tente de novo.' : 'A captura está desligada: ligue no Início ou em Ajustes.'}`;
+    };
+    ($('#g-nick') || $('#g-seguir')).focus();
+  };
+  desenhar();
+}
+
+/* ---------------- busca rápida (Ctrl+K) ---------------- */
+const TELAS_BUSCA = [['painel', 'Início'], ['partidas', 'Partidas'], ['desempenho', 'Desempenho'], ['decisoes', 'Decisões'],
+  ['decks', 'Meus decks'], ['meta', 'Meta'], ['matchups', 'Matchups'], ['deck', 'Perfil de deck'], ['cartas', 'Uso de cartas'],
+  ['cartas-mu', 'Cartas x matchups'], ['torneios', 'Torneios'], ['regras-standard', 'Regras do Standard'],
+  ['ajustes', 'Ajustes e captura'], ['amigos', 'Amigos (trocar logs)'], ['biblioteca', 'Biblioteca de cartas'],
+  ['revisao', 'Linhas não lidas'], ['regras', 'Regras de leitura']];
+async function abrirBusca() {
+  if ($('#busca-fundo')) return;
+  const fundo = document.createElement('div');
+  fundo.className = 'janela-fundo'; fundo.id = 'busca-fundo';
+  fundo.innerHTML = `<div class="janela busca" role="dialog" aria-label="Buscar">
+    <input id="busca-q" placeholder="Buscar telas, seus decks, decks do meta, adversários…" autocomplete="off">
+    <ul id="busca-lista" role="listbox"></ul></div>`;
+  document.body.appendChild(fundo);
+  const q = $('#busca-q'); q.focus();
+  const fechar = () => fundo.remove();
+  fundo.onclick = e => { if (e.target === fundo) fechar(); };
+  let itens = TELAS_BUSCA.map(([h, n]) => ({ tipo: 'Tela', nome: n, ir: () => { location.hash = h; } }));
+  let achados = [], sel = 0;
+  const escolher = k => { const i = achados[k]; if (!i) return; fechar(); i.ir(); };
+  const desenhar = () => {
+    const termos = semAcento(q.value).split(/\s+/).filter(Boolean);
+    achados = itens.filter(i => termos.every(t => semAcento(i.nome + ' ' + (i.extra || '') + ' ' + i.tipo).includes(t))).slice(0, 14);
+    sel = Math.min(sel, Math.max(achados.length - 1, 0));
+    $('#busca-lista').innerHTML = achados.length ? achados.map((i, k) => `<li role="option" data-k="${k}" aria-selected="${k === sel}">
+      <span class="b-tipo">${esc(i.tipo)}</span>${i.ico || ''}<span>${esc(i.nome)}</span>${i.extra ? `<span class="extra">${esc(i.extra)}</span>` : ''}</li>`).join('')
+      : '<li class="muted">Nada encontrado</li>';
+    document.querySelectorAll('#busca-lista li[data-k]').forEach(li => li.onclick = () => escolher(Number(li.dataset.k)));
+  };
+  q.oninput = () => { sel = 0; desenhar(); };
+  q.onkeydown = e => {
+    if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, achados.length - 1); desenhar(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); desenhar(); e.preventDefault(); }
+    else if (e.key === 'Enter') escolher(sel);
+    else if (e.key === 'Escape') fechar();
+  };
+  desenhar();
+  const [meus, ps] = await Promise.all([api('/api/decks').catch(() => []), api(comJog('/api/partidas')).catch(() => ({ partidas: [] }))]);
+  itens = itens.concat(
+    meus.map(d => ({ tipo: 'Meu deck', nome: d.nome, ico: icones(d.arquetipo), ir: () => { location.hash = 'meudeck-' + d.id; } })),
+    S.arqLista.map(a => ({ tipo: 'Perfil de deck', nome: a.nome, ico: icones(a.slug),
+      ir: () => { S.deck = a.slug; if (location.hash === '#deck') render(); else location.hash = 'deck'; } })),
+    ps.partidas.slice(0, 400).map(p => ({ tipo: 'Partida', nome: `${p.resultado === 'V' ? 'Vitória' : p.resultado === 'D' ? 'Derrota' : '?'} contra ${p.adversario}`,
+      extra: `${nomeDeck(p.meu_deck)} x ${nomeDeck(p.deck_adv)} · ${(p.data || '').slice(0, 10).split('-').reverse().join('/')}`,
+      ir: () => { location.hash = 'partida-' + p.id; } })));
+  if ($('#busca-fundo')) desenhar();
+}
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); abrirBusca(); }
+});
+$('#abrir-busca').onclick = abrirBusca;
+
 /* ---------------- início ---------------- */
 (async () => {
   await carregarArquetipos();
   await carregarJogadores();
   await atualizarStatus();
-  render();
+  await render();
   setInterval(atualizarStatus, 4000);
+  // primeiro uso: sem nick, sem partidas e sem ter passado pelo guia
+  const cfg = S.status?.config || {};
+  const partidas = S.jogadores.reduce((a, j) => a + j.partidas, 0);
+  if (!cfg.guia_visto && !cfg.nick && !partidas) mostrarGuia();
+  else mostrarNovidades(false);
 })();
 </script>
 </body>

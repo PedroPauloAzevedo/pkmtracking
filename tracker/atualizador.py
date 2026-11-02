@@ -27,7 +27,8 @@ from . import config
 
 ARQ_VERSAO = config.RAIZ / "versao.txt"
 NUNCA_SUBSTITUIR = {"dados", ".venv", ".git"}
-estado = {"atual": None, "remota": None, "disponivel": False, "verificado_em": None, "erro": "", "atualizando": False, "mensagem": ""}
+estado = {"atual": None, "remota": None, "disponivel": False, "verificado_em": None, "erro": "", "atualizando": False, "mensagem": "",
+          "novidades": []}
 
 
 def versao_local():
@@ -65,7 +66,18 @@ def verificar():
         r.raise_for_status()
         remota = r.text.strip()
         estado.update({"remota": remota, "disponivel": _como_tupla(remota) > _como_tupla(estado["atual"]),
-                       "verificado_em": time.strftime("%d/%m %H:%M")})
+                       "verificado_em": time.strftime("%d/%m %H:%M"), "novidades": []})
+        if estado["disponivel"]:
+            # o que a versão nova traz e o passo a passo para atualizar (novidades.json do GitHub)
+            try:
+                n = requests.get(f"https://api.github.com/repos/{repo}/contents/novidades.json?ref={ramo}",
+                                 headers={**_cabecalhos(cfg), "Accept": "application/vnd.github.raw"}, timeout=20)
+                if n.status_code == 200:
+                    n.encoding = "utf-8"
+                    from . import novidades
+                    estado["novidades"] = novidades.entre(novidades.ler(n.text), estado["atual"], remota)
+            except requests.RequestException:
+                pass
     except (requests.RequestException, RuntimeError) as e:
         estado["erro"] = str(e)
     return estado
@@ -104,6 +116,7 @@ def _reiniciar():
     time.sleep(1.5)
     args = [sys.executable, str(config.RAIZ / "app.py"), "--sem-navegador"]
     if os.name == "nt":
+        # python.exe abre com janela preta; o app.py novo troca sozinho para o pythonw.exe (ícone perto do relógio)
         subprocess.Popen(args, cwd=str(config.RAIZ), creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0))
     else:
         subprocess.Popen(args, cwd=str(config.RAIZ))

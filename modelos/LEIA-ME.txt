@@ -1,18 +1,23 @@
 IMAGENS PARA O MODO AUTOMÁTICO
 ==============================
 
-O modo automático procura estes botões na sua tela comparando com imagens recortadas
-por você. Recorte SÓ o botão, com o jogo na resolução e no idioma que você costuma usar.
+O modo automático procura estes botões na sua tela comparando com imagens.
 
   botao_battle_log.png   (obrigatório)  o botão "Battle Log" da tela de resultado da partida
   botao_exportar.png     (obrigatório)  o botão de exportar, no canto superior direito do Battle Log
+  botao_continuar.png    (recomendado)  o botão "Continue" da tela de resultado: confirma que a
+                                        partida acabou e é coberto enquanto o log é copiado
   botao_fechar.png       (opcional)     o botão de fechar/voltar do Battle Log
 
-Como recortar no Windows: Win + Shift + S, selecione o botão, abra o Paint, cole (Ctrl+V),
-salve como PNG nesta pasta com o nome exato acima.
+JEITO MAIS FÁCIL: no painel, Programa > Ajustes e captura > Modo automático > "Usar imagens prontas".
+Ele baixa as imagens do projeto Full Bench (https://github.com/heatfireash/FullBench, licença MIT,
+créditos em CREDITOS-FullBench.txt). Elas servem em qualquer resolução: o programa descobre
+sozinho o tamanho dos botões no seu monitor. As imagens que você tinha vão para modelos/minhas.
+
+PARA USAR AS SUAS: recorte SÓ o botão, com o jogo em inglês.
+No Windows: Win + Shift + S, selecione o botão, abra o Paint, cole (Ctrl+V) e salve como PNG
+nesta pasta com o nome exato acima (ou envie pela tela de Ajustes).
 No macOS: Cmd + Shift + 4, selecione o botão; o arquivo vai para a Mesa; renomeie e mova para cá.
 
-Se o programa não reconhecer o botão, recorte de novo um pouco mais justo ou baixe a
-"Precisão" em Ajustes. Se clicar no lugar errado, aumente a "Precisão".
-
+Se o programa não reconhecer o botão, baixe a "Precisão" em Ajustes. Se clicar no lugar errado, aumente.
 Para abortar um clique em andamento, leve o mouse rapidamente a um canto da tela.

@@ -12,7 +12,7 @@ está em jogo na mesa, que é o que o log descreve com segurança.
 import copy
 import re
 
-from . import cartas, leitor
+from . import cartas, leitor, regras_jogo
 
 
 def _tipo_anexo(nome):
@@ -68,7 +68,7 @@ def gerar(texto, regras):
 
     estado = {
         "turno": 0, "vez": None, "estadio": None, "resultado": None,
-        "mesa": {j: {"ativo": None, "banco": [], "premios": 6, "nocauteados": []} for j in jogadores},
+        "mesa": {j: {"ativo": None, "banco": [], "premios": regras_jogo.PREMIOS_PARTIDA, "nocauteados": []} for j in jogadores},
     }
 
     def achar(j, nome, zona=None, procurar_no_outro=True):
@@ -93,6 +93,17 @@ def gerar(texto, regras):
         j, zona, i = ref
         m = estado["mesa"][j]
         return m["ativo"] if zona == "ativo" else m["banco"][i]
+
+    def achar_evoluivel(j, nome, zona):
+        """Regra do jogo: não se evolui um Pokémon que entrou em jogo (ou evoluiu) neste turno.
+        Com vários Pokémon de mesmo nome, prefere um que já estava em jogo antes deste turno."""
+        m = estado["mesa"][j]
+        cands = ([(j, "ativo", None)] if zona == "ativo" and m["ativo"] and m["ativo"]["nome"] == nome else []) + \
+                ([(j, "banco", i) for i, p in enumerate(m["banco"]) if p["nome"] == nome] if zona == "banco" else [])
+        if not cands:
+            return achar(j, nome, zona, False)
+        prontos = [r for r in cands if pegar(r)["entrou"] < estado["turno"]]
+        return (prontos or cands)[0]
 
     def remover(ref):
         j, zona, i = ref
@@ -178,7 +189,7 @@ def gerar(texto, regras):
             d = {"tipo": "jogada", "jogador": m.group(1), "carta": m.group(2)}
         elif casa(rf"^{P} evolved (.+?) to (.+?) (in the Active Spot|on the Bench)\.$"):
             j, de, para, onde = m.groups()
-            ref = achar(j, de, "ativo" if "Active" in onde else "banco", False)
+            ref = achar_evoluivel(j, de, "ativo" if "Active" in onde else "banco")
             if ref:
                 p = pegar(ref)
                 p["nome"] = para
