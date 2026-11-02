@@ -143,7 +143,8 @@ class Coletor:
                                 p = banco.obter_partida(pid)
                                 self.ultima = {"id": pid, "quando": time.strftime("%H:%M:%S"),
                                                "nao_lidas": len(p["nao_lidas"]) if p else 0,
-                                               "problemas": p["resumo"].get("problemas", []) if p else []}
+                                               "problemas": p["resumo"].get("problemas", []) if p else [],
+                                               "dono": p["dono"] if p else ""}
                                 print(f"[coletor] Partida #{pid} registrada.")
                 self.erro = ""
             except Exception as e:  # nunca deixa o vigia morrer

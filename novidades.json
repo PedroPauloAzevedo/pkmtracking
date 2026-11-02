@@ -1,5 +1,26 @@
 [
   {
+    "versao": "2026.11.02-4",
+    "data": "2026-11-02",
+    "titulo": "Partidas de amigos separadas sozinhas e modo automático instalável pelo painel",
+    "mudancas": [
+      "Se você copiar ou colar no seu computador o log de uma partida em que o seu nick não joga (por exemplo, a de um amigo), ela vai para Amigos, no nome de quem jogou, e fica fora das suas estatísticas.",
+      "Partidas de outra pessoa que já estavam misturadas com as suas são separadas sozinhas ao abrir o programa (nada é apagado; elas aparecem no filtro Jogador, com o nick do amigo).",
+      "Modo automático: quando faltam as bibliotecas, aparece o botão \"Instalar o modo automático\" em Ajustes e captura. Ele instala no Python do próprio programa e o modo já começa a funcionar, sem reabrir.",
+      "A mensagem de erro do modo automático agora mostra o comando exato para o seu computador (um \"pip install\" num terminal comum instalava no Python errado)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-4\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Confira se o seu nick está certo em Programa > Ajustes e captura: é por ele que o programa sabe quais partidas são suas.",
+      "Para usar o modo automático: Programa > Ajustes e captura > Modo automático > \"Instalar o modo automático\" (espere alguns minutos) e depois \"Usar imagens prontas\"."
+    ]
+  },
+  {
     "versao": "2026.11.02-3",
     "data": "2026-11-02",
     "titulo": "Correção: Consistência com 7 ou mais cópias de uma carta",

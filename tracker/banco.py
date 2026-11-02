@@ -115,6 +115,7 @@ def iniciar():
         reprocessar_partidas(config.ler_regras())
         cfg["versao_leitor"] = VERSAO_LEITOR
         config.salvar_config(cfg)
+    separar_partidas_de_outros()
 
 
 # ---------------------------------------------------------------- partidas
@@ -124,15 +125,57 @@ def hash_log(texto):
     return hashlib.sha1(normal.encode("utf-8")).hexdigest()
 
 
+def dono_provavel(dados, nick, amigos=()):
+    """Partida capturada ou colada sem dono: se o seu nick não joga nela, ela é de outra pessoa
+    (um amigo copiou o log dele no seu computador, ou você colou o log de um amigo).
+    Devolve de quem ela é: o amigo que já está no programa; senão, quem exportou o log;
+    senão, o primeiro jogador. Devolve "" se a partida é sua (ou se não há nick para comparar)."""
+    jogadores = dados.get("jogadores") or []
+    if not nick or not jogadores or nick.lower() in {j.lower() for j in jogadores}:
+        return ""
+    conhecidos = {a.lower() for a in amigos}
+    amigo = next((j for j in jogadores if j.lower() in conhecidos), None)
+    exportou = (dados.get("resumo") or {}).get("exportou")
+    return amigo or (exportou if exportou in jogadores else jogadores[0])
+
+
+def _amigos(con):
+    return [r[0] for r in con.execute("SELECT DISTINCT dono FROM partidas WHERE COALESCE(dono,'')!=''")]
+
+
+def separar_partidas_de_outros():
+    """Partidas gravadas como suas em que o seu nick não joga passam para o amigo (ver dono_provavel).
+    Roda ao abrir o programa e quando o nick muda; não apaga nada, só troca o dono."""
+    nick = (config.ler_config().get("nick") or "").strip()
+    if not nick:
+        return 0
+    movidas = 0
+    with _trava, conectar() as con:
+        amigos = _amigos(con)
+        for r in con.execute("SELECT id, dados_json FROM partidas WHERE COALESCE(dono,'')=''").fetchall():
+            dono = dono_provavel(json.loads(r["dados_json"]), nick, amigos)
+            if dono:
+                con.execute("UPDATE partidas SET dono=? WHERE id=?", (dono, r["id"]))
+                amigos.append(dono)
+                movidas += 1
+    if movidas:
+        marcar_mudanca()
+        print(f"[banco] {movidas} partida(s) de outro jogador passaram para Amigos.")
+    return movidas
+
+
 def inserir_partida(texto, origem, regras, dono="", capturada_em=None, extras=None):
     """Grava uma partida. Devolve (id, nova?). Logs repetidos são ignorados.
-    dono: vazio para as suas partidas; o nick do amigo para logs importados dele."""
+    dono: vazio para as suas partidas; o nick do amigo para logs importados dele.
+    Sem dono, se o seu nick não joga a partida, ela vai para o amigo (ver dono_provavel)."""
     h = hash_log(texto)
     with _trava, conectar() as con:
         existente = con.execute("SELECT id FROM partidas WHERE hash=?", (h,)).fetchone()
         if existente:
             return existente["id"], False
         dados = leitor.ler_partida(texto, regras)
+        if not dono:
+            dono = dono_provavel(dados, (config.ler_config().get("nick") or "").strip(), _amigos(con))
         quando = capturada_em or datetime.now().isoformat(timespec="seconds")
         nome = quando.replace("T", "_").replace(":", "")[:17] + f"_{h[:6]}.txt"
         pasta = config.PASTA_LOGS

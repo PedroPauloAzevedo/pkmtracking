@@ -516,7 +516,8 @@ async function atualizarStatus() {
       ${st.atualizacao?.disponivel ? `<div class="aviso-versao">Nova versão ${esc(st.atualizacao.remota)} disponível<button onclick="location.hash='ajustes'">Ver atualização</button></div>` : ''}
       ${st.importacao.ativo ? `<span><span class="luz warn"></span>Importando ${esc(st.importacao.torneio)}: ${st.importacao.pct}%</span>` : ''}`;
     if (c.ultima && S.ultimaVista !== null && c.ultima.id !== S.ultimaVista) {
-      if (c.ultima.problemas?.length) toast(`Partida #${c.ultima.id} registrada, mas o log parece incompleto: ${c.ultima.problemas.join('; ')}.`, 'partida-' + c.ultima.id, 'Ver');
+      if (c.ultima.dono) toast(`Partida #${c.ultima.id} registrada como de ${c.ultima.dono}: seu nick não joga nela. Ela fica em Amigos, fora das suas estatísticas.`, 'partida-' + c.ultima.id, 'Ver');
+      else if (c.ultima.problemas?.length) toast(`Partida #${c.ultima.id} registrada, mas o log parece incompleto: ${c.ultima.problemas.join('; ')}.`, 'partida-' + c.ultima.id, 'Ver');
       else if (c.ultima.nao_lidas) toast(`Nova partida registrada (#${c.ultima.id}) com ${c.ultima.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
       else toast(`Nova partida registrada (#${c.ultima.id})`);
       if (['painel', 'partidas', 'desempenho'].includes(aba())) render();
@@ -693,7 +694,8 @@ async function renderPainel() {
     await api('/api/config', { method: 'POST', body: JSON.stringify({ nick: n }) }); toast('Nick salvo'); render(); };
   $('#btn-manual').onclick = async () => {
     try { const r = await api('/api/partidas', { method: 'POST', body: JSON.stringify({ texto: $('#manual').value }) });
-      if (r.nova && r.problemas?.length) toast(`Partida #${r.id} registrada, mas o log parece incompleto: ${r.problemas.join('; ')}. Confira se copiou o log inteiro.`, 'partida-' + r.id, 'Ver');
+      if (r.nova && r.dono) toast(`Partida #${r.id} registrada como de ${r.dono}: seu nick não joga nela. Ela fica em Amigos, fora das suas estatísticas.`, 'partida-' + r.id, 'Ver');
+      else if (r.nova && r.problemas?.length) toast(`Partida #${r.id} registrada, mas o log parece incompleto: ${r.problemas.join('; ')}. Confira se copiou o log inteiro.`, 'partida-' + r.id, 'Ver');
       else if (r.nova && r.nao_lidas) toast(`Partida #${r.id} registrada com ${r.nao_lidas} linha(s) não lida(s).`, 'revisao', 'Revisar');
       else toast(r.nova ? `Partida #${r.id} registrada` : 'Esse log já estava registrado');
       render(); }
@@ -1274,7 +1276,7 @@ async function renderAjustes() {
     <section class="panel"><h2>Modo automático <span class="pill n">experimental</span></h2>
       <p>O programa reconhece a tela de resultado e clica em <b>Battle Log</b> e em <b>exportar</b> por você. Ele não lê a memória do jogo nem joga por você, mas é automação de cliques no cliente do jogo: use por sua conta e risco.</p>
       <ol class="sub" style="margin:0;padding-left:20px">
-        <li>Instale o extra: <span class="mono">pip install -r requirements-auto.txt</span> (o instalador pergunta; no instalador .exe já vem).</li>
+        <li>Instale o extra com o botão <b>Instalar o modo automático</b> (aparece abaixo quando falta). No instalador .exe já vem.</li>
         <li>Clique em <b>Usar imagens prontas</b>: baixa as imagens dos botões do projeto Full Bench (licença MIT), que servem em qualquer resolução. As suas, se houver, ficam guardadas em <span class="mono">modelos/minhas</span>.</li>
         <li>Ou recorte as suas (Windows: Win+Shift+S) e envie abaixo: o botão "Battle Log", o botão de exportar do log e, se quiser, o "Continue" e o de fechar o log.</li>
       </ol>
@@ -1285,6 +1287,9 @@ async function renderAjustes() {
         <select id="a-conf">${[0.75, 0.8, 0.85, 0.9, 0.95].map(v => `<option value="${v}" ${cfg.confianca_imagem == v ? 'selected' : ''}>${Math.round(v * 100)}%</option>`).join('')}</select>
         <span class="muted">Status: ${esc(a.status)} · ${a.cliques} exportações automáticas${a.perdidas ? ` · <b style="color:var(--bad)">${a.perdidas} perdida(s)</b>` : ''}</span>
       </div>
+      ${['indisponível', 'instalando'].includes(a.status) ? `<div class="row">
+        <button class="primary" id="a-instalar" ${a.status === 'instalando' ? 'disabled' : ''}>${a.status === 'instalando' ? 'Instalando… (alguns minutos)' : 'Instalar o modo automático'}</button>
+        <span class="muted">Instala as bibliotecas no Python do próprio programa (pasta .venv).</span></div>` : ''}
       <div class="row">
         <button id="a-prontas">Usar imagens prontas</button>
         <label class="row" style="gap:6px"><input type="checkbox" id="a-cobrir" ${cfg.cobrir_continuar !== false ? 'checked' : ''}> Cobrir o botão Continue enquanto copia</label>
@@ -1344,6 +1349,11 @@ async function renderAjustes() {
   $('#a-salvar-nick').onclick = () => salvar({ nick: $('#a-nick').value.trim() }).then(() => toast('Nick salvo'));
   $('#a-coletor').onclick = () => salvar({ coletor_ativo: !cfg.coletor_ativo });
   $('#a-auto').onclick = () => salvar({ modo_automatico: !cfg.modo_automatico });
+  if ($('#a-instalar')) $('#a-instalar').onclick = async () => {
+    await api('/api/automatico/instalar', { method: 'POST' }); toast('Instalando o modo automático… pode levar alguns minutos.');
+    const espera = setInterval(async () => { const s = await api('/api/status');
+      if (s.automatico.status !== 'instalando') { clearInterval(espera); toast(s.automatico.erro || 'Modo automático instalado.'); if (location.hash === '#ajustes') render(); } }, 3000);
+    render(); };
   $('#a-conf').onchange = e => salvar({ confianca_imagem: Number(e.target.value) });
   $('#a-cobrir').onchange = e => salvar({ cobrir_continuar: e.target.checked });
   $('#a-prontas').onclick = async () => {

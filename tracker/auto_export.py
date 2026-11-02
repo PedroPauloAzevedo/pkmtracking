@@ -20,10 +20,16 @@ só reconhece dois botões e clica neles depois que a partida acabou. Mesmo assi
 é automação de cliques no cliente do jogo; use por sua conta e risco.
 
 Precisa de: pip install -r requirements-auto.txt  (pyautogui, opencv-python, pillow)
+O "pip" precisa ser o do Python que roda o programa (o da pasta .venv): um "pip install" num
+terminal qualquer instala no Python do Windows, e o programa continua sem as bibliotecas.
+Por isso o painel tem o botão "Instalar o modo automático" (ver instalar()).
 """
 import shutil
+import subprocess
+import sys
 import threading
 import time
+from pathlib import Path
 
 from . import avisos, config
 from .coletor import coletor
@@ -75,6 +81,17 @@ def baixar_prontas():
     return sorted(MODELOS[k] for k in novas)
 
 
+def python_do_programa():
+    """O python.exe que roda o programa (com o ícone na bandeja ele roda como pythonw.exe, que não mostra o pip)."""
+    exe = Path(sys.executable)
+    console = exe.with_name("python.exe")
+    return console if exe.name.lower() == "pythonw.exe" and console.exists() else exe
+
+
+def comando_instalar():
+    return f'"{python_do_programa()}" -m pip install -r "{config.RAIZ / "requirements-auto.txt"}"'
+
+
 def esquecer_escala():
     """Imagens novas: o tamanho certo no seu monitor precisa ser descoberto de novo."""
     cfg = config.ler_config()
@@ -108,6 +125,31 @@ class AutoExport:
     def parar(self):
         self._parar.set()
         self.status = "desligado"
+
+    def instalar(self):
+        """Instala pyautogui/opencv/pillow no Python do programa e, se o modo estiver ligado, já começa a vigiar."""
+        if self.status == "instalando":
+            return
+        self.status, self.erro = "instalando", ""
+        threading.Thread(target=self._instalar, name="instalar_auto", daemon=True).start()
+
+    def _instalar(self):
+        try:
+            r = subprocess.run([str(python_do_programa()), "-m", "pip", "install", "-r", str(config.RAIZ / "requirements-auto.txt")],
+                               capture_output=True, text=True, timeout=900, cwd=str(config.RAIZ),
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            if r.returncode != 0:
+                fim = (r.stderr or r.stdout or "").strip().splitlines()[-1:] or ["sem detalhes"]
+                raise RuntimeError(fim[0])
+        except Exception as e:
+            self.status = "indisponível"
+            self.erro = f"Não consegui instalar: {e}. Tente num terminal: {comando_instalar()}"
+            return
+        import importlib
+        importlib.invalidate_caches()  # o import seguinte já enxerga as bibliotecas novas, sem reabrir o programa
+        self.status = "desligado"
+        if config.ler_config().get("modo_automatico"):
+            self.iniciar()
 
     # -------------------------------------------------------------- reconhecer os botões
     def _modelo(self, cv2, k):
@@ -178,7 +220,8 @@ class AutoExport:
             import pyautogui  # noqa: importado aqui para o resto do programa funcionar sem ele
         except ImportError:
             self.status = "indisponível"
-            self.erro = "Instale as dependências: pip install -r requirements-auto.txt"
+            self.erro = ("Faltam as bibliotecas do modo automático no Python do programa. Clique em \"Instalar o modo automático\" "
+                         f"ou rode num terminal: {comando_instalar()}")
             return
         if self.faltando():
             self.status = "sem modelos"

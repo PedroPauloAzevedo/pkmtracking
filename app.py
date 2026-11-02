@@ -213,6 +213,8 @@ def salvar_config():
             compartilhar.sincronizador_pasta.agora()
     else:
         compartilhar.sincronizador_pasta.parar()
+    if "nick" in novo:  # nick novo: partidas em que você não joga passam para Amigos
+        banco.separar_partidas_de_outros()
     return jsonify(cfg)
 
 
@@ -307,7 +309,7 @@ def nova_partida():
     p = banco.obter_partida(pid)
     _cache_pendentes["t"] = 0
     return jsonify({"id": pid, "nova": nova, "nao_lidas": len(p["nao_lidas"]) if p else 0,
-                    "problemas": p["resumo"].get("problemas", []) if p else []})
+                    "problemas": p["resumo"].get("problemas", []) if p else [], "dono": p["dono"] if p else ""})
 
 
 @app.get("/api/partidas/<int:pid>")
@@ -626,6 +628,13 @@ def usar_modelos_prontos():
         return jsonify({"ok": True, "arquivos": baixar_prontas()})
     except Exception as e:
         return jsonify({"erro": f"Não consegui baixar as imagens prontas: {e}"}), 400
+
+
+@app.post("/api/automatico/instalar")
+def instalar_automatico():
+    """Instala as bibliotecas do modo automático no mesmo Python que roda o programa (veja auto_export.instalar)."""
+    auto.instalar()
+    return jsonify({"ok": True})
 
 
 @app.get("/modelos/<nome>")

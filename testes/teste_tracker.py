@@ -41,6 +41,19 @@ p = analises.analise_pessoal("")
 print("eu", p["eu"], "| total", p["total"], "| ordem", [(g["grupo"], g["n"]) for g in p["ordem"]])
 print("por adv", [(g["grupo"], g["n"], g["taxa"]) for g in p["por_adversario"]])
 
+# 2b) partida de outra pessoa copiada no seu computador: seu nick não joga nela -> vai para Amigos
+outro = exemplo.replace("Ana_TCG", "Bia_Amiga") + "\n\n(partida de outra pessoa)"
+cfg = config.ler_config(); cfg["nick"] = "Ana_TCG"; config.salvar_config(cfg)
+pid_outro, _ = banco.inserir_partida(outro, "teste", config.ler_regras())
+assert banco.obter_partida(pid_outro)["dono"] == "Bia_Amiga", banco.obter_partida(pid_outro)["dono"]
+assert banco.obter_partida(ids[0])["dono"] == "", "partida sua não pode mudar de dono"
+with banco.conectar() as con:  # gravada como sua por uma versão antiga: separada ao abrir o programa
+    con.execute("UPDATE partidas SET dono='' WHERE id=?", (pid_outro,))
+assert banco.separar_partidas_de_outros() == 1 and banco.obter_partida(pid_outro)["dono"] == "Bia_Amiga"
+assert analises.analise_pessoal("Ana_TCG")["total"] == p["total"], "partida do amigo entrou nas suas"
+cfg["nick"] = ""; config.salvar_config(cfg)
+print("partida de outra pessoa -> dono", banco.obter_partida(pid_outro)["dono"])
+
 # 3) torneio sintético com HTML no formato do Labs e do RK9
 arqs = ["dragapult-ex", "charizard-ex", "gardevoir-ex", "raging-bolt-ex", "n-zoroark"]
 forca = {"dragapult-ex": 0.58, "charizard-ex": 0.55, "gardevoir-ex": 0.5, "raging-bolt-ex": 0.47, "n-zoroark": 0.45}
