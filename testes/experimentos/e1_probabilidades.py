@@ -16,13 +16,14 @@ N = int(sys.argv[2]) if len(sys.argv) > 2 else 200_000
 random.seed(42)
 
 # deck de teste: 12 Básicos (4 A, 4 B, 4 C), um treinador X com 4 cópias, uma carta Y com 1 cópia, resto
-deck = ["A"] * 4 + ["B"] * 4 + ["C"] * 4 + ["X"] * 4 + ["Y"] + ["-"] * 43
+deck = ["A"] * 4 + ["B"] * 4 + ["C"] * 4 + ["X"] * 4 + ["Y"] + ["E"] * 9 + ["-"] * 34  # E: Energia com 9 cópias (mais que os 6 prêmios)
 basicos = {"A", "B", "C"}
 assert len(deck) == 60
 
 
 def simular():
-    cont = {"mull": 0, "maos": 0, "X_mao": 0, "X_t2": 0, "Y_todas_premio": 0, "X_alguma_premio": 0, "A_mao": 0, "combo": 0}
+    cont = {"mull": 0, "maos": 0, "X_mao": 0, "X_t2": 0, "Y_todas_premio": 0, "X_alguma_premio": 0, "A_mao": 0, "combo": 0,
+            "E_mao": 0, "E_alguma_premio": 0}
     for _ in range(N):
         while True:
             random.shuffle(deck)
@@ -38,6 +39,8 @@ def simular():
         cont["Y_todas_premio"] += "Y" in premios
         cont["X_alguma_premio"] += "X" in premios
         cont["combo"] += ("X" in vistas) and ("Y" in vistas)
+        cont["E_mao"] += "E" in mao
+        cont["E_alguma_premio"] += "E" in premios
     return cont
 
 
@@ -50,6 +53,7 @@ a = pr.carta(4, 12, True, 0)
 y = pr.carta(1, 12, False, 0)
 comb_ = pr.combo(4, 1, 12, compras=2)
 mull = pr.mulligan(12)
+e = pr.carta(9, 12, False, 0)  # antes dava erro: mais cópias do que prêmios
 t_exato = time.time() - t0
 
 linhas = [
@@ -60,6 +64,8 @@ linhas = [
     ("Y (1 cópia) presa nos prêmios", y["todas_premio"], c["Y_todas_premio"] / N),
     ("X: alguma cópia nos prêmios", x["alguma_premio"], c["X_alguma_premio"] / N),
     ("Combo X e Y até o 2º turno", comb_, c["combo"] / N),
+    ("Energia (9 cópias) na mão inicial", e["na_mao"], c["E_mao"] / N),
+    ("Energia: alguma cópia nos prêmios", e["alguma_premio"], c["E_alguma_premio"] / N),
 ]
 pior = 0.0
 print(f"{N} partidas simuladas em {t_sim:.1f} s; contas exatas em {1000 * t_exato:.1f} ms\n")

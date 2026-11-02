@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.02-3",
+    "data": "2026-11-02",
+    "titulo": "Correção: Consistência com 7 ou mais cópias de uma carta",
+    "mudancas": [
+      "Meus decks > Consistência dava erro em listas com 7 ou mais cópias da mesma carta (por exemplo, 9 Energias de Fogo). Agora calcula normalmente."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-3\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra Meus decks > um deck e a seção Consistência já aparece."
+    ]
+  },
+  {
     "versao": "2026.11.02-2",
     "data": "2026-11-02",
     "titulo": "ACE SPEC de cada lista e versões dos decks por ACE SPEC",

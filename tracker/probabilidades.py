@@ -22,8 +22,8 @@ DECK, MAO, PREMIOS = 60, 7, 6
 
 def hipergeometrica(total, sucessos, amostra, k):
     """P(exatamente k sucessos ao tirar `amostra` cartas de `total`, das quais `sucessos` são o alvo)."""
-    if k < 0 or k > sucessos or amostra - k > total - sucessos or amostra > total:
-        return 0.0
+    if k < 0 or k > sucessos or k > amostra or amostra - k > total - sucessos or amostra > total:
+        return 0.0  # impossível (ex.: 9 cópias de uma Energia não cabem todas nos 6 prêmios)
     return comb(sucessos, k) * comb(total - sucessos, amostra - k) / comb(total, amostra)
 
 
