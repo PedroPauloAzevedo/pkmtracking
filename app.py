@@ -81,6 +81,17 @@ def icone_aba():
     return send_from_directory(PASTA_WEB, "icone.ico")
 
 
+@app.get("/web/<path:arquivo>")
+def arquivo_painel(arquivo):
+    """Partes do painel (estilo.css e web/js/*.js). Só CSS e JS de dentro de web/; sem cache,
+    para a versão nova aparecer logo depois de atualizar."""
+    if not arquivo.endswith((".css", ".js")):
+        return Response(status=404)
+    resp = send_from_directory(PASTA_WEB, arquivo, max_age=0)
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 # ------------------------------------------------------------------ status e configurações
 @app.get("/api/status")
 def status():
@@ -782,6 +793,16 @@ def deck(arq):
 @app.get("/api/cartas")
 def api_cartas():
     return jsonify(analises.cartas(_lista_torneios(), request.args.get("arq") or None))
+
+
+@app.get("/api/efeito-cartas")
+def api_efeito_cartas():
+    """Efeito de cada carta na chance de vencer, descontados os confrontos (regressão logística, tracker/regressao.py)."""
+    from tracker import regressao
+    arq = request.args.get("arq") or ""
+    if not arq:
+        return jsonify({"erro": "Escolha um deck."}), 400
+    return jsonify(regressao.efeito_cartas(arq, _lista_torneios()))
 
 
 @app.get("/api/jogadores")

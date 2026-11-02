@@ -14,6 +14,9 @@ import re
 
 from . import cartas, leitor, regras_jogo
 
+# Cartas que pegam Pokémon do descarte ou da mão ("X moved X's Y to their hand"), nunca da mesa.
+CARTAS_FORA_DA_MESA = ("Night Stretcher", "Super Rod", "Lillie's Determination")
+
 
 def _tipo_anexo(nome):
     e = cartas.por_nome(nome)
@@ -32,7 +35,27 @@ def _tipo_energia(nome):
     return "Special"
 
 
-def gerar(texto, regras):
+def _ps_minimo(nome, golpes=()):
+    """Menor PS entre as versões da carta que valem no Standard (Dunsparce: 60 e 70 -> 60).
+    Usar o menor evita "achar" falta de dano num Pokémon que era a versão mais fraca.
+    golpes: ataques/habilidades que ele usou na partida; ficam só as versões que têm todos eles
+    (Dhelmise que usou Vengeful Anchor é a de 140 PS, não a de 120)."""
+    ind = cartas.indice()
+    chaves = ind.get("por_nome", {}).get(cartas.normalizar(nome)) or []
+    validas = [k for k in chaves if cartas.legal_chave(k) is not False] or chaves
+    if golpes:
+        validas = [k for k in validas if set(golpes) <= set(",".join(k.split("|")[2:]).split(","))] or validas
+    ps = [int(k.split("|")[1]) for k in validas if k.count("|") >= 1 and k.split("|")[1].isdigit()]
+    return min(ps) if ps else 0
+
+
+def gerar(texto, regras, _correcoes=None):
+    """_correcoes: {linha do log: uid} da segunda passada (ver "contadores ambíguos" no fim)."""
+    correcoes = _correcoes or {}
+    ambiguos = []        # contadores postos num Pokémon com irmãos de mesmo nome: (linha, uid escolhido, dano, uids possíveis)
+    novas_correcoes = {}
+    golpes_vistos = {}   # (jogador, Pokémon) -> ataques/habilidades usados na partida
+    atingidos = set()
     dados = leitor.ler_partida(texto, regras)
     jogadores = dados["jogadores"]
     if not jogadores:
@@ -127,11 +150,41 @@ def gerar(texto, regras):
             ko = re.match(rf"^{P}'s (.+?) (?:is now|was) Knocked Out", s)
             if ko and ko.group(2) == alvo:
                 return ko.group(1)
-            if re.match(rf"^(?:Turn # \d+ - )?{P}'s Turn$", s) or " damage counters on " in s:
+            if re.match(rf"^(?:Turn # \d+ - )?{P}'s Turn$", s) or re.search(r" damage counters? (?:on|from) ", s):
                 break
         if ultima_principal and re.match(rf"^{re.escape(j)}'s .+? used ", ultima_principal) and achar(outro(j), alvo, None, False):
             return outro(j)
         return dono_escrito
+
+    def achar_nocauteado(j, nome):
+        """Com dois Pokémon de mesmo nome do mesmo lado, cai o que está mais perto (ou além) dos PS,
+        não sempre o Ativo (ex.: o Phantom Dive nocauteia o do Banco). Empate: o Ativo."""
+        m = estado["mesa"][j]
+        cands = ([(j, "ativo", None)] if m["ativo"] and m["ativo"]["nome"] == nome else []) + \
+                [(j, "banco", i) for i, p in enumerate(m["banco"]) if p["nome"] == nome]
+        if len(cands) <= 1:
+            return achar(j, nome, "ativo")
+        return max(cands, key=lambda r: pegar(r)["dano"])  # mesmo nome, mesmos PS: o de mais dano  # max devolve o primeiro no empate (o Ativo)
+
+    def achar_alvo_dos_contadores(dono, alvo, n_linha=None, dano=0):
+        """Com dois Pokémon de mesmo nome do mesmo lado: se o ataque acabou de acertar o Ativo com esse nome,
+        os contadores extras vão para o do Banco (ex.: Phantom Dive só põe contadores no Banco).
+        O log não diz qual deles recebeu: a escolha fica anotada e pode ser corrigida pelo nocaute (fim de gerar)."""
+        m = estado["mesa"].get(dono)
+        irmaos = ([(dono, "ativo", None)] if m and m["ativo"] and m["ativo"]["nome"] == alvo else []) + \
+                 ([(dono, "banco", i) for i, p in enumerate(m["banco"]) if p["nome"] == alvo] if m else [])
+        if n_linha in correcoes:
+            certo = next((r for r in irmaos if pegar(r)["uid"] == correcoes[n_linha]), None)
+            if certo:
+                return certo
+        ref = None
+        golpe = re.match(rf"^{P}'s .+? used .+? on {P}'s (.+?) for \d+ damage", ultima_principal or "")
+        if golpe and golpe.group(2) == dono and golpe.group(3) == alvo:
+            ref = next((r for r in irmaos if r[1] == "banco"), None)
+        ref = ref or achar(dono, alvo)
+        if ref and len(irmaos) > 1 and n_linha:
+            ambiguos.append((n_linha, pegar(ref)["uid"], dano, [pegar(r)["uid"] for r in irmaos]))
+        return ref
 
     quadros = []
     ultima_principal = ""  # última linha que não começa com "-" (o ataque ou habilidade que gerou as sublinhas)
@@ -180,6 +233,10 @@ def gerar(texto, regras):
         if not sublinha:
             poder = None
             ultima_principal = l
+            atingidos = set()  # Pokémon que já levaram dano "took N damage" nesta mesma ação
+            usou = re.match(rf"^{P}'s (.+?) used (.+?)(?: on .+)?\.$", l)
+            if usou:  # para saber qual versão da carta ele é (ver _ps_minimo)
+                golpes_vistos.setdefault((usou.group(1), usou.group(2)), set()).add(cartas.normalizar(usou.group(3)))
         if poder and re.match(rf"^{P} shuffled \d+ cards? into their deck\.$", l) and l.startswith(poder[0]):
             embaralhou = True
 
@@ -286,19 +343,55 @@ def gerar(texto, regras):
             j, qtd, dono_alvo, alvo = m.groups()
             qtd = 1 if qtd == "a" else qtd
             dono_alvo = dono_dos_contadores(n_linha, j, dono_alvo, alvo)
-            ref = achar(dono_alvo, alvo)
+            ref = achar_alvo_dos_contadores(dono_alvo, alvo, n_linha, 10 * int(qtd))
             if ref:
                 p = pegar(ref)
                 p["dano"] += 10 * int(qtd)
                 d = {"tipo": "dano", "jogador": j, "carta": alvo, "alvo_uid": p["uid"], "dano": 10 * int(qtd)}
+        elif casa(rf"^{P}'s (.+?) took (\d+) damage\.$"):
+            # dano extra de um ataque em outro Pokémon (ex.: Torrential Pump do Ogerpon ex também acerta o Banco)
+            dono_alvo, alvo, dano = m.group(1), m.group(2), int(m.group(3))
+            ref = achar_alvo_dos_contadores(dono_alvo, alvo, n_linha, dano)
+            if ref and pegar(ref)["uid"] in atingidos:  # o mesmo golpe acerta vários (ex.: Trifrost): outro de mesmo nome
+                mesa = estado["mesa"][dono_alvo]
+                livres = ([(dono_alvo, "ativo", None)] if mesa["ativo"] and mesa["ativo"]["nome"] == alvo else []) + \
+                         [(dono_alvo, "banco", i) for i, x in enumerate(mesa["banco"]) if x["nome"] == alvo]
+                ref = next((r for r in livres if pegar(r)["uid"] not in atingidos), ref)
+            if ref:
+                p = pegar(ref)
+                atingidos.add(p["uid"])
+                p["dano"] += dano
+                d = {"tipo": "dano", "jogador": outro(dono_alvo), "carta": alvo, "alvo_uid": p["uid"], "dano": dano}
+        elif casa(rf"^{P} moved (\d+|a) damage counters? from {P}'s (.+?) to {P}'s (.+?)\.$"):
+            # ex.: Munkidori "Adrena-Brain": tira contadores de um Pokémon seu e põe num do adversário.
+            # O jogo escreve o nome de quem usou também no Pokémon que recebe (mesmo defeito do "put ... on").
+            j, qtd, dono_origem, origem, dono_alvo, alvo = m.groups()
+            dano = 10 * (1 if qtd == "a" else int(qtd))
+            ref_origem = achar(dono_origem, origem)
+            if ref_origem:
+                p = pegar(ref_origem)
+                p["dano"] = max(0, p["dano"] - dano)
+            dono_alvo = dono_dos_contadores(n_linha, j, dono_alvo, alvo)
+            ref = achar_alvo_dos_contadores(dono_alvo, alvo, n_linha, dano)
+            if ref:
+                p = pegar(ref)
+                p["dano"] += dano
+                d = {"tipo": "dano", "jogador": j, "carta": alvo, "alvo_uid": p["uid"], "dano": dano}
         elif re.search(rf"{P}'s ([^.]+?) (?:is now|was) Knocked Out", l):
             m = re.search(rf"{P}'s ([^.]+?) (?:is now|was) Knocked Out", l)
             j, c = m.groups()
-            ref = achar(j, c, "ativo")
+            ref = achar_nocauteado(j, c)
             uid = None
             if ref:
                 p = remover(ref)
                 uid = p["uid"]
+                falta = _ps_minimo(c, golpes_vistos.get((j, c), ())) - p["dano"]
+                if p["dano"] and falta > 0 and not correcoes:
+                    # Caiu com menos dano que os PS: um contador ambíguo de mesmo valor, posto num irmão, era dele.
+                    erro = next((a for a in ambiguos if a[2] == falta and a[1] != uid and uid in a[3]
+                                 and a[0] not in novas_correcoes), None)
+                    if erro:
+                        novas_correcoes[erro[0]] = uid
                 estado["mesa"][ref[0]]["nocauteados"].append(p["nome"])
             d = {"tipo": "nocaute", "jogador": j, "carta": c, "uid": uid}
         elif casa(rf"^(.+?) was discarded from {P}'s (.+?)\.$"):
@@ -318,7 +411,10 @@ def gerar(texto, regras):
             d = {"tipo": "premio", "jogador": j, "qtd": q}
         elif casa(rf"^{P} (?:moved|shuffled|put) {P}'s (.+?) (?:and all attached cards )?(?:to their hand|into their deck)"):
             j, dono, c = m.groups()
-            ref = achar(dono, c, None, False)
+            # Night Stretcher e companhia tiram a carta do DESCARTE (ou da mão), não da mesa:
+            # o Pokémon de mesmo nome que está em jogo continua lá.
+            do_descarte = re.match(rf"^{P} played ({'|'.join(map(re.escape, CARTAS_FORA_DA_MESA))})\.$", ultima_principal or "")
+            ref = None if do_descarte else achar(dono, c, None, False)
             if ref:
                 remover(ref)
             d = {"tipo": "info", "jogador": j, "carta": c}
@@ -329,6 +425,13 @@ def gerar(texto, regras):
                 p = pegar(ref)
                 p["dano"] = max(0, p["dano"] - int(qtd))
             d = {"tipo": "info", "jogador": j, "carta": c}
+        elif casa(rf"^{P}'s (.+?) healed (\d+) damage\.$"):  # outro formato (ex.: Hydrapple ex "Ripening Charge")
+            dono, c, qtd = m.groups()
+            ref = achar(dono, c, None, False)
+            if ref:
+                p = pegar(ref)
+                p["dano"] = max(0, p["dano"] - int(qtd))
+            d = {"tipo": "info", "jogador": dono, "carta": c}
         elif casa(rf"^{P} played (.+?)\.$"):
             d = {"tipo": "jogada", "jogador": m.group(1), "carta": m.group(2)}
             ref = mais_recente(m.group(1), m.group(2))
@@ -345,6 +448,8 @@ def gerar(texto, regras):
             d = {"tipo": "info", "jogador": j}
         quadros.append(_quadro(n_linha, l, estado, d))
 
+    if novas_correcoes:  # contadores ambíguos: refaz a partida com a escolha que o nocaute revelou
+        return gerar(texto, regras, novas_correcoes)
     return {"jogadores": jogadores, "primeiro": dados["resumo"]["primeiro"], "vencedor": dados["resumo"]["vencedor"],
             "turnos": estado["turno"], "quadros": quadros, "cartas": _cartas_usadas(quadros)}
 

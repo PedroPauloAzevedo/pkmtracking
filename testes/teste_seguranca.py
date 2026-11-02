@@ -22,6 +22,11 @@ casos = [
     ("outra porta local se passando pelo painel", "post", "/api/encerrar",
      {"Host": "127.0.0.1:8765", "Origin": "http://127.0.0.1:9999"}, 403),
     ("DNS rebinding (Host de outro domínio)", "get", "/api/status", {"Host": "site-malicioso.example:8765"}, 403),
+    # /web/ entrega só as partes do painel (CSS e JS de dentro de web/), nunca outros arquivos do programa
+    ("parte do painel (web/js/base.js)", "get", "/web/js/base.js", {"Host": "127.0.0.1:8765"}, 200),
+    ("/web/ não entrega outro tipo de arquivo", "get", "/web/LEIA-ME.md", {"Host": "127.0.0.1:8765"}, 404),
+    ("/web/ não sai da pasta web (app.py)", "get", "/web/../app.py", {"Host": "127.0.0.1:8765"}, 404),
+    ("/web/ não sai da pasta web (dados)", "get", "/web/%2e%2e/dados/config.js", {"Host": "127.0.0.1:8765"}, 404),
 ]
 falhas = 0
 for nome, metodo, rota, cab, esperado in casos:

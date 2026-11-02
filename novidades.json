@@ -1,5 +1,37 @@
 [
   {
+    "versao": "2026.11.02-7",
+    "data": "2026-11-02",
+    "titulo": "Efeito de cada carta, replay mais fiel e correções no painel",
+    "mudancas": [
+      "Novo: Meta e torneios > Uso de cartas > escolha um deck > \"Efeito de cada carta\". Mostra quanto uma cópia a mais de cada carta muda a chance de vencer, já descontados os adversários que cada lista enfrentou e as outras cartas que vêm junto (regressão logística). Com poucos dados o efeito fica perto de zero de propósito; \"efeito provável\" só quando dificilmente é sorte.",
+      "Medido nos torneios: a conta nova prevê melhor que a comparação bruta \"Vitória com / sem\" (que se engana com amostras pequenas) e um pouco melhor que olhar só o deck.",
+      "Replay: quando existem versões da mesma carta com PS diferentes (ex.: Dunsparce de 60 e de 70 PS), o programa usa o que aconteceu na partida para escolher. Nocauteado com 60 de dano tem no máximo 60 PS; quem aguentou 60 de dano tem mais de 60. Essa pista vale mais que a sua lista de Meus decks.",
+      "Replay: passou a ler \"moved damage counters\" (ex.: habilidade Adrena-Brain do Munkidori), tirando o dano de um Pokémon e pondo no do adversário.",
+      "Replay: passou a ler a cura no formato \"Fulano's Pokémon healed 30 damage\" (ex.: Hydrapple ex).",
+      "Replay: com dois Pokémon de mesmo nome do mesmo lado, os contadores extras do Phantom Dive vão para o do Banco, e não para o Ativo.",
+      "Replay: com dois Pokémon de mesmo nome do mesmo lado, o nocauteado é o que tem mais dano (antes era sempre o Ativo).",
+      "Replay: quando o log não diz qual de dois Pokémon de mesmo nome recebeu os contadores (ex.: Munkidori em um de dois Dhelmise), o nocaute que vem depois mostra qual era, e o replay corrige a escolha.",
+      "Replay: Night Stretcher (e Super Rod) pega o Pokémon do descarte; antes o replay tirava da mesa o Pokémon de mesmo nome que estava em jogo.",
+      "Replay: passou a ler o dano extra no formato \"Fulano's Pokémon took 120 damage\" (ex.: Torrential Pump do Ogerpon ex, Trifrost copiado pelo Slowking).",
+      "Conferido nas partidas gravadas: nenhum Pokémon fica em jogo com dano maior que os PS dele (antes eram 96 momentos assim), e os nocautes com dano menor que os PS caíram de 41 para 14 — todos os que sobraram estão certos (Dusclops/Dusknoir que se nocauteiam com Cursed Blast e o Terminal Period do Mega Absol ex).",
+      "Correção: Ajustes e captura às vezes dava erro na parte \"Como abrir o programa\".",
+      "Correção: a Consistência de um deck sem Pokémon Básico reconhecido (por exemplo, com a biblioteca de cartas ainda baixando) não aparecia.",
+      "Correção: no celular, o Perfil de deck e o detalhe da partida passavam da largura da tela.",
+      "Por dentro: o painel foi dividido em arquivos menores (um por área) e ganhou testes automáticos que abrem todas as telas num navegador."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.02-7\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra o replay de qualquer partida, inclusive as antigas.",
+      "Para ver o efeito das cartas: Meta e torneios > Uso de cartas > escolha um deck na caixa \"Deck\". Funciona melhor com muitos torneios importados (Fonte: Todos)."
+    ]
+  },
+  {
     "versao": "2026.11.02-6",
     "data": "2026-11-02",
     "titulo": "Replay: dano de habilidades e do Phantom Dive no Pokémon certo",

@@ -135,10 +135,20 @@ print("dif", analises.comparar_listas("0999", ordem[0]["id"], "0999", ordem[1]["
 import app as aplicativo
 cli = aplicativo.app.test_client()
 for url in ["/", "/api/status", "/api/partidas", f"/api/partidas/{ids[1]}", "/api/regras", "/api/torneios", "/api/meta?top=32",
-            "/api/tendencia", "/api/deck/charizard-ex", "/api/cartas?arq=dragapult-ex", "/api/jogadores?torneio=0999",
+            "/api/tendencia", "/api/deck/charizard-ex", "/api/cartas?arq=dragapult-ex", "/api/efeito-cartas?arq=dragapult-ex",
+            "/api/jogadores?torneio=0999",
             "/exportar/minhas_partidas.csv", "/exportar/eventos.csv", "/exportar/torneios.csv", "/exportar/meta.csv"]:
     r = cli.get(url)
     assert r.status_code == 200, (url, r.status_code, r.data[:200])
+# efeito de cada carta (regressão): com o freio no máximo, todo efeito vai a zero; sem freio, a conta converge
+from tracker import regressao  # noqa: E402
+ef = cli.get("/api/efeito-cartas?arq=dragapult-ex").get_json()
+print("efeito cartas:", {k: ef[k] for k in ("listas", "partidas")}, [(c["carta"], c["efeito_pp"]) for c in ef["cartas"][:3]])
+linhas = [(0.0, {0: 1.0, 1: 1.0}, 1), (0.0, {0: 1.0, 1: 1.0}, 1), (0.0, {0: 1.0, 1: 1.0}, 0), (0.0, {0: 1.0}, 0), (0.0, {0: 1.0}, 0), (0.0, {0: 1.0}, 1)]
+b, _ = regressao.ajustar(linhas, 2, peso=1e9)
+assert abs(b[1]) < 1e-6, b
+b, _ = regressao.ajustar(linhas, 2, peso=1e-6, peso_deck=1e-6)
+assert abs(regressao._sig(b[0] + b[1]) - 2 / 3) < 1e-3 and abs(regressao._sig(b[0]) - 1 / 3) < 1e-3, b  # sem freio = taxas reais
 print("POST manual ruim:", cli.post("/api/partidas", json={"texto": "oi"}).status_code)
 print("testar:", cli.post("/api/regras/testar", json={"linha": "Ana_TCG's Pidgey was Knocked Out!"}).get_json())
 print("regra inválida:", cli.post("/api/regras", json={"regras": [{"id": "x", "tipo": "outro", "ativa": True, "re": "("}]}).status_code)

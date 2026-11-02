@@ -132,5 +132,7 @@ def resumo_lista(cartas_lista, compras_turno=(1, 2, 3)):
         turnos = [carta(g["qtd"], basicos, g["basico"], t, deck)["ate_compras"] for t in compras_turno]
         linhas.append({**g, "na_mao": r["na_mao"], "ate_turno": turnos, "alguma_premio": r["alguma_premio"],
                        "todas_premio": r["todas_premio"]})
+    esperados = mulligans_esperados(basicos, deck)
     return {"deck": deck, "basicos": basicos, "mulligan": mulligan(basicos, deck),
-            "mulligans_esperados": mulligans_esperados(basicos, deck), "cartas": linhas}
+            # sem Básico toda mão é mulligan (infinito); JSON não aceita infinito: vai None e o painel mostra "–"
+            "mulligans_esperados": None if esperados == float("inf") else esperados, "cartas": linhas}

@@ -1,0 +1,2 @@
+# Só para quem desenvolve: testes de tela (testes/teste_telas.py). Os usuários não precisam.
+playwright>=1.40,<2

@@ -538,11 +538,51 @@ def vincular_automatico(pid, sobrescrever=False):
 
 # ------------------------------------------------------------------ versão certa de cartas com o mesmo nome
 
+def _limites_ps(quadros):
+    """O que o replay revela dos PS de cada Pokémon: {(jogador, nome): (mínimo exclusivo, máximo ou None)}.
+    Ficou em jogo com D de dano -> PS > D. Nocauteado com D de dano (D > 0) -> PS <= D.
+    Nocaute sem dano (ex.: Dusclops que se nocauteia com Cursed Blast) não diz nada."""
+    def pokemons(q):
+        for j, m in q["estado"]["mesa"].items():
+            for p in ([m["ativo"]] if m["ativo"] else []) + m["banco"]:
+                yield j, p
+    # 1º: com quanto dano cada Pokémon caiu (o dano do quadro anterior ao nocaute)
+    caiu_com = {}
+    for i, q in enumerate(quadros):
+        if i and q["destaque"].get("tipo") == "nocaute" and q["destaque"].get("uid"):
+            for j, p in pokemons(quadros[i - 1]):
+                if p["uid"] == q["destaque"]["uid"] and p["dano"]:
+                    caiu_com[p["uid"]] = (j, p["nome"], p["dano"])
+    # 2º: o dano que ele aguentou (o dano fatal, mostrado antes do nocaute, não conta)
+    limites = {}
+    for q in quadros:
+        for j, p in pokemons(q):
+            fatal = caiu_com.get(p["uid"])
+            if fatal and fatal[1] == p["nome"] and p["dano"] >= fatal[2]:
+                continue
+            mi, ma = limites.get((j, p["nome"]), (0, None))
+            limites[(j, p["nome"])] = (max(mi, p["dano"]), ma)
+    for j, nome, dano in caiu_com.values():
+        mi, ma = limites.get((j, nome), (0, None))
+        limites[(j, nome)] = (mi, dano if ma is None else min(ma, dano))
+    return limites
+
+
+def _ps_compativel(chave, minimo, maximo):
+    try:
+        ps = int(chave.split("|")[1])
+    except (IndexError, ValueError):
+        return True  # PS desconhecido: não dá para descartar
+    return ps > minimo and (maximo is None or ps <= maximo)
+
+
 def resolver_versoes(rep, partida, eu):
     """
     Cartas diferentes podem ter o mesmo nome (ex.: Dunsparce TEF 128 e JTG 120). O log só traz o
     nome, então escolhemos a versão nesta ordem:
       0. só as versões que valem no Standard (marca de regulamento válida), se houver alguma;
+      0b. só as versões com PS compatíveis com o replay: nocauteado com 60 de dano tem no máximo 60 PS,
+          e quem ficou em jogo com 60 de dano tem mais de 60 (ver _limites_ps);
       1. ataque/habilidade usado no log que só uma das versões tem;
       2. a versão que está na sua lista de "Meus decks" ligada à partida;
       3. a versão mais usada nas listas dos torneios para o deck do adversário (ou no geral);
@@ -564,6 +604,7 @@ def resolver_versoes(rep, partida, eu):
     if partida.get("deck_id"):
         for c in banco.consultar("SELECT nome, carta_base, carta_id, qtd FROM meus_decks_cartas WHERE deck_id=? AND carta_id != ''", (partida["deck_id"],)):
             lista_deck.setdefault(cartas.normalizar(c["carta_base"] or c["nome"]), []).append(c["carta_id"])
+    limites = _limites_ps(rep["quadros"])
     uso = Counter()
     for r in banco.consultar("SELECT carta_id, COUNT(*) AS q FROM t_listas WHERE carta_id != '' GROUP BY carta_id"):
         uso[r["carta_id"]] = r["q"]
@@ -577,6 +618,9 @@ def resolver_versoes(rep, partida, eu):
                 continue  # só existe uma versão: o padrão já resolve
             chaves = cartas._preferir_standard(chaves)
             validas = [k for k in chaves if cartas.legal_chave(k) is not False] or chaves
+            minimo, maximo = limites.get((j, nome), (0, None))
+            pelos_ps = [k for k in validas if _ps_compativel(k, minimo, maximo)]
+            validas = pelos_ps or validas  # nenhuma versão bate (ex.: ferramenta que dá PS): ignora a pista
             ids = [ind["basica"][k] for k in validas]
             usados = golpes.get((j, nome))
             escolha = None
@@ -587,7 +631,11 @@ def resolver_versoes(rep, partida, eu):
                 if len(compat) == 1:
                     escolha = compat[0]
             if not escolha and j == eu and cartas.normalizar(nome) in lista_deck:
-                escolha = lista_deck[cartas.normalizar(nome)][0]
+                da_lista = lista_deck[cartas.normalizar(nome)]
+                if not pelos_ps:
+                    escolha = da_lista[0]
+                else:  # a lista só vale se a versão dela tem os PS que o replay mostrou
+                    escolha = next((i for i in da_lista if cartas._basica_de(i) and cartas._basica_de(i)["id"] in ids), None)
             if not escolha:
                 melhor = max(ids, key=lambda i: uso.get(i, 0))
                 if uso.get(melhor, 0):
