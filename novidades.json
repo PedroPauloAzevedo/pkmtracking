@@ -1,5 +1,26 @@
 [
   {
+    "versao": "2026.11.03-1",
+    "data": "2026-11-03",
+    "titulo": "Replay: a mão dos dois jogadores",
+    "mudancas": [
+      "Replay: mostra a mão de cada jogador em cada momento da partida. A de quem exportou o log aparece com todas as cartas, porque o log diz o nome de tudo o que ele compra.",
+      "A mão do adversário aparece com as cartas viradas. Quando ele busca uma carta no baralho (Poké Pad, Ultra Ball, Night Stretcher...), ela aparece com a face, e sai da mão quando ele a usa.",
+      "Depois de um mulligan, o log não lista a mão nova de quem exportou: essas cartas começam viradas e aparecem desde o começo da partida quando são jogadas (com borda tracejada).",
+      "A carta que acabou de entrar na mão fica destacada. Passe o mouse em cima de uma carta para vê-la maior.",
+      "Conferido nas partidas gravadas: toda vez que um Judge, Lillie's Determination ou Unfair Stamp mostra o tamanho real da mão, a mão montada pelo replay bate (109 de 109 conferências)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.03-1\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra o replay de qualquer partida, inclusive as antigas."
+    ]
+  },
+  {
     "versao": "2026.11.02-7",
     "data": "2026-11-02",
     "titulo": "Efeito de cada carta, replay mais fiel e correções no painel",

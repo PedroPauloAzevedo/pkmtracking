@@ -3,8 +3,8 @@ TESTE DAS TELAS: abre o painel num navegador de verdade (Edge ou Chrome, escondi
 
 Em cada tela confere:
   - que ela desenhou (tem um título);
-  - que não houve erro de JavaScript nem pedido ao servidor com erro (5xx);
-  - que, na largura de celular, a página não rola para o lado.
+  - que não houve erro de JavaScript nem pedido ao servidor com erro (5xx).
+Só na largura de computador: o programa não é usado no celular.
 
 Uso (numa CÓPIA do programa, nunca na pasta de quem usa):
     python -I testes/teste_tracker.py <cópia> testes/leitor-tcg-live.html     (cria partidas e um torneio de teste)
@@ -133,7 +133,7 @@ def main():
             rotas = pagina.evaluate("Object.keys(ROTAS)")
             for nome in rotas:
                 destino = com_id.get(nome, nome)
-                for largura in (1366, 375):
+                for largura in (1366,):
                     erros.clear()
                     pagina.set_viewport_size({"width": largura, "height": 900})
                     pagina.evaluate("h => { location.hash = '#x'; location.hash = '#' + h; }", destino)
@@ -144,8 +144,6 @@ def main():
                     except Exception:
                         erros.append("a tela não terminou de desenhar (nada em 20 s)")
                     pagina.wait_for_timeout(400)  # pedidos que a tela faz depois de desenhar
-                    if largura == 375 and pagina.evaluate("() => document.documentElement.scrollWidth > window.innerWidth + 1"):
-                        erros.append("no celular, a página rola para o lado")
                     situacao = "ok" if not erros else "FALHOU"
                     print(f"{situacao:6} #{destino:24} {largura}px" + ("" if not erros else "\n         " + "\n         ".join(erros[:5])))
                     if erros:

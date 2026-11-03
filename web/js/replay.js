@@ -32,6 +32,23 @@ function ladoMesa(j, m, q, cima, cor) {
   return `<div class="lado-mesa">${info}<div class="campo">${cima ? banco + ativo : ativo + banco}</div></div>`;
 }
 
+// Mão de um jogador: carta com nome = face; sem nome = verso. "nova" = entrou na mão neste passo.
+// "inferida" = carta da mão inicial descoberta depois, quando foi jogada (mulligan de quem exportou o log).
+function maoHtml(j, mao, anterior) {
+  if (!mao) return '';
+  const antes = new Set((anterior || []).map(c => c.id));
+  const viradas = mao.filter(c => !c.nome).length;
+  const cartas = mao.map(c => {
+    const cls = ['mao-carta', antes.has(c.id) ? '' : 'nova', c.inferida ? 'inferida' : ''].join(' ');
+    if (!c.nome) return `<div class="${cls} verso" title="Carta virada"></div>`;
+    const dica = c.inferida ? `${c.nome} · estava na mão desde o começo (descoberta quando foi jogada)` : c.nome;
+    return `<div class="${cls}" title="${esc(dica)}"><img src="${imgNome(c.nome)}" alt="${esc(c.nome)}" loading="lazy"></div>`;
+  }).join('');
+  return `<div class="mao" aria-label="Mão de ${esc(j)}">
+    <span class="mao-rotulo">Mão · ${mao.length} carta${mao.length === 1 ? '' : 's'}${viradas && viradas < mao.length ? ` (${viradas} virada${viradas === 1 ? '' : 's'})` : ''}</span>
+    <div class="mao-cartas">${cartas || '<span class="mao-vazia">Sem cartas</span>'}</div></div>`;
+}
+
 async function renderReplay(id) {
   main.innerHTML = '<p class="vazio">Montando o replay…</p>';
   const r = await api(`/api/partidas/${id}/replay`);
@@ -84,14 +101,18 @@ function desenharQuadro() {
   const { r, i, eu, adv } = S.rp;
   const q = r.quadros[i], e = q.estado, d = q.destaque;
   const est = e.estadio;
+  const maoAntes = (r.quadros[i - 1] || q).estado.maos || {};
+  const maos = e.maos || {};
   $('#rp-mesa').innerHTML = `
+    ${adv ? maoHtml(adv, maos[adv], i ? maoAntes[adv] : maos[adv]) : ''}
     ${adv ? ladoMesa(adv, e.mesa[adv], q, true, 'p2') : ''}
     <div class="centro-mesa">
       <span>Turno ${Math.max(q.turno, 0)}${q.vez ? ` · vez de <b>${esc(q.vez)}</b>` : ''}</span>
       <span class="estadio">${est ? `<img src="${imgNome(est.nome)}" alt="">Estádio: <b>${esc(est.nome)}</b>` : 'Sem Estádio'}</span>
       ${e.resultado ? `<span class="rp-vez">${esc(e.resultado)} venceu</span>` : ''}
     </div>
-    ${ladoMesa(eu, e.mesa[eu], q, false, 'p1')}`;
+    ${ladoMesa(eu, e.mesa[eu], q, false, 'p1')}
+    ${maoHtml(eu, maos[eu], i ? maoAntes[eu] : maos[eu])}`;
   const carta = d.carta || (d.tipo === 'turno' ? null : null);
   $('#rp-destaque').innerHTML = `<div class="rp-destaque">
       ${carta ? `<img src="${imgNome(carta, true)}" alt="${esc(carta)}">` : '<div></div>'}

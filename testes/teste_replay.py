@@ -215,4 +215,118 @@ lim =decks._limites_ps(replay.gerar(texto, config.ler_regras())["quadros"])
 ok = [k for k in _ind["por_nome"]["dunsparce"] if decks._ps_compativel(k, *lim[("Bia", "Dunsparce")])]
 confere("versão pelo nocaute: Dunsparce de 60 PS", ok, ["dunsparce|60||ram"])
 
+
+# 11) MÃOS. Ana exportou o log (vê o nome do que compra); da Bia só aparece o que ela busca no baralho.
+def maos(log, ate=None, cabecalho=None):
+    """{jogador: [nome ou "?"]} no fim do log (ou na última linha que contém `ate`)."""
+    texto = (cabecalho or CABECALHO_ANA) + log.strip("\n") + "\n" + FIM
+    r = replay.gerar(texto, config.ler_regras())
+    q = [x for x in r["quadros"] if ate in x["texto"]][-1] if ate else r["quadros"][-1]
+    return {j: sorted(c["nome"] or "?" for c in m) for j, m in q["estado"]["maos"].items()}, r
+
+
+CABECALHO_ANA = """Setup
+Ana chose heads for the opening coin flip.
+Ana won the coin toss.
+Ana decided to go first.
+Ana drew 7 cards for the opening hand.
+- 7 drawn cards.
+   • Budew, Dunsparce, Judge, Poké Pad, Basic Psychic Energy, Ultra Ball, Buneary
+Bia drew 7 cards for the opening hand.
+- 7 drawn cards.
+Ana played Budew to the Active Spot.
+Bia played Dreepy to the Active Spot.
+"""
+m, _ = maos("""
+Ana's Turn
+Ana drew Munkidori.
+Ana played Poké Pad.
+- Ana drew Dreepy.
+- Ana shuffled their deck.
+Ana attached Basic Psychic Energy to Budew in the Active Spot.
+Ana ended their turn.
+
+Bia's Turn
+Bia drew a card.
+Bia played Buddy-Buddy Poffin.
+- Bia drew Dreepy and played it to the Bench.
+Bia played Ultra Ball.
+- Bia discarded 2 cards.
+   • Basic Fire Energy, Night Stretcher
+- Bia drew Dragapult ex.
+- Bia shuffled their deck.
+""", ate="Bia drew Dragapult ex")
+confere("mão: compras com nome (Ana) e busca à vista (Bia)", m,
+        {"Ana": ["Buneary", "Dreepy", "Dunsparce", "Judge", "Munkidori", "Ultra Ball"], "Bia": ["?", "?", "?", "Dragapult ex"]})
+
+m, _ = maos("""
+Ana's Turn
+Ana drew Munkidori.
+Ana played Judge.
+- Ana shuffled 6 cards into their deck.
+   • Dunsparce, Poké Pad, Basic Psychic Energy, Ultra Ball, Buneary, Munkidori
+- Bia shuffled 7 cards into their deck.
+- Ana drew 4 cards.
+   • Crispin, Dreepy, Dreepy, Boss's Orders
+- Bia drew 4 cards.
+""")
+confere("mão: Judge embaralha as duas mãos e cada um compra 4", m,
+        {"Ana": ["Boss's Orders", "Crispin", "Dreepy", "Dreepy"], "Bia": ["?", "?", "?", "?"]})
+
+# Mulligan de quem exportou: a nova mão não aparece no log; a carta jogada depois é revelada desde o começo.
+m, r = maos("""
+Ana's Turn
+Ana drew Crispin.
+Ana played Ultra Ball.
+- Ana discarded 2 cards.
+   • Crispin, Judge
+- Ana drew Munkidori.
+""", cabecalho="""Setup
+Ana chose heads for the opening coin flip.
+Ana won the coin toss.
+Ana decided to go first.
+Ana drew 7 cards for the opening hand.
+- 7 drawn cards.
+   • Judge, Poké Pad, Ultra Ball, Crispin, Boss's Orders, Night Stretcher, Rare Candy
+Bia drew 7 cards for the opening hand.
+- 7 drawn cards.
+Ana took a mulligan.
+- Cards revealed from Mulligan 1
+   • Judge, Poké Pad, Ultra Ball, Crispin, Boss's Orders, Night Stretcher, Rare Candy
+Ana played Budew to the Active Spot.
+Bia played Dreepy to the Active Spot.
+""")
+inicio = [q for q in r["quadros"] if q["texto"] == "Ana played Budew to the Active Spot."][0]["estado"]["maos"]["Ana"]
+confere("mão: depois do mulligan, Ultra Ball e Judge aparecem desde o começo (descobertas)",
+        sorted((c["nome"] or "?", bool(c.get("inferida"))) for c in inicio),
+        [("?", False), ("?", False), ("?", False), ("?", False), ("Judge", True), ("Ultra Ball", True)])
+confere("mão: no fim, só a compra e a carta buscada", m["Ana"], ["?", "?", "?", "?", "Munkidori"])
+
+m, _ = maos("""
+Ana's Turn
+Ana drew Munkidori.
+Ana played Lillie's Determination.
+- Ana shuffled Munkidori into their deck.
+- Ana drew 6 cards.
+   • Crispin, Dreepy, Dreepy, Boss's Orders, Rare Candy, Judge
+""", cabecalho=CABECALHO_ANA.replace("Budew, Dunsparce, Judge, Poké Pad, Basic Psychic Energy, Ultra Ball, Buneary",
+                                      "Budew, Lillie's Determination, Ultra Ball, Ultra Ball, Ultra Ball, Ultra Ball, Ultra Ball")
+                            .replace("Ana played Budew to the Active Spot.", "Ana played Budew to the Active Spot.\nAna played Ultra Ball.\n"
+                                     "Ana played Ultra Ball.\nAna played Ultra Ball.\nAna played Ultra Ball.\nAna played Ultra Ball."))
+confere("mão: 'shuffled <carta> into their deck' (uma carta, com nome)", m["Ana"],
+        ["Boss's Orders", "Crispin", "Dreepy", "Dreepy", "Judge", "Rare Candy"])
+
+m, _ = maos("""
+Ana's Turn
+Ana drew Munkidori.
+Ana played Academy at Night to the Stadium spot.
+Ana played Academy at Night.
+- Ana put a card on top of their deck.
+Ana played Slowking to the Bench.
+Ana's Slowking used Seek Inspiration.
+- Ana discarded Munkidori.
+""", cabecalho=CABECALHO_ANA.replace("Judge, Poké Pad", "Academy at Night, Slowking"))
+# 7 - Budew + Munkidori - Academy (jogada) - carta no topo - Slowking = 4; usar o Estádio e o Seek Inspiration não tiram nada
+confere("mão: usar o Estádio e o Seek Inspiration (descarta do baralho) não tiram carta a mais", len(m["Ana"]), 4)
+
 print("OK")

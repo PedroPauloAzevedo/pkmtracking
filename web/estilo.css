@@ -1,4 +1,5 @@
-/* Layout: barra lateral de navegação + área de conteúdo; vira barra superior no celular. */
+/* Layout: barra lateral de navegação + área de conteúdo; vira barra superior com a janela estreita (ex.: metade da tela ao lado do jogo).
+   O programa é só para computador: não há regras para celular. */
 :root {
   --bg: #EEF1F5; --surface: #FFFFFF; --sunken: #F5F7FA; --ink: #172033; --muted: #5B6578; --line: #D5DBE5;
   --accent: #E8B321; --on-accent: #1A1404; --p1: #2B63D9; --p2: #D2432F; --good: #1E8A5A; --bad: #C2382B;
@@ -142,7 +143,6 @@ nav .busca-btn kbd { margin-left: auto; font: 500 .7rem var(--f-mono); border: 1
 .deck-nums .v { font: 700 1.15rem var(--f-mono); }
 .deck-novo { border: 2px dashed var(--line); border-radius: 12px; display: grid; place-items: center; text-align: center; min-height: 250px; cursor: pointer; background: transparent; color: var(--muted); }
 .deck-novo:hover { border-color: var(--muted); color: var(--ink); }
-@media (max-width: 600px) { .mu-linha { grid-template-columns: 1fr 1fr; } .mu-linha .wl, .mu-linha .nn { text-align: left; } }
 .aviso-versao { background: var(--accent); color: var(--on-accent); border-radius: 8px; padding: 8px 10px; font-size: .8rem; display: flex; flex-direction: column; gap: 6px; }
 .aviso-versao button { background: var(--on-accent); color: var(--accent); border: none; font-size: .78rem; padding: 4px 8px; align-self: flex-start; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -236,6 +236,19 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 .centro-mesa { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(255,255,255,.12); padding: 8px 0; font-size: 0.82rem; flex-wrap: wrap; }
 .estadio { display: flex; align-items: center; gap: 8px; } .estadio img { width: 34px; border-radius: 3px; }
 .ko-lista { color: rgba(230,235,243,.7); font-size: 0.74rem; }
+/* mão de cada jogador no replay */
+.mao { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: center; }
+.mao-rotulo { font-size: 0.74rem; color: rgba(230,235,243,.75); }
+.mao-cartas { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 60px; align-items: center; }
+.mao-carta { width: 44px; aspect-ratio: 245 / 337; border-radius: 4px; position: relative; transition: transform .2s, box-shadow .2s; }
+.mao-carta img { display: block; width: 100%; height: 100%; border-radius: 4px; background: #2a3447; }
+.mao-carta:hover { transform: translateY(-4px) scale(1.6); z-index: 2; }
+.mao-carta.verso { background: radial-gradient(circle at 50% 50%, #f2f2f2 0 18%, #0b1a3a 18% 24%, transparent 24%),
+  linear-gradient(180deg, #2B63D9 0 47%, #0b1a3a 47% 53%, #D2432F 53%); border: 2px solid #0b1a3a; }
+.mao-carta.verso:hover { transform: none; }
+.mao-carta.nova { box-shadow: 0 0 0 2px var(--accent); transform: translateY(-3px); }
+.mao-carta.inferida { outline: 2px dashed rgba(255,255,255,.6); outline-offset: 1px; }
+.mao-vazia { opacity: .6; font-size: 0.8rem; }
 .rp-lateral { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 12px; }
 .rp-destaque { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: start; }
 .rp-destaque img { width: 110px; border-radius: 7px; aspect-ratio: 245/337; background: var(--sunken); }
@@ -248,7 +261,6 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 :root { --mesa: #1d3b2f; }
 @media (prefers-color-scheme: dark) { :root { --mesa: #15291f; } }
 @media (max-width: 1100px) { .replay { grid-template-columns: 1fr; } .rp-lateral { position: static; } }
-@media (max-width: 600px) { .lado-mesa { grid-template-columns: 1fr; } .carta.grande, .carta.vazia { width: 92px; } .carta.peq { width: 58px; } .banco { min-height: 84px; } }
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; background: none; }
   nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; }
@@ -256,10 +268,10 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
   nav details.programa { flex-basis: 100%; margin-top: 4px; }
   main { padding: 18px 16px 48px; }
   .grid2, .grid3 { grid-template-columns: 1fr; }
-  /* campos "rótulo + caixa" que não quebram linha no computador: no celular, a caixa desce para baixo do rótulo */
+  /* campos "rótulo + caixa": com a janela estreita, a caixa desce para baixo do rótulo */
   .grid2 > .row { flex-wrap: wrap !important; }
   .grid2 > .row > select, .grid2 > .row > input, .grid2 > .row > .row { min-width: 0; max-width: 100%; }
-  /* Perfil de deck: no celular, os números descem para baixo da carta */
+  /* Perfil de deck: com a janela estreita, os números descem para baixo da carta */
   .perfil-topo { flex-wrap: wrap !important; }
   .perfil-topo > .kpis { flex-basis: 100%; }
   .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

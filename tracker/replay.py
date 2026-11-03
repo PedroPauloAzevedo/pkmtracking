@@ -49,6 +49,175 @@ def _ps_minimo(nome, golpes=()):
     return min(ps) if ps else 0
 
 
+# ------------------------------------------------------------------ mão de cada jogador
+
+# Cartas e golpes que descartam do BARALHO (não da mão).
+DESCARTA_DO_BARALHO = ("Brilliant Blender", "Seek Inspiration")
+# Habilidades que ligam Energia DA MÃO (as outras ligações em sublinha vêm do descarte ou do baralho, ex.: Rosa's Encouragement).
+LIGA_DA_MAO = ("Teal Dance", "Ripening Charge")
+# Cartas que embaralham a mão INTEIRA no baralho: o número de cartas da linha é o tamanho real da mão (serve de conferência).
+MAO_INTEIRA = ("Judge", "Lillie's Determination", "Unfair Stamp", "Iono", "Xerosic's Machinations")
+
+
+class _Maos:
+    """MÃO DE CADA JOGADOR, montada a partir do log.
+
+    Quem exportou o log vê o nome de tudo o que compra ("drew Dudunsparce", "drew 4 cards" + lista), então a mão
+    dele é conhecida carta a carta. Do adversário o log só diz "drew a card": a carta fica virada, a não ser
+    que ele a tenha BUSCADO no baralho ("_out_ drew Meowth ex.") ou recebido de um efeito que mostra o nome.
+    Toda carta jogada, ligada, evoluída, descartada ou devolvida ao baralho sai da mão.
+
+    Mulligan de quem exportou: o log lista a primeira mão (a descartada) e não a nova. As 7 cartas ficam viradas
+    e vão sendo descobertas quando ele as joga; no fim, `revelar_no_passado` mostra a face delas desde o começo
+    (só para quem exportou: todas as outras compras dele têm nome, então a carta só pode ter vindo dessa mão).
+    """
+
+    def __init__(self, jogadores, exportou, P):
+        self.P, self.exportou = P, exportou
+        self.maos = {j: [] for j in jogadores}
+        self.proximo = 0
+        self.pendente = None     # ("nomear", j, [ids]) ou ("tirar", j, n, [nomes])
+        self.reveladas = {}      # id -> nome: cartas viradas de quem exportou, descobertas quando ele as jogou
+        self.estadio_saindo = None
+        self.conferencia = []    # (jogador, tamanho montado, tamanho real) nas cartas que embaralham a mão inteira
+        self.sem_explicacao = 0  # jogadas de quem exportou que a mão montada não explicava
+
+    def _nova(self, j, nome=None):
+        self.proximo += 1
+        self.maos[j].append({"id": self.proximo, "nome": nome})
+        return self.proximo
+
+    def _tirar(self, j, nome):
+        mao = self.maos.get(j)
+        if mao is None:
+            return
+        for i, c in enumerate(mao):
+            if c["nome"] == nome:
+                mao.pop(i)
+                return
+        virada = next((i for i, c in enumerate(mao) if c["nome"] is None), None)
+        if virada is not None:
+            c = mao.pop(virada)
+            if j == self.exportou:
+                self.reveladas[c["id"]] = nome
+        elif j == self.exportou:
+            self.sem_explicacao += 1
+
+    def _tirar_qualquer(self, j):
+        mao = self.maos.get(j)
+        if mao:
+            virada = next((i for i, c in enumerate(mao) if c["nome"] is None), 0)
+            mao.pop(virada)
+
+    def fechar_pendente(self):
+        """Linha nova sem a lista de nomes: o que estava pendente vale sem nomes (cartas viradas)."""
+        if self.pendente and self.pendente[0] == "tirar":
+            _, j, n, nomes, inteira = self.pendente
+            for nome in nomes:
+                self._tirar(j, nome)
+            for _ in range(n - len(nomes)):
+                self._tirar_qualquer(j)
+            if inteira:  # a mão toda foi para o baralho
+                self.maos[j] = []
+        self.pendente = None
+
+    def lista(self, itens):
+        """Lista "• A, B, C" logo depois de uma compra/descarte/embaralhada: dá nome às cartas. Devolve True se usou."""
+        if not self.pendente:
+            return False
+        if self.pendente[0] == "nomear":
+            _, j, ids = self.pendente
+            por_id = {c["id"]: c for c in self.maos[j]}
+            for id_, nome in zip(ids, itens):
+                if id_ in por_id:
+                    por_id[id_]["nome"] = nome
+            self.pendente = None
+        else:
+            self.pendente[3].extend(itens)
+            self.fechar_pendente()
+        return True
+
+    def linha(self, l, sublinha, ultima_principal, estadio, em_jogo, embaralhou_poder):
+        P = self.P
+        m = re.match(rf"^{P} drew (a card|\d+ cards?)(?: for the opening hand)?\.$", l)
+        if m:
+            n = 1 if m.group(2) == "a card" else int(m.group(2).split()[0])
+            ids = [self._nova(m.group(1)) for _ in range(n)]
+            if n > 1 or m.group(2) != "a card":
+                self.pendente = ("nomear", m.group(1), ids)
+            return
+        m = re.match(rf"^{P} drew (.+?)\.$", l)
+        if m and " because " not in l and " and played " not in l:
+            self._nova(m.group(1), m.group(2))  # comprou com nome (sua compra, ou busca no baralho)
+            return
+        m = re.match(rf"^{P} took a mulligan\.$", l)
+        if m:
+            self.maos[m.group(1)] = []
+            for _ in range(7):
+                self._nova(m.group(1))
+            return
+        m = re.match(rf"^(A card|.+?) was added to {P}'s hand\.$", l)
+        if m:
+            self._nova(m.group(2), None if m.group(1) == "A card" else m.group(1))
+            return
+        m = re.match(rf"^{P} moved {P}'s (.+?) (?:and all attached cards )?to their hand\.?$", l)
+        if m:
+            self._nova(m.group(2), m.group(3))
+            return
+        m = re.match(rf"^{P} played (.+?) to the (Bench|Active Spot|Stadium spot)\.$", l)
+        if m and not sublinha:
+            if m.group(3) == "Stadium spot":
+                self.estadio_saindo = estadio["nome"] if estadio else None
+            self._tirar(m.group(1), m.group(2))
+            return
+        m = re.match(rf"^{P} played (.+?)\.$", l)
+        if m and not sublinha:
+            # "played <Estádio em jogo>." = usou o efeito do Estádio (o que ele faz com a mão vem na linha seguinte,
+            # ex.: Academy at Night "put a card on top of their deck"); "played <Pokémon em jogo>." = habilidade
+            if not (estadio and estadio["nome"] == m.group(2)) and not em_jogo(m.group(1), m.group(2)):
+                self._tirar(m.group(1), m.group(2))
+            return
+        m = re.match(rf"^{P} evolved .+? to (.+?) (?:in the Active Spot|on the Bench)\.$", l)
+        if m:  # inclusive em sublinha (Rare Candy: a evolução sai da mão)
+            self._tirar(m.group(1), m.group(2))
+            return
+        m = re.match(rf"^{P} attached (.+?) to .+? (?:in the Active Spot|on the Bench)\.$", l)
+        if m:
+            da_mao = not sublinha or re.search(rf"used (?:{'|'.join(map(re.escape, LIGA_DA_MAO))})\b", ultima_principal or "")
+            if da_mao:
+                self._tirar(m.group(1), m.group(2))
+            return
+        m = re.match(rf"^{P} discarded (\d+ cards|.+?)\.$", l)
+        if m:
+            if re.search(rf"(?:played|used) (?:{'|'.join(map(re.escape, DESCARTA_DO_BARALHO))})\.$", ultima_principal or ""):
+                return
+            j, o_que = m.group(1), m.group(2)
+            if re.fullmatch(r"\d+ cards", o_que):
+                self.pendente = ("tirar", j, int(o_que.split()[0]), [], False)
+            elif o_que != self.estadio_saindo:  # Estádio trocado: "discarded <Estádio antigo>" sai da mesa, não da mão
+                self._tirar(j, o_que)
+            self.estadio_saindo = None
+            return
+        m = re.match(rf"^{P} (?:shuffled (a card|\d+ cards|.+?) into their deck|put (a card|\d+ cards) on (?:the )?(?:top|bottom) of their deck)\.$", l)
+        if m and not embaralhou_poder and not re.match(rf"^{P} shuffled {P}'s ", l):  # "X's <Pokémon>" vem da mesa
+            j, qtd = m.group(1), m.group(2) or m.group(3)
+            nomes = []
+            if re.fullmatch(r"a card|\d+ cards", qtd):
+                n = 1 if qtd == "a card" else int(qtd.split()[0])
+            else:  # "shuffled Rosa's Encouragement into their deck." = uma carta, com nome
+                n, nomes = 1, [qtd]
+            inteira = bool(re.match(rf"^{P} played (?:{'|'.join(map(re.escape, MAO_INTEIRA))})\.$", ultima_principal or ""))
+            if inteira:
+                self.conferencia.append((j, len(self.maos[j]), n))
+            self.pendente = ("tirar", j, n, nomes, inteira)
+
+    def revelar_no_passado(self, quadros):
+        for q in quadros:
+            for c in q["estado"]["maos"].get(self.exportou, []):
+                if c["nome"] is None and c["id"] in self.reveladas:
+                    c["nome"], c["inferida"] = self.reveladas[c["id"]], True
+
+
 def gerar(texto, regras, _correcoes=None):
     """_correcoes: {linha do log: uid} da segunda passada (ver "contadores ambíguos" no fim)."""
     correcoes = _correcoes or {}
@@ -89,9 +258,11 @@ def gerar(texto, regras, _correcoes=None):
                     return j, "banco", i
         return None
 
+    maos = _Maos(jogadores, dados["resumo"].get("exportou"), P)
     estado = {
         "turno": 0, "vez": None, "estadio": None, "resultado": None,
         "mesa": {j: {"ativo": None, "banco": [], "premios": regras_jogo.PREMIOS_PARTIDA, "nocauteados": []} for j in jogadores},
+        "maos": maos.maos,
     }
 
     def achar(j, nome, zona=None, procurar_no_outro=True):
@@ -201,6 +372,8 @@ def gerar(texto, regras, _correcoes=None):
             embaralhou = False
         if l.startswith("•"):
             itens = [c.strip() for c in l.lstrip("• ").split(",") if c.strip()]
+            if maos.lista(itens) and quadros:  # a lista deu nome às cartas compradas/descartadas: atualiza a foto
+                quadros[-1]["estado"]["maos"] = copy.deepcopy(maos.maos)
             if embaralhou and poder and poder[1] in itens:
                 # O Pokémon que usou a habilidade voltou para o baralho (com a pré-evolução embaixo dele).
                 ref = achar_uid(poder[2])
@@ -239,6 +412,9 @@ def gerar(texto, regras, _correcoes=None):
                 golpes_vistos.setdefault((usou.group(1), usou.group(2)), set()).add(cartas.normalizar(usou.group(3)))
         if poder and re.match(rf"^{P} shuffled \d+ cards? into their deck\.$", l) and l.startswith(poder[0]):
             embaralhou = True
+        if not re.match(r"^\d+ drawn cards\.$", l):  # "- 7 drawn cards." vem entre a compra e a lista dos nomes
+            maos.fechar_pendente()
+        maos.linha(l, sublinha, ultima_principal, estado["estadio"], lambda j, c: mais_recente(j, c) is not None, embaralhou)
 
         def casa(padrao):
             nonlocal m
@@ -450,13 +626,17 @@ def gerar(texto, regras, _correcoes=None):
 
     if novas_correcoes:  # contadores ambíguos: refaz a partida com a escolha que o nocaute revelou
         return gerar(texto, regras, novas_correcoes)
+    maos.fechar_pendente()
+    maos.revelar_no_passado(quadros)
     return {"jogadores": jogadores, "primeiro": dados["resumo"]["primeiro"], "vencedor": dados["resumo"]["vencedor"],
-            "turnos": estado["turno"], "quadros": quadros, "cartas": _cartas_usadas(quadros)}
+            "turnos": estado["turno"], "quadros": quadros, "cartas": _cartas_usadas(quadros),
+            "exportou": maos.exportou,
+            "conferencia_maos": {"tamanho": maos.conferencia, "sem_explicacao": maos.sem_explicacao}}
 
 
 def _quadro(n_linha, texto, estado, destaque):
     return {"linha": n_linha, "texto": texto, "turno": estado["turno"], "vez": estado["vez"],
-            "destaque": destaque, "estado": copy.deepcopy({k: estado[k] for k in ("estadio", "mesa", "resultado")})}
+            "destaque": destaque, "estado": copy.deepcopy({k: estado[k] for k in ("estadio", "mesa", "resultado", "maos")})}
 
 
 def _cartas_usadas(quadros):
