@@ -18,8 +18,8 @@ Cada pessoa tem os próprios dados (pasta `dados/`, que nunca vai para o GitHub)
 com amigos: cada um instala, informa o próprio nick em Ajustes e usa no seu computador.
 Atualizações: em **Ajustes > Atualizações** o programa avisa quando há versão nova aqui e se atualiza com um clique.
 
-**Windows, jeito mais fácil (sem Python):** baixe o `ColetorTCG-Instalador-<versão>.exe` (fica em **Releases**,
-no lado direito desta página do GitHub), dê dois cliques e siga as telas. Se o Windows mostrar "O Windows protegeu o
+**Windows, jeito mais fácil (sem Python):** peça o `ColetorTCG-Instalador-<versão>.exe` a quem já usa o programa
+(ele ainda não fica disponível aqui no GitHub), dê dois cliques e siga as telas. Se o Windows mostrar "O Windows protegeu o
 computador", clique em **Mais informações > Executar assim mesmo**. O programa vai para
 `%LOCALAPPDATA%\Programs\ColetorTCG`, cria o atalho na Área de Trabalho e já vem com o modo automático.
 Para montar o instalador: `python instalador/montar.py` (precisa do Inno Setup 6; veja o começo do script).
@@ -63,9 +63,10 @@ Em **Amigos (trocar logs) > Automático**, escolha a pasta e ligue "Enviar e rec
 Quem recebeu o convite da pasta precisa, no drive.google.com, ir em *Compartilhados comigo* > botão direito na pasta >
 *Organizar > Adicionar atalho* ao Meu Drive; sem isso a pasta não aparece no computador.
 
-3. Em Painel, Partidas, Desempenho e Decisões aparece o filtro **Jogador**: você, cada amigo, ou todos juntos
-   (cada partida vista do lado de quem jogou; um jogo entre vocês dois conta uma vez só, pela "impressão digital"
-   da partida). Meus decks continua só com as suas partidas.
+3. Em Painel, Partidas, Desempenho e Decisões aparece o filtro **Jogador**, uma caixa de opções: marque você, um ou
+   vários amigos, em qualquer combinação (cada partida vista do lado de quem jogou; um jogo entre dois jogadores
+   marcados conta uma vez só, pela "impressão digital" da partida). A escolha vale em todas essas telas e fica
+   guardada. Meus decks continua só com as suas partidas.
 
 ## 4. Modo automático (opcional, experimental)
 
@@ -129,8 +130,10 @@ e o erro aparece no painel. Uso pessoal.
 
 **Replay:** abra uma partida e clique em **▶ Ver replay**. A mesa é reconstruída linha a linha a partir do log:
 Pokémon Ativo e Banco de cada jogador com as imagens das cartas, dano, energias e ferramentas ligadas, prêmios
-restantes, Estádio e nocauteados. Avance com as setas do teclado, os botões ou o botão Reproduzir; dá para pular
-direto para um turno e clicar em qualquer linha do log. A mão do adversário não aparece porque o log não a mostra.
+restantes, Estádio, nocauteados e a mão de cada jogador. Avance com as setas do teclado, os botões ou o botão
+Reproduzir; dá para pular direto para um turno e clicar em qualquer linha do log. Só aparece com a face o que o log
+revela: a sua mão inteira; da mão do adversário, as cartas que ele buscou no baralho; e os prêmios que você pegou,
+que aparecem desde o começo da partida (os outros prêmios ficam virados).
 
 **Biblioteca de cartas** (menu Programa): dados e imagens vêm do TCGdex (base aberta e gratuita). Só a arte
 básica de cada carta é guardada; as imagens são baixadas na primeira vez que aparecem (ou todas de uma vez,
@@ -188,22 +191,13 @@ Para comparar seus resultados com os campeonatos, use nos seus decks o mesmo nom
 
 ## 8. Arquivos
 
-```
-app.py                  servidor do painel + início do coletor
-iniciar_com_o_windows.bat   faz o coletor abrir sozinho com o Windows (também dá pelo painel, em Ajustes)
-tracker/bandeja.py      ícone perto do relógio do Windows (no lugar da janela preta)
-tracker/atalhos.py      atalhos na Área de Trabalho e no início do Windows
-tracker/leitor.py       lê o texto do log e transforma em eventos (comece por aqui para aprender)
-tracker/coletor.py      vigia a área de transferência
-tracker/auto_export.py  modo automático (reconhece botões e clica)
-tracker/limitless.py    importador do Limitless Labs + RK9
-tracker/analises.py     todas as contas das abas
-tracker/replay.py       reconstrói a mesa linha a linha para o replay
-tracker/cartas.py       biblioteca de cartas, arte básica e conversor
-tracker/banco.py        banco SQLite
-web/index.html          o painel (HTML, CSS e JavaScript)
-dados/                  criado ao rodar: tracker.db, logs/, config.json, regras.json
-```
+O mapa completo do programa (cada pasta e cada módulo) está em
+[`PROJECT_KNOWLEDGE/00_CENTRAL/ARCHITECTURE.md`](PROJECT_KNOWLEDGE/00_CENTRAL/ARCHITECTURE.md); toda a documentação de quem
+desenvolve começa em [`PROJECT_KNOWLEDGE/00_CENTRAL/INDEX.md`](PROJECT_KNOWLEDGE/00_CENTRAL/INDEX.md).
+Para aprender como o log vira dados, comece por `tracker/leitor.py`.
+
+Os seus dados ficam na pasta `dados/`, criada ao rodar: `tracker.db` (banco), `logs/` (cópia de cada partida), `config.json`
+(suas configurações) e `regras.json` (regras de leitura). Ela nunca vai para o GitHub e as atualizações não mexem nela.
 
 O banco `dados/tracker.db` é SQLite: dá para abrir no DB Browser for SQLite ou ligar no Power BI.
 Para fazer backup, copie a pasta `dados`.
