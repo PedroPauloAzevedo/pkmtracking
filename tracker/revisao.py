@@ -4,7 +4,7 @@ REVISÃO DE LINHAS NÃO LIDAS
 Quando o log traz uma frase que nenhuma regra conhece, ela vira "linha não lida".
 Aqui juntamos essas linhas em MODELOS, trocando o que muda de partida para partida:
     {J} = nome de jogador      {C} = nome de carta      {N} = número
-Ex.: "PEPONILDO put 5 damage counters on Gokuzera's Mega Kangaskhan ex."
+Ex.: "Ana put 5 damage counters on Bia's Mega Kangaskhan ex."
   -> "{J} put {N} damage counters on {J}'s {C}."
 
 Para cada modelo você decide:

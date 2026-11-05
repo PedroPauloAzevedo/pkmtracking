@@ -21,11 +21,25 @@ function cartaMesa(p, tam, d, j) {
   return `<div class="${cls}" title="${esc(p.nome)}${p.dano ? ` · ${p.dano} de dano` : ''}"><img src="${imgMesa(j, p.nome)}" alt="${esc(p.nome)}">
     ${p.dano ? `<span class="dano">${p.dano}</span>` : ''}<div class="anexos">${p.anexos.map(anexoHtml).join('')}</div></div>`;
 }
+// Prêmios restantes: com a face = prêmio que o log revela (quem exportou vê o nome de cada prêmio que pega).
+// Como os prêmios são separados na preparação, ele aparece desde o começo, com a borda tracejada; os outros ficam virados.
+function premiosHtml(j, m) {
+  const conhecidos = m.premios_conhecidos || [];
+  const slots = Array.from({ length: 6 }, (_, i) => {
+    if (i >= m.premios) return '<span class="premio-carta" title="Prêmio já pego"></span>';
+    const c = conhecidos[i];
+    if (!c) return '<span class="premio-carta verso" title="Prêmio virado: o log não diz qual é"></span>';
+    const dica = `${c.nome} · estava nos prêmios desde o começo (${j} pegou no turno ${c.turno})`;
+    return `<span class="premio-carta face" title="${esc(dica)}"><img src="${imgMesa(j, c.nome)}" alt="${esc(c.nome)}" loading="lazy"></span>`;
+  }).join('');
+  const n = conhecidos.length;
+  return `<div class="premios" aria-label="Prêmios de ${esc(j)}">${slots}</div>
+    <span>${m.premios} prêmio${m.premios === 1 ? '' : 's'} restante${m.premios === 1 ? '' : 's'}${n ? `, ${n} conhecido${n === 1 ? '' : 's'}` : ''}</span>`;
+}
 function ladoMesa(j, m, q, cima, cor) {
   const d = q.destaque;
   const info = `<div class="lado-info"><span class="rp-nome ${cor}">${esc(j)}${q.vez === j ? '<span class="rp-vez">vez</span>' : ''}</span>
-    <div class="premios" title="${m.premios} prêmios restantes">${Array.from({ length: 6 }, (_, i) => `<span class="${i < m.premios ? 'cheio' : ''}"></span>`).join('')}</div>
-    <span>${m.premios} prêmio${m.premios === 1 ? '' : 's'} restante${m.premios === 1 ? '' : 's'}</span>
+    ${premiosHtml(j, m)}
     ${m.nocauteados.length ? `<span class="ko-lista">Nocauteados: ${m.nocauteados.map(esc).join(', ')}</span>` : ''}</div>`;
   const banco = `<div class="banco">${m.banco.map(p => cartaMesa(p, 'peq', d, j)).join('') || '<span style="opacity:.6;font-size:.8rem">Banco vazio</span>'}</div>`;
   const ativo = cartaMesa(m.ativo, 'grande', d, j);

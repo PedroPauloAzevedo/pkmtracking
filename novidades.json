@@ -1,5 +1,46 @@
 [
   {
+    "versao": "2026.11.05-3",
+    "data": "2026-11-05",
+    "titulo": "Filtro Jogador: escolha qualquer combinação de jogadores",
+    "mudancas": [
+      "Minhas partidas (Partidas, Desempenho e Decisões) e Início: o campo Jogador virou uma caixa de opções. Marque você, um amigo, vários amigos ou todos, em qualquer combinação. A tela muda na hora, a caixa continua aberta para você marcar outros, e a escolha vale nas outras abas e fica guardada.",
+      "Com mais de um jogador marcado aparece a coluna Jogador na lista de partidas. Um jogo entre dois jogadores marcados que chegou pelos dois lados (o seu log e o do amigo) conta uma vez só.",
+      "Correção: duas partidas diferentes do mesmo jogador com o mesmo resumo (mesmo adversário, vencedor, turnos, motivo e prêmios) podiam virar uma só em \"Todos os jogadores\". Agora só se junta o mesmo jogo vindo de jogadores diferentes."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.05-3\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Em Minhas partidas, clique no campo Jogador e marque os jogadores que quiser ver (o campo só aparece se você tiver logs de amigos)."
+    ]
+  },
+  {
+    "versao": "2026.11.05-2",
+    "data": "2026-11-05",
+    "titulo": "Replay: os seus prêmios aparecem com a face",
+    "mudancas": [
+      "Replay: os prêmios de quem exportou o log aparecem com a face para cima. O jogo escreve o nome de cada prêmio que você pega e, como os prêmios são separados na preparação da partida, eles já aparecem desde o começo do replay (com borda tracejada).",
+      "Passe o mouse em cima de um prêmio para ver a carta maior e o turno em que ela foi pega.",
+      "Quando você pega um prêmio, a carta sai dos prêmios, aparece no destaque do passo e entra na sua mão.",
+      "Os prêmios que não foram pegos continuam virados, porque o log não diz quais são. Os do adversário também ficam virados: o log nunca mostra o nome deles.",
+      "Numa jogada que vale 3 prêmios, o jogo às vezes escreve parte deles antes da linha \"took 3 Prize cards\" e o resto depois do nocaute. O replay entende essa ordem.",
+      "Conferido nas 78 partidas gravadas: todos os 253 prêmios pegos por quem exportou aparecem desde o começo. A mesa e as mãos não mudaram em nenhum momento."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.05-2\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra o replay de qualquer partida, inclusive as antigas."
+    ]
+  },
+  {
     "versao": "2026.11.05-1",
     "data": "2026-11-05",
     "titulo": "Modo automático volta a funcionar quando o jogo muda de tamanho",

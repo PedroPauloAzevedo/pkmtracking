@@ -32,7 +32,7 @@ async function renderDecisoes() {
   const vi = r.viradas, rv = r.ritmo, pc = r.perdeu_controle;
   const maxPc = Math.max(1, ...pc.map(x => x.derrotas));
   main.innerHTML = `
-    ${trilha()}<header><h1>Decisões</h1><p class="sub">${S.jogador ? `Mostrando: <b>${esc(nomeJogadorSel())}</b> (cada partida do ponto de vista de quem jogou). ` : ''}O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
+    ${trilha()}<header><h1>Decisões</h1><p class="sub">${!soEu() ? `Mostrando: <b>${esc(nomeJogadorSel())}</b> (cada partida do ponto de vista de quem jogou). ` : ''}O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
     <div class="aviso">São <b>correlações</b>, não causas: uma carta pode aparecer mais nas vitórias porque você só consegue jogá-la quando a partida já está boa. Use como pista para revisar replays. Com poucas partidas, a faixa provável (passe o mouse na taxa) é larga.</div>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, rt]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${rt}</button>`).join('')}</div>

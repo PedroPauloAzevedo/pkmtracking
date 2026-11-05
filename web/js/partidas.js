@@ -1,27 +1,82 @@
 /* =====================================================================
    SUAS PARTIDAS
    ===================================================================== */
-// ---- jogador: você ou um amigo de quem você importou logs ('' = você, '*' = todos)
+// ---- jogador: você e/ou amigos de quem você importou logs, em qualquer combinação.
+// S.jogadorSel = ids marcados ('' = você). Vale para Início, Partidas, Desempenho e Decisões; fica guardado no navegador.
 S.jogadores = [];
-try { S.jogador = localStorage.getItem('jogador') || ''; } catch (e) { S.jogador = ''; }
+function lerSelecaoJogador() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem('jogadores') || 'null');
+    if (Array.isArray(salvo) && salvo.length) return salvo.map(String);
+    const antigo = localStorage.getItem('jogador');  // versões até 2026.11.05-2: um só ('' = você, '*' = todos)
+    if (antigo) return [antigo];
+  } catch (e) {}
+  return [''];
+}
+S.jogadorSel = lerSelecaoJogador();
+function salvarSelecaoJogador() {
+  try { localStorage.setItem('jogadores', JSON.stringify(S.jogadorSel)); localStorage.removeItem('jogador'); } catch (e) {}
+}
 async function carregarJogadores() {
   try { S.jogadores = await api('/api/jogadores-locais'); } catch (e) { S.jogadores = []; }
-  if (S.jogador && S.jogador !== '*' && !S.jogadores.some(j => j.id === S.jogador)) S.jogador = '';
+  const ids = S.jogadores.map(j => j.id);
+  if (S.jogadorSel.includes('*')) S.jogadorSel = ids;  // "Todos os jogadores" da versão antiga
+  S.jogadorSel = S.jogadorSel.filter(id => ids.includes(id));
+  if (!S.jogadorSel.length) S.jogadorSel = [''];
 }
-const qJog = () => S.jogador ? 'jogador=' + encodeURIComponent(S.jogador) : '';
+const soEu = () => S.jogadorSel.length === 1 && S.jogadorSel[0] === '';
+const qJog = () => soEu() ? '' : S.jogadorSel.map(id => 'jogadores=' + encodeURIComponent(id)).join('&');
 const comJog = url => { const q = qJog(); return q ? url + (url.includes('?') ? '&' : '?') + q : url; };
 const variosJogadores = () => S.jogadores.length > 1;
-const nomeJogadorSel = () => S.jogador === '*' ? 'todos os jogadores' : (S.jogadores.find(j => j.id === S.jogador) || {}).nome || 'você';
+const todosMarcados = () => variosJogadores() && S.jogadores.every(j => S.jogadorSel.includes(j.id));
+const rotuloJogador = j => j.voce ? 'Eu' + (j.nome && j.nome !== 'Você' ? ` (${j.nome})` : '') : j.nome;
+const juntarNomes = l => l.length > 1 ? l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1] : (l[0] || '');
+const nomeJogadorSel = () => todosMarcados() ? 'todos os jogadores'
+  : juntarNomes(S.jogadores.filter(j => S.jogadorSel.includes(j.id)).map(j => j.voce ? 'você' : j.nome)) || 'você';
+function resumoJogadores() {
+  if (todosMarcados()) return 'Todos os jogadores';
+  const marcados = S.jogadores.filter(j => S.jogadorSel.includes(j.id));
+  if (marcados.length > 2) return `${marcados.length} jogadores`;
+  return marcados.map(j => j.voce ? 'Eu' : j.nome).join(' + ') || 'Eu';
+}
+// Caixa de opções: cada jogador com uma marca; qualquer combinação. Muda na hora e a caixa continua aberta.
 function seletorJogador() {
   if (!variosJogadores()) return '';
-  return `<span style="display:inline-flex;align-items:center;gap:6px"><label class="label" for="sel-jogador">Jogador</label><select id="sel-jogador">
-    ${S.jogadores.map(j => `<option value="${esc(j.id)}" ${S.jogador === j.id ? 'selected' : ''}>${j.voce ? 'Eu' + (j.nome && j.nome !== 'Você' ? ` (${esc(j.nome)})` : '') : esc(j.nome)} · ${j.partidas}</option>`).join('')}
-    <option value="*" ${S.jogador === '*' ? 'selected' : ''}>Todos os jogadores · ${S.jogadores.reduce((a, j) => a + j.partidas, 0)}</option></select></span>`;
+  // sem total no resumo: a soma contaria duas vezes o jogo que chegou pelos dois lados (a tela mostra o número certo)
+  return `<details class="multi" id="sel-jogador" ${S.jogadorAberto ? 'open' : ''}>
+    <summary title="Escolha de quais jogadores ver as partidas"><span class="label">Jogador</span><b>${esc(resumoJogadores())}</b><span class="seta" aria-hidden="true">▾</span></summary>
+    <div class="multi-opcoes" role="group" aria-label="Jogadores">
+      ${S.jogadores.map(j => `<label><input type="checkbox" value="${esc(j.id)}" ${S.jogadorSel.includes(j.id) ? 'checked' : ''}><span class="multi-nome">${esc(rotuloJogador(j))}</span><span class="muted num">${j.partidas}</span></label>`).join('')}
+      <div class="multi-acoes"><button type="button" data-jog="todos">Marcar todos</button><button type="button" data-jog="eu">Só eu</button></div>
+    </div></details>`;
 }
 function ligarSeletorJogador(aoMudar) {
   const el = $('#sel-jogador'); if (!el) return;
-  el.onchange = e => { S.jogador = e.target.value; try { localStorage.setItem('jogador', S.jogador); } catch (er) {} aoMudar(); };
+  el.ontoggle = () => { S.jogadorAberto = el.open; };
+  const aplicar = (sel, foco) => {
+    S.jogadorSel = sel; S.jogadorAberto = true; salvarSelecaoJogador();
+    Promise.resolve(aoMudar()).then(() => {  // a tela foi desenhada de novo: devolve o foco à mesma marca
+      const cb = foco != null && [...document.querySelectorAll('#sel-jogador input[type=checkbox]')].find(x => x.value === foco);
+      if (cb) cb.focus();
+    });
+  };
+  el.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = () => {
+    const sel = [...el.querySelectorAll('input[type=checkbox]:checked')].map(x => x.value);
+    if (!sel.length) { cb.checked = true; toast('Marque pelo menos um jogador'); return; }
+    aplicar(sel, cb.value);
+  });
+  el.querySelector('[data-jog="todos"]').onclick = () => aplicar(S.jogadores.map(j => j.id));
+  el.querySelector('[data-jog="eu"]').onclick = () => aplicar(['']);
 }
+// Clicar fora da caixa (ou Esc) fecha.
+document.addEventListener('click', e => {
+  const el = document.getElementById('sel-jogador');
+  if (el && el.open && !el.contains(e.target)) { el.open = false; S.jogadorAberto = false; }
+});
+document.addEventListener('keydown', e => {
+  const el = document.getElementById('sel-jogador');
+  if (e.key === 'Escape' && el && el.open) { el.open = false; S.jogadorAberto = false; }
+});
 function trilha() {
   const r = aba(), sec = SECAO[r] || 'programa', abas = ABAS[sec];
   if (abas && abas.some(([k]) => k === r))
@@ -45,7 +100,7 @@ async function renderPainel() {
       ${st.bandeja ? ' O Coletor continua rodando no ícone perto do relógio, mesmo com esta aba fechada.' : ''}</span></div>
     ${c.ativo ? '' : '<button class="primary" id="in-ligar">Ligar captura</button>'}</section>`;
   main.innerHTML = `
-    ${trilha()}<header><h1>Início</h1><p class="sub">${S.jogador ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${trilha()}<header><h1>Início</h1><p class="sub">${!soEu() ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
     ${variosJogadores() ? `<div class="row">${seletorJogador()}</div>` : ''}
     ${boasVindas}
     ${captura}
@@ -104,7 +159,7 @@ async function sugerirAtalho(st) {
 }
 
 function tabelaPartidas(lista) {
-  const cj = lista.some(l => l.dono) || S.jogador === '*';
+  const cj = lista.some(l => l.dono) || S.jogadorSel.length > 1;
   return `<div class="tabela alta"><table><thead><tr><th>Data</th>${cj ? '<th>Jogador</th>' : ''}<th>Resultado</th><th>Adversário</th><th>${cj ? 'Deck do jogador' : 'Seu deck'}</th><th>Deck do adversário</th><th class="n">Prêmios</th><th class="n">Turnos</th><th>Ordem</th><th>Motivo</th></tr></thead><tbody>
     ${lista.map(l => `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
       <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>${cj ? `<td>${l.dono ? esc(l.dono) : '<b>Eu</b>'}</td>` : ''}
@@ -240,7 +295,7 @@ async function renderDesempenho() {
   const kpi = (ico, cls, rotulo, v, det) => `<div class="kpi2"><span class="ico-kpi ${cls}">${ico}</span><div><span class="label">${rotulo}</span><div class="v">${v}</div><span class="d">${det}</span></div></div>`;
   const classe = g => g && g.taxa != null ? (g.taxa >= 50 ? 'bom' : 'ruim') : 'neutro';
   main.innerHTML = `
-    ${trilha()}<header><h1>Desempenho</h1><p class="sub">${S.jogador ? `Mostrando: <b>${esc(nomeJogadorSel())}</b>. ` : ''}Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
+    ${trilha()}<header><h1>Desempenho</h1><p class="sub">${!soEu() ? `Mostrando: <b>${esc(nomeJogadorSel())}</b>. ` : ''}Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, r]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${r}</button>`).join('')}</div>
       <label class="label" for="d-de">De</label><input type="date" id="d-de" value="${f.de}">

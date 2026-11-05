@@ -4,6 +4,7 @@ TESTE DAS TELAS: abre o painel num navegador de verdade (Edge ou Chrome, escondi
 Em cada tela confere:
   - que ela desenhou (tem um título);
   - que não houve erro de JavaScript nem pedido ao servidor com erro (5xx).
+Depois confere o filtro Jogador com vários jogadores marcados (caixa de opções) e a seção Efeito de cada carta.
 Só na largura de computador: o programa não é usado no celular.
 
 Uso (numa CÓPIA do programa, nunca na pasta de quem usa):
@@ -103,6 +104,56 @@ def telas():
     return com_id
 
 
+def jogadores_combinados(pagina):
+    """Marca e desmarca jogadores na caixa de opções da tela Partidas e confere a lista. Devolve os problemas achados."""
+    problemas = []
+    contagem = "() => (document.querySelector('#main p.muted.num') || {}).innerText || ''"
+    resumo = "() => (document.querySelector('#sel-jogador summary b') || {}).innerText || ''"
+
+    def esperar(texto, onde=contagem):
+        try:
+            pagina.wait_for_function(f"t => ({onde})().trim() === t", arg=texto, timeout=15000)
+        except Exception:
+            problemas.append(f"esperava '{texto}', apareceu '{pagina.evaluate(onde)}'")
+
+    pagina.evaluate("try { localStorage.removeItem('jogadores'); localStorage.removeItem('jogador'); } catch (e) {} "
+                    "S.jogadorSel = ['']; S.jogadorAberto = false; location.hash = '#x'; location.hash = '#partidas'")
+    pagina.wait_for_selector("#sel-jogador summary", timeout=20000)
+    esperar("14 partidas")
+    pagina.click("#sel-jogador summary")
+    pagina.click("#sel-jogador input[value='Bia_Amiga']")      # você + Bia_Amiga
+    esperar("15 partidas")
+    esperar("Eu + Bia_Amiga", resumo)
+    if not pagina.evaluate("document.querySelector('#sel-jogador').open"):
+        problemas.append("a caixa fechou depois de marcar (deveria continuar aberta)")
+    if "Jogador" not in pagina.evaluate("[...document.querySelectorAll('#main th')].map(t => t.textContent).join('|')"):  # innerText viria em maiúsculas (CSS)
+        problemas.append("faltou a coluna Jogador com mais de um jogador marcado")
+    pagina.click("#sel-jogador input[value='']")               # só Bia_Amiga
+    esperar("1 partidas")
+    pagina.click("#sel-jogador input[value='Bia_Amiga']")      # desmarcar o último: não pode
+    pagina.wait_for_timeout(500)
+    if not pagina.evaluate("document.querySelector(\"#sel-jogador input[value='Bia_Amiga']\").checked"):
+        problemas.append("deixou desmarcar todos os jogadores")
+    pagina.click("#sel-jogador [data-jog='todos']")            # todos: o mesmo jogo pelos dois lados conta uma vez
+    esperar("15 partidas")
+    esperar("Todos os jogadores", resumo)
+    pagina.click("#main h1")                                    # clicar fora fecha a caixa
+    if pagina.evaluate("document.querySelector('#sel-jogador').open"):
+        problemas.append("a caixa não fechou ao clicar fora")
+    pagina.evaluate("location.hash = '#desempenho'")            # a escolha vale nas outras telas
+    pagina.wait_for_selector("#sel-jogador summary", timeout=20000)
+    esperar("Todos os jogadores", resumo)
+    pagina.reload()                                             # e fica guardada no navegador
+    pagina.wait_for_selector("#sel-jogador summary", timeout=20000)
+    esperar("Todos os jogadores", resumo)
+    pagina.evaluate("location.hash = '#partidas'")
+    pagina.wait_for_selector("#sel-jogador summary", timeout=20000)
+    pagina.click("#sel-jogador summary")
+    pagina.click("#sel-jogador [data-jog='eu']")               # volta para "só eu"
+    esperar("14 partidas")
+    return problemas
+
+
 def main():
     from playwright.sync_api import sync_playwright
     preparar()
@@ -161,6 +212,14 @@ def main():
             print(("ok    " if not erros else "FALHOU") + " #cartas com deck (Efeito de cada carta)" + ("" if not erros else "\n         " + "\n         ".join(erros[:5])))
             if erros:
                 falhas.append("efeito-cartas")
+            # Filtro Jogador: caixa de opções com qualquer combinação (dados do teste_tracker: você com 14 partidas,
+            # Bia_Amiga com 1 e o adversário de uma das suas com o outro lado do mesmo jogo)
+            erros.clear()
+            problemas = jogadores_combinados(pagina)
+            print(("ok    " if not (erros or problemas) else "FALHOU") + " #partidas com vários jogadores marcados"
+                  + ("" if not (erros or problemas) else "\n         " + "\n         ".join((problemas + erros)[:6])))
+            if erros or problemas:
+                falhas.append("filtro jogador")
             # busca rápida (Ctrl+K)
             pagina.keyboard.press("Control+K")
             if not pagina.wait_for_selector("input", timeout=5000):

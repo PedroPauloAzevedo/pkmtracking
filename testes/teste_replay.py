@@ -329,4 +329,112 @@ Ana's Slowking used Seek Inspiration.
 # 7 - Budew + Munkidori - Academy (jogada) - carta no topo - Slowking = 4; usar o Estádio e o Seek Inspiration não tiram nada
 confere("mão: usar o Estádio e o Seek Inspiration (descarta do baralho) não tiram carta a mais", len(m["Ana"]), 4)
 
+
+# 12) PRÊMIOS. Quem exportou (Ana) vê o nome de cada prêmio que pega; da Bia vem "A card".
+#     Os prêmios são separados na preparação: o que a Ana pegou aparece com a face desde o começo.
+def premios(r, linha):
+    """{jogador: (prêmios restantes, [nomes conhecidos])} na primeira foto cujo texto é `linha`."""
+    q = next(x for x in r["quadros"] if x["texto"] == linha)
+    return {j: (m["premios"], [c["nome"] for c in m["premios_conhecidos"]]) for j, m in q["estado"]["mesa"].items()}
+
+
+PARTIDA_PREMIOS = """
+Bia played Meowth ex to the Bench.
+Ana played Dunsparce to the Bench.
+
+Ana's Turn
+Ana drew Munkidori.
+Ana's Budew used Itchy Pollen on Bia's Dreepy for 70 damage.
+Bia's Dreepy was Knocked Out!
+Ana took a Prize card.
+Judge was added to Ana's hand.
+Bia's Meowth ex is now in the Active Spot.
+Ana ended their turn.
+
+Bia's Turn
+Bia drew a card.
+Bia's Meowth ex used Tackle on Ana's Budew for 30 damage.
+Ana's Budew was Knocked Out!
+Bia took a Prize card.
+A card was added to Bia's hand.
+Ana's Dunsparce is now in the Active Spot.
+Bia ended their turn.
+
+Ana's Turn
+Ana drew Dreepy.
+Ana's Dunsparce used Ram on Bia's Meowth ex for 170 damage.
+Bia's Meowth ex was Knocked Out!
+Ana took 2 Prize cards.
+Rare Candy was added to Ana's hand.
+Dreepy was added to Ana's hand.
+"""
+r = replay.gerar(CABECALHO_ANA + PARTIDA_PREMIOS.strip("\n") + "\n" + FIM, config.ler_regras())
+confere("prêmios: os 3 que a Ana pegou aparecem desde o começo; os da Bia ficam virados",
+        premios(r, "Ana played Budew to the Active Spot."), {"Ana": (6, ["Judge", "Rare Candy", "Dreepy"]), "Bia": (6, [])})
+confere("prêmios: o que acabou de ser pego sai dos prêmios", premios(r, "Ana took a Prize card."),
+        {"Ana": (5, ["Rare Candy", "Dreepy"]), "Bia": (6, [])})
+confere("prêmios: no fim, nenhum conhecido sobrando", premios(r, "Dreepy was added to Ana's hand."),
+        {"Ana": (3, []), "Bia": (5, [])})
+q = next(x for x in r["quadros"] if x["texto"] == "Judge was added to Ana's hand.")
+confere("prêmios: a linha da carta pega mostra a carta e põe na mão",
+        (q["destaque"], sorted(c["nome"] or "?" for c in q["estado"]["maos"]["Ana"]).count("Judge")),
+        ({"tipo": "premio", "jogador": "Ana", "carta": "Judge"}, 2))
+q = next(x for x in r["quadros"] if x["texto"] == "A card was added to Bia's hand.")
+confere("prêmios: o prêmio da Bia entra virado na mão dela", (q["destaque"], [c["nome"] for c in q["estado"]["maos"]["Bia"]].count(None)),
+        ({"tipo": "premio", "jogador": "Bia"}, 7))
+
+# O último prêmio pode vir sem o nome (o jogo acaba): ele fica virado o tempo todo; nada passa do número de prêmios.
+r = replay.gerar(CABECALHO_ANA + PARTIDA_PREMIOS.strip("\n") + """
+Ana ended their turn.
+
+Bia's Turn
+Bia drew a card.
+Bia played Mega Lopunny ex to the Active Spot.
+
+Ana's Turn
+Ana drew Buneary.
+Ana's Dunsparce used Ram on Bia's Mega Lopunny ex for 330 damage.
+Bia's Mega Lopunny ex was Knocked Out!
+Ana took 3 Prize cards.
+All Prize cards taken. Ana wins.
+""", config.ler_regras())
+confere("prêmios: os últimos, sem nome no log, ficam virados", premios(r, "Ana played Budew to the Active Spot."),
+        {"Ana": (6, ["Judge", "Rare Candy", "Dreepy"]), "Bia": (6, [])})
+confere("prêmios: nunca mais conhecidos que restantes",
+        [q["linha"] for q in r["quadros"] for m in q["estado"]["mesa"].values() if len(m["premios_conhecidos"]) > m["premios"]], [])
+
+# Jogada que vale 3 prêmios (visto em logs reais): o jogo escreve 2 cartas ANTES do "took" e a 3ª depois do nocaute.
+r = replay.gerar(CABECALHO_ANA + PARTIDA_PREMIOS.strip("\n") + """
+Ana ended their turn.
+
+Bia's Turn
+Bia drew a card.
+Bia played Mega Lopunny ex to the Active Spot.
+Bia played Budew to the Bench.
+
+Ana's Turn
+Ana drew Buneary.
+Ana's Dunsparce used Ram on Bia's Mega Lopunny ex for 330 damage.
+Crispin was added to Ana's hand.
+Night Stretcher was added to Ana's hand.
+Ana took 3 Prize cards.
+Bia's Mega Lopunny ex was Knocked Out!
+Battle Cage was activated.
+- Damage to Budew was prevented.
+Ultra Ball was added to Ana's hand.
+Bia's Budew is now in the Active Spot.
+""", config.ler_regras())
+confere("prêmios (3 de uma vez, fora de ordem): todos aparecem desde o começo",
+        premios(r, "Ana played Budew to the Active Spot."),
+        {"Ana": (6, ["Judge", "Rare Candy", "Dreepy", "Crispin", "Night Stretcher", "Ultra Ball"]), "Bia": (6, [])})
+confere("prêmios (3 de uma vez, fora de ordem): carta escrita antes do 'took' sai dos prêmios na hora",
+        premios(r, "Crispin was added to Ana's hand."), {"Ana": (2, ["Night Stretcher", "Ultra Ball"]), "Bia": (5, [])})
+confere("prêmios (3 de uma vez, fora de ordem): o 'took' tira só o que faltava",
+        premios(r, "Ana took 3 Prize cards."), {"Ana": (0, []), "Bia": (5, [])})
+q = next(x for x in r["quadros"] if x["texto"] == "Ultra Ball was added to Ana's hand.")
+confere("prêmios (3 de uma vez, fora de ordem): a 3ª carta, depois do nocaute, é prêmio",
+        (q["destaque"], q["estado"]["mesa"]["Ana"]["premios"]), ({"tipo": "premio", "jogador": "Ana", "carta": "Ultra Ball"}, 0))
+confere("prêmios (3 de uma vez, fora de ordem): nunca mais conhecidos que restantes",
+        [q["linha"] for q in r["quadros"] for m in q["estado"]["mesa"].values() if len(m["premios_conhecidos"]) > m["premios"]], [])
+
 print("OK")

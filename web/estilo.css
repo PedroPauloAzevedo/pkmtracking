@@ -87,6 +87,23 @@ nav details.programa a { display: block; padding-left: 34px; }
 .chips-periodo { display: inline-flex; gap: 4px; }
 .chips-periodo button { padding: 5px 10px; font-size: .8rem; }
 .chips-periodo button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+/* caixa de opções para marcar vários (filtro Jogador): o resumo parece um select; a lista abre por cima da tela */
+details.multi { position: relative; }
+details.multi > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font: 400 0.9rem var(--f-body); color: var(--ink);
+  background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 6px 10px; white-space: nowrap; }
+details.multi > summary::-webkit-details-marker { display: none; }
+details.multi > summary:hover, details.multi[open] > summary { border-color: var(--muted); }
+details.multi > summary b { font-weight: 600; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+details.multi .seta { color: var(--muted); font-size: .75rem; transition: transform .2s; }
+details.multi[open] .seta { transform: rotate(180deg); }
+.multi-opcoes { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; min-width: 250px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.18); display: flex; flex-direction: column; gap: 2px; }
+.multi-opcoes label { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.multi-opcoes label:hover { background: var(--sunken); }
+.multi-opcoes label .multi-nome { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.multi-opcoes input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; padding: 0; flex: none; }
+.multi-acoes { display: flex; gap: 6px; border-top: 1px solid var(--line); margin-top: 4px; padding-top: 6px; }
+.multi-acoes button { padding: 4px 10px; font-size: .8rem; }
 .kpi2 { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .kpi2 .ico-kpi { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-size: 1.1rem; font-weight: 800; }
 .kpi2 .ico-kpi.bom { background: color-mix(in srgb, var(--good) 18%, var(--surface)); color: var(--good); }
@@ -217,9 +234,14 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 .rp-nome { font: 700 0.95rem var(--f-display); overflow-wrap: anywhere; }
 .rp-nome.p1 { color: #8FB4FF; } .rp-nome.p2 { color: #FF9C8A; }
 .rp-vez { display: inline-block; font: 600 0.62rem var(--f-body); letter-spacing: .08em; text-transform: uppercase; background: var(--accent); color: var(--on-accent); padding: 1px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
-.premios { display: grid; grid-template-columns: repeat(3, 18px); gap: 3px; }
-.premios span { width: 18px; height: 25px; border-radius: 3px; border: 1px dashed rgba(255,255,255,.35); }
-.premios span.cheio { border: 1px solid #0b1a3a; background: linear-gradient(135deg, #2B63D9 0 45%, #f2f2f2 45% 55%, #D2432F 55%); }
+/* prêmios: vazio (já pego) = tracejado; virado = verso; com a face = revelado pelo log (borda tracejada, como na mão) */
+.premios { display: grid; grid-template-columns: repeat(3, 34px); gap: 4px; }
+.premio-carta { width: 34px; aspect-ratio: 245 / 337; border-radius: 3px; border: 1px dashed rgba(255,255,255,.35); position: relative; transition: transform .2s; }
+.premio-carta.verso { border: 2px solid #0b1a3a; background: radial-gradient(circle at 50% 50%, #f2f2f2 0 18%, #0b1a3a 18% 24%, transparent 24%),
+  linear-gradient(180deg, #2B63D9 0 47%, #0b1a3a 47% 53%, #D2432F 53%); }
+.premio-carta.face { border: none; outline: 2px dashed rgba(255,255,255,.6); outline-offset: 1px; transform-origin: top left; }
+.premio-carta.face img { display: block; width: 100%; height: 100%; border-radius: 3px; background: #2a3447; }
+.premio-carta.face:hover { transform: scale(2.2); z-index: 3; }
 .campo { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
 .banco { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; min-height: 112px; align-items: center; }
 .carta { position: relative; border-radius: 7px; transition: transform .2s, box-shadow .2s; }

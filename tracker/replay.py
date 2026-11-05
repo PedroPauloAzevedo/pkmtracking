@@ -1,13 +1,17 @@
 """
 REPLAY: reconstrói a mesa linha a linha a partir do log.
 
-Para cada linha do log guardamos uma "foto" da mesa: Pokémon Ativo e Banco de cada
-jogador (com dano, energias e ferramentas), prêmios restantes, Estádio, descarte de
-Pokémon nocauteados e o que aconteceu naquela linha (o "destaque").
-O painel só desenha essas fotos, uma depois da outra.
+Para cada linha do log guardamos uma "foto" (quadro): Pokémon Ativo e Banco de cada
+jogador (com dano, energias e ferramentas), prêmios restantes (e quais deles já se sabe
+quais são), Estádio, Pokémon nocauteados, a mão de cada jogador e o que aconteceu naquela
+linha (o "destaque"). O painel só desenha essas fotos, uma depois da outra.
 
-O log não mostra tudo (por exemplo, a mão do adversário), então o replay mostra o que
-está em jogo na mesa, que é o que o log descreve com segurança.
+O log não mostra tudo, então só aparece com a face o que ele revela:
+  - mão: a de quem exportou o log, carta a carta; a do adversário fica virada, menos o que
+    ele buscou no baralho ou recebeu com o nome à vista (ver _Maos);
+  - prêmios: os que quem exportou o log pegou, porque o jogo escreve o nome de cada um. Como
+    os prêmios são separados na preparação, eles aparecem desde o começo (ver _premios_conhecidos).
+    Os prêmios do adversário vêm como "A card" e ficam virados.
 """
 import copy
 import re
@@ -64,7 +68,7 @@ class _Maos:
 
     Quem exportou o log vê o nome de tudo o que compra ("drew Dudunsparce", "drew 4 cards" + lista), então a mão
     dele é conhecida carta a carta. Do adversário o log só diz "drew a card": a carta fica virada, a não ser
-    que ele a tenha BUSCADO no baralho ("_out_ drew Meowth ex.") ou recebido de um efeito que mostra o nome.
+    que ele a tenha BUSCADO no baralho ("Bia drew Meowth ex.") ou recebido de um efeito que mostra o nome.
     Toda carta jogada, ligada, evoluída, descartada ou devolvida ao baralho sai da mão.
 
     Mulligan de quem exportou: o log lista a primeira mão (a descartada) e não a nova. As 7 cartas ficam viradas
@@ -357,7 +361,22 @@ def gerar(texto, regras, _correcoes=None):
             ambiguos.append((n_linha, pegar(ref)["uid"], dano, [pegar(r)["uid"] for r in irmaos]))
         return ref
 
+    def premio_logo_adiante(n_linha, j):
+        """O log às vezes escreve cartas de prêmio ANTES de "X took N Prize cards." (visto em jogadas que valem 3 prêmios):
+        procura esse "took" do mesmo jogador nas próximas linhas, sem passar do fim do turno."""
+        for seguinte in linhas[n_linha:n_linha + 10]:
+            s = leitor.limpar_linha(seguinte)
+            if re.match(rf"^(?:Turn # \d+ - )?{P}'s Turn$", s):
+                return False
+            pegou = re.match(rf"^{P} took (?:a|\d+) Prize cards?\.$", s)
+            if pegou and pegou.group(1) == j:
+                return True
+        return False
+
     quadros = []
+    premios_pegos = []     # cartas de prêmio pegas: {jogador, nome (None = "A card"), quadro (em que saiu dos prêmios), turno}
+    premio_aberto = {}     # jogador -> {faltam, quadro, turno}: o "took N Prize cards" cujas cartas ainda vão aparecer
+    adiantados = {}        # jogador -> nº de cartas de prêmio que o log escreveu antes do "took" (já saíram dos prêmios)
     ultima_principal = ""  # última linha que não começa com "-" (o ataque ou habilidade que gerou as sublinhas)
     lista_pendente = None
     poder = None          # Pokémon que acabou de usar habilidade (ex.: Dudunsparce "Run Away Draw")
@@ -425,6 +444,8 @@ def gerar(texto, regras, _correcoes=None):
             estado["turno"] += 1
             estado["vez"] = m.group(1)
             d = {"tipo": "turno", "jogador": m.group(1)}
+            premio_aberto.clear()  # as cartas de prêmio aparecem sempre no mesmo turno em que foram pegas
+            adiantados.clear()
         elif casa(rf"^{P} drew \d+ cards? and played them to the (Bench|Active Spot)\.$"):
             lista_pendente = (m.group(1), m.group(2))
             d = {"tipo": "info", "jogador": m.group(1)}
@@ -583,8 +604,28 @@ def gerar(texto, regras, _correcoes=None):
         elif casa(rf"^{P} took (a|\d+) Prize cards?\.$"):
             j = m.group(1)
             q = 1 if m.group(2) == "a" else int(m.group(2))
-            estado["mesa"][j]["premios"] = max(0, estado["mesa"][j]["premios"] - q)
+            resto = max(0, q - adiantados.pop(j, 0))  # as que o log já escreveu antes deste "took" já saíram
+            estado["mesa"][j]["premios"] = max(0, estado["mesa"][j]["premios"] - resto)
             d = {"tipo": "premio", "jogador": j, "qtd": q}
+            premio_aberto[j] = {"faltam": resto, "quadro": len(quadros), "turno": estado["turno"]}
+        elif casa(rf"^(A card|.+?) was added to {P}'s hand\.$") and (
+                (premio_aberto.get(m.group(2)) or {}).get("faltam") or premio_logo_adiante(n_linha, m.group(2))):
+            # Uma linha por carta de prêmio: com o nome para quem exportou o log, "A card" para o adversário (a mão recebe
+            # a carta em _Maos.linha). Em geral vem logo depois do "took"; numa jogada que vale 3 prêmios o jogo já
+            # escreveu parte delas antes do "took" e o resto depois do nocaute.
+            nome = None if m.group(1) == "A card" else m.group(1)
+            j = m.group(2)
+            aberto = premio_aberto.get(j)
+            if aberto and aberto["faltam"]:
+                aberto["faltam"] -= 1
+                premios_pegos.append({"jogador": j, "nome": nome, "quadro": aberto["quadro"], "turno": aberto["turno"]})
+            else:  # escrita antes do "took": sai dos prêmios agora
+                adiantados[j] = adiantados.get(j, 0) + 1
+                estado["mesa"][j]["premios"] = max(0, estado["mesa"][j]["premios"] - 1)
+                premios_pegos.append({"jogador": j, "nome": nome, "quadro": len(quadros), "turno": estado["turno"]})
+            d = {"tipo": "premio", "jogador": j}
+            if nome:
+                d["carta"] = nome
         elif casa(rf"^{P} (?:moved|shuffled|put) {P}'s (.+?) (?:and all attached cards )?(?:to their hand|into their deck)"):
             j, dono, c = m.groups()
             # Night Stretcher e companhia tiram a carta do DESCARTE (ou da mão), não da mesa:
@@ -628,10 +669,27 @@ def gerar(texto, regras, _correcoes=None):
         return gerar(texto, regras, novas_correcoes)
     maos.fechar_pendente()
     maos.revelar_no_passado(quadros)
+    _premios_conhecidos(quadros, premios_pegos)
     return {"jogadores": jogadores, "primeiro": dados["resumo"]["primeiro"], "vencedor": dados["resumo"]["vencedor"],
             "turnos": estado["turno"], "quadros": quadros, "cartas": _cartas_usadas(quadros),
             "exportou": maos.exportou,
             "conferencia_maos": {"tamanho": maos.conferencia, "sem_explicacao": maos.sem_explicacao}}
+
+
+def _premios_conhecidos(quadros, pegos):
+    """PRÊMIOS COM A FACE CONHECIDA, em cada foto: m["premios_conhecidos"] = [{"nome", "turno"}].
+    Quem exportou o log vê o nome de cada prêmio que pega ("Ana took a Prize card." e logo depois "Judge was
+    added to Ana's hand."); do adversário vem "A card". Os 6 prêmios são separados na preparação e nenhuma linha
+    do log os troca depois, então a carta pega estava ali desde o começo: em cada foto, os prêmios conhecidos
+    são os que o jogador AINDA VAI pegar (turno = quando pegou). Os outros prêmios restantes ficam virados.
+    pegos: cartas de prêmio com o quadro em que saíram dos prêmios (o do "took", ou o da própria linha quando o
+    log a escreveu antes do "took"). Se o log não trouxer o nome de um prêmio, ele fica virado."""
+    pegos = sorted(pegos, key=lambda c: c["quadro"])  # na ordem em que vão sair dos prêmios
+    for i, q in enumerate(quadros):
+        for j, m in q["estado"]["mesa"].items():
+            futuros = [{"nome": c["nome"], "turno": c["turno"]} for c in pegos
+                       if c["jogador"] == j and c["quadro"] > i and c["nome"]]
+            m["premios_conhecidos"] = futuros[:m["premios"]]
 
 
 def _quadro(n_linha, texto, estado, destaque):

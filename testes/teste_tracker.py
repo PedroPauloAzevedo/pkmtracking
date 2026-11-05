@@ -54,6 +54,21 @@ assert analises.analise_pessoal("Ana_TCG")["total"] == p["total"], "partida do a
 cfg["nick"] = ""; config.salvar_config(cfg)
 print("partida de outra pessoa -> dono", banco.obter_partida(pid_outro)["dono"])
 
+# 2c) filtro Jogador com qualquer combinação (caixa de opções do painel): '' = você, nick = amigo.
+#     O mesmo jogo exportado pelos dois lados conta uma vez; jogos do MESMO dono com o mesmo resumo são jogos diferentes.
+p1 = banco.obter_partida(ids[1])
+adv1 = next(j for j in p1["jogadores"] if j != "Ana_TCG")
+pid_dele, _ = banco.inserir_partida(p1["texto"] + "\n(o mesmo jogo, exportado pelo adversário)", "teste", config.ler_regras(), dono=adv1)
+assert banco.obter_partida(pid_dele)["dono"] == adv1 and banco.obter_partida(pid_dele)["resumo"]["digital"] == p1["resumo"]["digital"]
+n = lambda jog: len(analises.analise_pessoal("Ana_TCG", jogador=jog)["partidas"])
+assert n("") == n([""]) == 14 and n("Bia_Amiga") == n(["Bia_Amiga"]) == 1 and n(adv1) == 1
+assert n(["", "Bia_Amiga"]) == 15, n(["", "Bia_Amiga"])
+assert n(["", adv1]) == 14, "o mesmo jogo pelos dois lados deveria contar uma vez"
+assert n(["Bia_Amiga", adv1]) == 2
+assert n("*") == n(["", "Bia_Amiga", adv1]) == 15, ("partidas suas com o mesmo resumo não podem sumir", n("*"))
+print("filtro jogador: você", n(""), "| você + amiga", n(["", "Bia_Amiga"]), "| você + o outro lado do mesmo jogo", n(["", adv1]),
+      "| todos", n("*"))
+
 # 3) torneio sintético com HTML no formato do Labs e do RK9
 arqs = ["dragapult-ex", "charizard-ex", "gardevoir-ex", "raging-bolt-ex", "n-zoroark"]
 forca = {"dragapult-ex": 0.58, "charizard-ex": 0.55, "gardevoir-ex": 0.5, "raging-bolt-ex": 0.47, "n-zoroark": 0.45}
@@ -140,6 +155,14 @@ for url in ["/", "/api/status", "/api/partidas", f"/api/partidas/{ids[1]}", "/ap
             "/exportar/minhas_partidas.csv", "/exportar/eventos.csv", "/exportar/torneios.csv", "/exportar/meta.csv"]:
     r = cli.get(url)
     assert r.status_code == 200, (url, r.status_code, r.data[:200])
+# filtro Jogador pela API: vários (?jogadores=, vazio = você) e o formato das versões antigas (?jogador=)
+qtd = lambda url: len(cli.get(url).get_json()["partidas"])
+assert {j["id"] for j in cli.get("/api/jogadores-locais").get_json()} == {"", "Bia_Amiga", adv1}
+assert qtd("/api/partidas?jogadores=&jogadores=Bia_Amiga") == 15
+assert qtd("/api/partidas?jogadores=Bia_Amiga") == qtd("/api/partidas?jogador=Bia_Amiga") == 1
+assert qtd("/api/partidas") == 14 and qtd("/api/partidas?jogador=*") == 15
+assert cli.get("/api/decisoes?jogadores=&jogadores=Bia_Amiga").status_code == 200
+assert len(cli.get("/exportar/minhas_partidas.csv?jogadores=&jogadores=Bia_Amiga").data.decode("utf-8-sig").strip().splitlines()) == 16
 # efeito de cada carta (regressão): com o freio no máximo, todo efeito vai a zero; sem freio, a conta converge
 from tracker import regressao  # noqa: E402
 ef = cli.get("/api/efeito-cartas?arq=dragapult-ex").get_json()

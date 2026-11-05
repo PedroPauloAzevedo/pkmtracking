@@ -68,24 +68,37 @@ def perspectiva(p, eu):
 
 
 def sem_repetidas(partidas):
-    """Um jogo entre você e um amigo chega duas vezes (o seu log e o dele). Na visão "Todos os
-    jogadores", conta uma vez só: a partida com a mesma impressão digital (ver leitor) fica com o seu log."""
-    vistas, saida = set(), []
+    """Um jogo entre você e um amigo chega duas vezes (o seu log e o dele). Quando mais de um jogador
+    está escolhido, conta uma vez só: a partida com a mesma impressão digital (ver leitor) fica com o seu log.
+    Só junta logs de DONOS diferentes: dois logs do mesmo dono com a mesma impressão são jogos diferentes
+    (ex.: duas vitórias de 6 a 3 em 12 turnos contra o mesmo amigo); o mesmo texto já é barrado ao gravar."""
+    donos_por_digital, saida = {}, []
     for p in sorted(partidas, key=lambda p: bool(p.get("dono"))):
-        d = p["resumo"].get("digital")
-        if d and d in vistas:
-            continue
+        d, dono = p["resumo"].get("digital"), p.get("dono") or ""
+        if d and d in donos_por_digital and dono not in donos_por_digital[d]:
+            continue  # o outro lado de um jogo que já entrou
         if d:
-            vistas.add(d)
+            donos_por_digital.setdefault(d, set()).add(dono)
         saida.append(p)
     return sorted(saida, key=lambda p: p["capturada_em"] or "", reverse=True)
 
 
 def do_jogador(p, jogador):
-    """Filtro de jogador: '' = só você, '*' = todos, ou o nick de um amigo."""
+    """Filtro de jogador: '' = só você, '*' = todos, o nick de um amigo, ou uma LISTA com qualquer
+    combinação deles ('' na lista = você), como a caixa de opções do painel manda."""
     if jogador == "*":
         return True
-    return (p.get("dono") or "") == (jogador or "")
+    dono = p.get("dono") or ""
+    if isinstance(jogador, (list, tuple, set)):
+        return "*" in jogador or dono in jogador
+    return dono == (jogador or "")
+
+
+def varios_jogadores(jogador):
+    """Mais de um jogador escolhido? Então o mesmo jogo pode ter chegado pelos dois lados (ver sem_repetidas)."""
+    if isinstance(jogador, (list, tuple, set)):
+        return "*" in jogador or len(set(jogador)) > 1
+    return jogador == "*"
 
 
 def jogadores(nick):
@@ -166,7 +179,7 @@ def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, ad
     partidas = banco.listar_partidas()
     eu = descobrir_eu(partidas, nick)
     escolhidas = [p for p in partidas if do_jogador(p, jogador)]
-    if jogador == "*":
+    if varios_jogadores(jogador):
         escolhidas = sem_repetidas(escolhidas)
     todas = [visao(p, perspectiva(p, eu)) for p in escolhidas]
     linhas = [l for l in todas

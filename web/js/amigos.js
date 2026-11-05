@@ -84,13 +84,15 @@ async function renderAmigos() {
     if (!resp || !resp.ok) { $('#am-resultado').innerHTML = `<div class="aviso erro">${esc(j.erro || 'Não consegui importar.')}</div>`; return; }
     await carregarJogadores(); await renderAmigos();
     $('#am-resultado').innerHTML = `<div class="aviso">Logs de <b>${esc(j.nome)}</b>: ${j.novas} partida(s) nova(s)${j.repetidas ? `, ${j.repetidas} já estavam aqui` : ''}${j.invalidos ? `, ${j.invalidos} arquivo(s) não eram log` : ''}. <a href="#partidas" id="am-ver-novo">Ver partidas dele</a></div>`;
-    $('#am-ver-novo').onclick = () => { S.jogador = j.nome; try { localStorage.setItem('jogador', j.nome); } catch (e) {} };
+    $('#am-ver-novo').onclick = () => { S.jogadorSel = [j.nome]; salvarSelecaoJogador(); };
   };
-  document.querySelectorAll('[data-ver]').forEach(b => b.onclick = () => { S.jogador = b.dataset.ver; try { localStorage.setItem('jogador', S.jogador); } catch (e) {} location.hash = 'partidas'; });
+  document.querySelectorAll('[data-ver]').forEach(b => b.onclick = () => { S.jogadorSel = [b.dataset.ver]; salvarSelecaoJogador(); location.hash = 'partidas'; });
   document.querySelectorAll('[data-apagar]').forEach(b => b.onclick = async () => {
     if (b.dataset.confirmar !== '1') { b.dataset.confirmar = '1'; b.textContent = 'Confirmar: apagar todas as partidas dele'; return; }
     const x = await api('/api/amigos/' + encodeURIComponent(b.dataset.apagar), { method: 'DELETE' });
-    if (S.jogador === b.dataset.apagar) S.jogador = '';
+    S.jogadorSel = S.jogadorSel.filter(x => x !== b.dataset.apagar);
+    if (!S.jogadorSel.length) S.jogadorSel = [''];
+    salvarSelecaoJogador();
     toast(`${x.apagadas} partida(s) apagada(s)`); await carregarJogadores(); renderAmigos();
   });
 }

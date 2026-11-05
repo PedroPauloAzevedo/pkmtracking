@@ -146,11 +146,18 @@ def _contar_pendentes():
     return _cache_pendentes["n"]
 
 
+def _jogador_pedido():
+    """Filtro Jogador do pedido: vários (?jogadores=&jogadores=Fulano; vazio = você), como manda a caixa de opções
+    do painel; ou um só (?jogador=, como nas versões antigas: vazio = você, * = todos)."""
+    a = request.args
+    return a.getlist("jogadores") if "jogadores" in a else a.get("jogador", "")
+
+
 @app.get("/api/decisoes")
 def api_decisoes():
     a = request.args
     return jsonify(analises.decisoes(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"),
-                                     a.get("lista"), a.get("adv"), int(a.get("min", 3)), a.get("jogador", ""),
+                                     a.get("lista"), a.get("adv"), int(a.get("min", 3)), _jogador_pedido(),
                                      a.get("ordem", "")))
 
 
@@ -234,7 +241,7 @@ def salvar_config():
 def partidas():
     a = request.args
     return jsonify(analises.analise_pessoal(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"), a.get("tag"),
-                                            a.get("lista"), a.get("adv"), a.get("jogador", "")))
+                                            a.get("lista"), a.get("adv"), _jogador_pedido()))
 
 
 # ------------------------------------------------------------------ amigos: trocar logs
@@ -834,7 +841,7 @@ def _csv(cabecalho, linhas, nome):
 
 @app.get("/exportar/minhas_partidas.csv")
 def exportar_partidas():
-    dados = analises.analise_pessoal(config.ler_config()["nick"], jogador=request.args.get("jogador", ""))
+    dados = analises.analise_pessoal(config.ler_config()["nick"], jogador=_jogador_pedido())
     campos = ["id", "data", "dono", "eu", "adversario", "resultado", "comecei", "meu_deck", "deck_adv",
               "premios_eu", "premios_adv", "turnos", "motivo", "primeiro_ko_meu", "mulligan_eu", "tags", "notas"]
     return _csv(campos, [[l[c] for c in campos] for l in dados["partidas"]], "minhas_partidas.csv")
