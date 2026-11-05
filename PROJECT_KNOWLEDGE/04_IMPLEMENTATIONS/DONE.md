@@ -6,9 +6,9 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
-| 2026.11.05-3 | 05/11/2026 | — (não publicada) | Filtro Jogador com qualquer combinação (ramo `replay-premios`) |
-| 2026.11.05-2 | 05/11/2026 | — (não publicada) | Replay mostra os prêmios que o log revela (ramo `replay-premios`) |
-| (documentação) | 05/11/2026 | — | Reorganização da documentação em `PROJECT_KNOWLEDGE/` (sem commit; vai junto com a 2026.11.05-2 e a -3) |
+| 2026.11.05-3 | 05/11/2026 | `c53abc5` | Filtro Jogador com qualquer combinação (publicada junto com a -2) |
+| 2026.11.05-2 | 05/11/2026 | `c53abc5` | Replay mostra os prêmios que o log revela (não saiu sozinha: foi junto com a -3) |
+| (documentação) | 05/11/2026 | `c100596` | Reorganização da documentação em `PROJECT_KNOWLEDGE/` |
 | 2026.11.05-1 | 05/11/2026 | `c0b0943` | Modo automático se ajusta quando o jogo muda de tamanho |
 | 2026.11.03-1 | 03/11/2026 | `4484f2c` | Replay mostra a mão dos dois jogadores; painel só para computador |
 | 2026.11.02-7 | 02/11/2026 | `c5196bd` | Efeito de cada carta, replay mais fiel, painel dividido e testes de tela |
