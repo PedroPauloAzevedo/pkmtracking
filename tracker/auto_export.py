@@ -50,6 +50,7 @@ ESCALAS = [round(0.36 + 0.02 * i, 2) for i in range(63)]   # 0,36 a 1,60 do tama
 TESTADAS = 16               # busca ampla: as 16 escalas mais perto do esperado (jogo em janela, por exemplo)
 ALTURA_PRONTAS = 1440       # as imagens do Full Bench foram recortadas numa tela de 1440 de altura
 SEM_TELA_PARA_SOLTAR = 12   # segundos sem a tela de resultado até poder capturar a próxima partida
+QUASE = 0.70                # nota na tela reduzida a partir da qual vale conferir na tela inteira
 
 
 def baixar_prontas():
@@ -101,6 +102,20 @@ def _janela_do_jogo():
         return True
     u.EnumWindows(ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)(olhar), 0)
     return achadas[0] if achadas else None
+
+
+def tamanho_jogo():
+    """(largura, altura) da área do jogo (sem a borda da janela), ou None se não achar a janela (ou fora do Windows).
+    Os botões crescem e diminuem com a janela do jogo, não com o monitor."""
+    h = _janela_do_jogo()
+    if not h:
+        return None
+    import ctypes
+    from ctypes import wintypes
+    r = wintypes.RECT()
+    if not ctypes.windll.user32.GetClientRect(h, ctypes.byref(r)) or r.bottom < 100:
+        return None  # minimizada
+    return r.right, r.bottom
 
 
 def jogo_na_frente():
@@ -155,6 +170,7 @@ class AutoExport:
         self.perdidas = 0
         self.escalas = {}   # tamanho que funcionou no seu monitor, por botão
         self.ultima_nota = 0.0  # parecença da última busca (0 a 1), para o registro de diagnóstico
+        self.ultima_escala = None  # tamanho em que a última busca chegou mais perto
         self._cache = {}
         self._thread = None
         self._parar = threading.Event()
@@ -213,29 +229,38 @@ class AutoExport:
         return cv2.cvtColor(np.array(pyautogui.screenshot()), cv2.COLOR_RGB2GRAY)
 
     def _candidatas(self, k, altura_tela, amplo):
-        """Tamanhos a testar. Já achou antes: só esse e os vizinhos (vigiar fica leve).
-        Ainda não: o esperado para a sua tela (imagens prontas: altura da tela / 1440; as suas: 1,0)
-        e, na busca ampla, os tamanhos ao redor dele."""
-        conhecida = self.escalas.get(k)
-        if conhecida:
-            return [conhecida, round(conhecida - 0.01, 3), round(conhecida + 0.01, 3)]
+        """Tamanhos a testar. Já achou antes: esse e os vizinhos (vigiar fica leve).
+        Ainda não: o esperado (imagens prontas: altura da JANELA DO JOGO / 1440 — ou da tela, se não achar a janela;
+        as suas: 1,0) e os vizinhos.
+        Na busca ampla (a cada 10 s), sempre testa também os tamanhos ao redor do esperado, mesmo com um tamanho
+        já conhecido: se o jogo mudou de tamanho (tela cheia, janela maior ou menor), o modo automático se acerta
+        sozinho em vez de ficar procurando para sempre no tamanho antigo (problema de 3/nov/2026)."""
+        jogo = tamanho_jogo()
+        altura = jogo[1] if jogo else altura_tela
         prontas = k in (config.ler_config().get("modelos_prontos") or [])
-        esperado = round(altura_tela / ALTURA_PRONTAS, 3) if prontas else 1.0
-        perto = [esperado, round(esperado - 0.01, 3), round(esperado + 0.01, 3)]
-        return perto + (sorted(ESCALAS, key=lambda s: abs(s - esperado))[:TESTADAS] if amplo else [])
+        esperado = round(altura / ALTURA_PRONTAS, 3) if prontas else 1.0
+        conhecida = self.escalas.get(k)
+        base = conhecida or esperado
+        perto = [base, round(base - 0.01, 3), round(base + 0.01, 3)]
+        if not conhecida and esperado not in perto:
+            perto.append(esperado)
+        return perto + ([s for s in sorted(ESCALAS, key=lambda s: abs(s - esperado))[:TESTADAS] if s not in perto] if amplo else [])
 
-    def _achar(self, cv2, tela, k, conf, reducao=1.0, amplo=True):
+    def _achar(self, cv2, tela, k, conf, reducao=1.0, amplo=True, so_escalas=None):
         """Procura o botão na tela em vários tamanhos. Devolve (x, y, largura, altura) na tela real, ou None.
         reducao < 1: `tela` é uma cópia reduzida (vigiar a tela o tempo todo fica mais leve)."""
         modelo = self._modelo(cv2, k)
         if modelo is None:
             return None
-        real = [round(tela.shape[0] / reducao), round(tela.shape[1] / reducao)]
+        jogo = tamanho_jogo()
+        real = [round(tela.shape[0] / reducao), round(tela.shape[1] / reducao)] + ([jogo[1], jogo[0]] if jogo else [])
         antes = self.escalas.get("_tela") or [0, 0]
-        if abs(antes[0] - real[0]) > 4 or abs(antes[1] - real[1]) > 4:  # monitor ou resolução mudou: descobre de novo
+        if len(antes) != len(real) or any(abs(x - y) > 4 for x, y in zip(antes, real)):
+            # monitor, resolução ou tamanho da janela do jogo mudou: descobre o tamanho dos botões de novo
+            print(f"[auto] tela/janela do jogo mudou ({antes} -> {real}): procurando o tamanho dos botões de novo")
             self.escalas = {"_tela": real}
         melhor = None
-        for s in self._candidatas(k, tela.shape[0] / reducao, amplo):
+        for s in so_escalas or self._candidatas(k, tela.shape[0] / reducao, amplo):
             f = s * reducao
             m = modelo if f == 1.0 else cv2.resize(modelo, None, fx=f, fy=f,
                                                      interpolation=cv2.INTER_AREA if f < 1 else cv2.INTER_LINEAR)
@@ -246,6 +271,7 @@ class AutoExport:
             if not melhor or valor > melhor[0]:
                 melhor = (valor, pos, w, h, s)
         self.ultima_nota = melhor[0] if melhor else 0.0
+        self.ultima_escala = melhor[4] if melhor else None
         if not melhor or melhor[0] < conf:
             return None
         valor, (x, y), w, h, s = melhor
@@ -297,7 +323,13 @@ class AutoExport:
             try:
                 tela = self._tela(pyautogui, np, cv2)
                 pequena = cv2.resize(tela, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-                bl = self._achar(cv2, pequena, "battle_log", conf, reducao=0.5, amplo=voltas % 5 == 1)
+                # busca ampla: a cada 10 s enquanto não sabe o tamanho dos botões; sabendo, a cada 30 s (rede de segurança)
+                amplo = voltas % (15 if self.escalas.get("battle_log") else 5) == 1
+                bl = self._achar(cv2, pequena, "battle_log", conf, reducao=0.5, amplo=amplo)
+                if not bl and self.ultima_nota >= QUASE and self.ultima_escala:
+                    # na cópia reduzida o botão pequeno perde detalhe: quase achou -> confere na tela inteira, no mesmo tamanho
+                    e = self.ultima_escala
+                    bl = self._achar(cv2, tela, "battle_log", conf, so_escalas=[e, round(e - 0.01, 3), round(e + 0.01, 3)])
                 cont = self._achar(cv2, tela, "continuar", conf) if bl and self._modelo(cv2, "continuar") is not None else None
                 resultado = bl and (cont or self._modelo(cv2, "continuar") is None)
                 if resultado:

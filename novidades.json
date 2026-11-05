@@ -1,5 +1,26 @@
 [
   {
+    "versao": "2026.11.05-1",
+    "data": "2026-11-05",
+    "titulo": "Modo automático volta a funcionar quando o jogo muda de tamanho",
+    "mudancas": [
+      "Modo automático: o programa guardava o tamanho dos botões do jogo na primeira partida e, dali em diante, só procurava nesse tamanho. Se o jogo mudasse de tamanho (tela cheia, janela maximizada ou redimensionada), ele nunca mais reconhecia a tela de resultado. Agora ele mede a janela do jogo e, quando ela muda, aprende o tamanho de novo sozinho.",
+      "Mesmo com o tamanho conhecido, faz uma busca mais ampla a cada 30 segundos, por segurança.",
+      "Quando a busca rápida (feita numa cópia reduzida da tela) chega perto, o programa confere na tela inteira antes de desistir. O botão Battle Log, que é pequeno, passava raspando antes.",
+      "O registro (dados/programa.log) avisa quando o jogo muda de tamanho."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.05-1\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: o modo automático se ajusta sozinho ao tamanho do jogo, em janela ou em tela cheia.",
+      "Na tela de resultado, deixe o jogo na frente e espere uns segundos antes de clicar em Continue."
+    ]
+  },
+  {
     "versao": "2026.11.03-1",
     "data": "2026-11-03",
     "titulo": "Replay: a mão dos dois jogadores",
