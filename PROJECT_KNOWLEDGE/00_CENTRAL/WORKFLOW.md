@@ -59,7 +59,8 @@ ou medição descrita em `EVIDENCE.md`). Manter a versão antiga quando útil (e
 - Cada tarefa num **ramo próprio** (`git switch -c <prefixo>/<nome>`: `feature/`, `fix/`, `refactor/`, `docs/`, `chore/`), criado
   antes da primeira edição. Fluxo a dois, PR e conflitos: [`COLLABORATION.md`](COLLABORATION.md).
 - **Commit e push só quando a pessoa daquele computador pedir**, e o push vai para o próprio ramo. Tudo entra na `main` por
-  **Pull Request**, e **só o Pedro junta** (D-043). Os programas dos amigos olham `versao.txt` da `main`: juntar uma versão dispara
+  **Pull Request**, e **só o Pedro junta** (D-043); no computador do Pedro, o "publicar" dele autoriza o Claude a abrir **e juntar** o
+  PR (D-047). Os programas dos amigos olham `versao.txt` da `main`: juntar uma versão dispara
   o aviso de atualização neles.
 - Autor dos commits: `Claude <noreply@anthropic.com>` (`git -c user.name=Claude -c user.email=noreply@anthropic.com commit ...`),
   com a linha `Co-Authored-By` pedida pelo app. Nunca expor o e-mail do Pedro.

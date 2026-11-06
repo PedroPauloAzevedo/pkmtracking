@@ -1,4 +1,4 @@
-<!-- Preencha em português simples. Regras em PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md. Só o Pedro junta na main. -->
+<!-- Preencha em português simples. Regras em PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md. Só o Pedro junta na main (no computador dele, o "publicar" dele autoriza o Claude a juntar; D-047). -->
 
 ## Objetivo
 <!-- O que este PR resolve e por quê (1 a 3 frases). -->

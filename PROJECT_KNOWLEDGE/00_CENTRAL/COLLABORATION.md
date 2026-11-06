@@ -25,6 +25,9 @@
 ## 3. Ramos e Pull Requests
 - **`main` = o que os amigos recebem.** O atualizador baixa a `main` quando `versao.txt` muda. Nada vai direto para a `main`:
   tudo entra por Pull Request, e **só o Pedro junta** (D-043).
+- **No computador do Pedro (D-047):** quando o Pedro pede "publicar", o Claude dele faz o commit, envia o ramo, abre o PR com o
+  modelo e **junta ele mesmo** (`gh pr merge <nº> --merge`), sem esperar o clique — os testes de entrega rodam antes, como sempre.
+  O PR fica registrado no GitHub do mesmo jeito. **PR do segundo desenvolvedor não muda:** espera o Pedro revisar e juntar.
 - Um ramo por tarefa, criado a partir da `main` atualizada:
   | Prefixo | Para quê | Exemplo |
   |---|---|---|
