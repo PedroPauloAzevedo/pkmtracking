@@ -17,6 +17,9 @@
 | [`OVERVIEW.md`](OVERVIEW.md) | O que é o programa, para quem, limites de escopo, funcionalidades, glossário | Primeira sessão; dúvida sobre o que o programa faz |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Camadas, mapa das pastas e módulos, threads, painel, banco de dados, configurações, integrações | Antes de mexer em código; para achar onde algo está |
 | [`WORKFLOW.md`](WORKFLOW.md) | Como testar, medir, versionar, publicar, cuidados de privacidade e no Windows, manutenção destes documentos | Antes de testar, publicar ou criar versão |
+| [`COLLABORATION.md`](COLLABORATION.md) | Trabalho a dois: primeiro dia, ramos e PR, arquivos que dão conflito, testes por risco, mudança de banco/contrato, configurações do GitHub | Primeira sessão de quem chega; antes de abrir um PR |
+| [`API_CONTRACTS.md`](API_CONTRACTS.md) | Camadas, imports em círculo, todas as rotas `/api` e quem as usa no painel | Antes de mexer numa rota, num import ou entre camadas |
+| [`DATA_MODEL.md`](DATA_MODEL.md) | Tabelas do banco, formato `dados_json` do leitor, registro de migrações | Antes de mexer no banco ou no leitor |
 
 ## 01_MODULES — uma funcionalidade por documento
 | Documento | Assunto | Ler quando |
@@ -73,11 +76,14 @@
 | `docs/regras-standard.md` | Base de regras do Standard. **É lida pelo programa**: não mudar de lugar nem o formato da tabela de marcas |
 | `novidades.json` | O que mudou em cada versão, do ponto de vista de quem usa (o programa mostra na tela) |
 | `testes/`, `testes/experimentos/` | Testes de regressão, segurança, replay e telas; experimentos de medição |
+| `.github/` | Modelo de Pull Request e `CODEOWNERS` (ver `COLLABORATION.md`) |
+| `CLAUDE.local.example.md` | Modelo do `CLAUDE.local.md` de cada desenvolvedor |
+| "ROADMAP" e "CHANGELOG" | Não existem com esse nome: o roteiro é `BACKLOG.md` + `NEXT_STEPS.md`; o histórico é `DONE.md` (técnico) + `novidades.json` (quem usa) |
 | `.claude/skills/statistical-analyst/` | Skill de matemática e estatística: matriz dos métodos (`knowledge/KNOWN_METHODS.md`), fórmulas, lacunas, ferramentas (`tools/`), experimentos de auditoria e testes. O Claude Code a carrega sozinho quando a tarefa é de análise |
 
 ## Fora do GitHub (só no computador do Pedro)
 | Arquivo | O que é |
 |---|---|
-| `CLAUDE.local.md` | Dados da máquina: pastas reais, instalações, nick, pasta do Drive, cópias de teste, links e códigos privados. Ler quando a tarefa envolver o computador do Pedro |
+| `CLAUDE.local.md` | Dados da máquina: pastas reais, instalações, nick, pasta do Drive, cópias de teste, links e códigos privados. Cada desenvolvedor tem o seu (modelo em `CLAUDE.local.example.md`). Ler quando a tarefa envolver o computador de quem está usando |
 | `_arquivo_docs_antigos/` | Documentos antigos (antes de 05/11/2026), guardados só como cópia. Tudo o que tinham foi migrado para cá |
 | `ferramentas/video/` | Como refazer o vídeo tutorial (excluída do GitHub; ver `DONE.md`, versão 2026.11.02-3) |

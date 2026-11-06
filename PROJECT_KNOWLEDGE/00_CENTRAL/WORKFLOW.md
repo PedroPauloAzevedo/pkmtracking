@@ -1,6 +1,6 @@
 # Como trabalhar no projeto
 
-> Atualizado em 05/11/2026. Testar, medir, versionar, publicar e manter esta documentação.
+> Atualizado em 06/11/2026. Testar, medir, versionar, publicar e manter esta documentação.
 > Caminhos e detalhes do computador do Pedro ficam em `CLAUDE.local.md` (fora do GitHub).
 
 ## 1. Onde mexer e onde testar
@@ -55,15 +55,18 @@ ou medição descrita em `EVIDENCE.md`). Manter a versão antiga quando útil (e
 4. Entregar ao Pedro, no chat, o passo a passo resumido para os amigos.
 - Mudança só de documentação não muda a versão (os amigos não veem nada de diferente).
 
-## 6. Git e publicação (D-025)
-- Cada tarefa num **ramo próprio** (`git switch -c <nome>`), criado antes da primeira edição.
-- **Commit e push só quando o Pedro pedir.** Publicar = levar o ramo para a `main` (`git merge --ff-only`) e `git push origin main`.
-  Os programas dos amigos olham `versao.txt` da `main`: publicar uma versão dispara o aviso de atualização neles.
+## 6. Git e publicação (D-025, D-043)
+- Cada tarefa num **ramo próprio** (`git switch -c <prefixo>/<nome>`: `feature/`, `fix/`, `refactor/`, `docs/`, `chore/`), criado
+  antes da primeira edição. Fluxo a dois, PR e conflitos: [`COLLABORATION.md`](COLLABORATION.md).
+- **Commit e push só quando a pessoa daquele computador pedir**, e o push vai para o próprio ramo. Tudo entra na `main` por
+  **Pull Request**, e **só o Pedro junta** (D-043). Os programas dos amigos olham `versao.txt` da `main`: juntar uma versão dispara
+  o aviso de atualização neles.
 - Autor dos commits: `Claude <noreply@anthropic.com>` (`git -c user.name=Claude -c user.email=noreply@anthropic.com commit ...`),
   com a linha `Co-Authored-By` pedida pelo app. Nunca expor o e-mail do Pedro.
 - Antes do commit: `git status` e `git diff --cached --name-only` (só os arquivos da tarefa) e conferir que nenhum dado pessoal entrou (seção 7).
 - Depois do push: conferir pela API do GitHub que `versao.txt` da `main` mudou e quem é o autor.
-- `.git/info/exclude` mantém fora do GitHub: `dados/`, `.venv/`, `__pycache__/`, `ferramentas/`, `CLAUDE.local.md`, `_arquivo_docs_antigos/`.
+- O `.gitignore` mantém fora do GitHub: `dados/`, `.venv/`, `__pycache__/`, `ferramentas/`, `CLAUDE.local.md`, `_arquivo_docs_antigos/`
+  (até 06/11 os quatro últimos estavam só no `.git/info/exclude` do computador do Pedro). O `.gitattributes` fixa os fins de linha.
 
 ## 7. Privacidade (o repositório é PÚBLICO; D-026 e D-027)
 Nunca no GitHub (nem em documentos, commits ou exemplos): caminhos do computador do Pedro, nomes de pastas pessoais, e-mail,
@@ -85,6 +88,7 @@ continua aberto. Detalhes em `../01_MODULES/UPDATE_AND_INSTALL.md`.
 |---|---|
 | Qualquer trabalho | `../05_SESSION_CONTROL/CURRENT_STATE.md` e `NEXT_STEPS.md`, no fim da sessão |
 | Mudou um módulo | O documento do módulo em `01_MODULES/` (e a explicação no topo do arquivo de código) |
+| Mudou o banco, uma rota `/api` ou o formato `dados_json` | `00_CENTRAL/DATA_MODEL.md` (registro de migrações) ou `00_CENTRAL/API_CONTRACTS.md`, no mesmo PR |
 | Regra nova ou alterada (inclusive descoberta sobre o formato do log) | O documento em `02_BUSINESS_RULES/` |
 | Decisão técnica (inclusive "pesquisado e descartado") | `../03_DECISIONS/DECISIONS.md` (número novo, nunca reaproveitar) |
 | Medição feita | `../03_DECISIONS/EVIDENCE.md` |

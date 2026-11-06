@@ -42,3 +42,8 @@
   do Pedro; P2/P4–P7 ficam exploratórios até haver centenas de partidas.
 - **Skill — ferramentas estratégicas prontas (06/11, sem commit, NÃO aplicadas por decisão do Pedro):** `tools/estrategia.py` e
   `experiments/p_estrategia.py` (P1–P7, com trava: P1 50, P3 100, demais 300 partidas). Rodar quando houver amostra suficiente.
+
+**Acréscimo de 06/11/2026 (preparação para dois desenvolvedores; ramo `docs/preparar-dois-devs`, por Pull Request):**
+- PR #2 juntado na `main` (`66440fe`). Pedro: configurar o GitHub (`00_CENTRAL/COLLABORATION.md`, seção 9) e convidar o segundo dev.
+- Segundo dev: primeiro dia (`COLLABORATION.md`, seção 2) e o item **M1** do BACKLOG (conferir o básico no Mac), que diz quais dos
+  itens M2–M7 são reais.

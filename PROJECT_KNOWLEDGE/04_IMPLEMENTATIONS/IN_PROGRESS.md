@@ -30,3 +30,7 @@
   `CONTROL_AND_DISRUPTION.md`, `DECISION_ANALYSIS.md`; `experiments/p0_viabilidade_estrategica.py` (+ resultado); pesquisa registrada em
   `RESEARCH_REGISTER.md`; `SKILL.md`, `POKEMON_TCG_MODEL.md`, `GAPS_AND_ROADMAP.md` (G20–G24) e `KNOWN_METHODS.md` atualizados.
 - Não feito (propostos): experimentos P1–P7. Nada no Coletor mudou. Vai junto com a rodada de hardening quando o Pedro pedir o commit.
+
+## Preparar o projeto para dois desenvolvedores — ramo `docs/preparar-dois-devs`, Pedro (06/11/2026)
+- **Situação:** documentação, `.gitattributes`, `.gitignore` e `.github/` prontos, em Pull Request. Nenhum código do programa mudou.
+- **Juntado na `main` em 06/11 (PR #2, `66440fe`).** **Falta:** configurar o GitHub (`../00_CENTRAL/COLLABORATION.md`, seção 9).

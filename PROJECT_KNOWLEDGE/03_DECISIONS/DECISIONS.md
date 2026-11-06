@@ -138,6 +138,19 @@
 - **D-029 · Nome, Player ID e nascimento (Lista oficial) só em `dados/config.json`** (01/11).
 - **D-030 · Painel sem frameworks, dividido em arquivos por área, com testes de tela automáticos** (02/11/2026, v2026.11.02-7).
 
+- **D-043 · Dois desenvolvedores: tudo entra na `main` por Pull Request e só o Pedro junta** (06/11/2026, decisão do Pedro).
+  Complementa D-025 (o "publicar" passa a ser o Pedro juntar o PR na `main`). Ramos `feature/`, `fix/`, `refactor/`, `docs/`,
+  `chore/`; modelo de PR em `.github/`; `CODEOWNERS` com o Pedro; PR que muda o programa traz a própria versão (D-024); mudança de
+  banco ou de contrato registrada em `DATA_MODEL.md`/`API_CONTRACTS.md`; cada um com dados, credenciais e `CLAUDE.local.md` próprios.
+  Repositório continua **público** (confirmado pelo Pedro; D-026); o e-mail e o nick antigos que já estão no histórico ficam como
+  estão (aceito pelo Pedro: tirar exigiria reescrever o histórico). *Por quê:* a `main` é baixada pelo atualizador dos amigos sem
+  conferência de assinatura, então só código revisado pode chegar lá. Regras em `../00_CENTRAL/COLLABORATION.md`; a proteção da
+  `main` no GitHub é configurada pelo Pedro (seção 9 de lá).
+- **D-044 · Mac como plataforma de uso completo, prioridade do segundo desenvolvedor** (06/11/2026, decisão do Pedro). O segundo
+  desenvolvedor usa Mac e vai priorizar fazer o programa funcionar por inteiro nele. Código de uma plataforma fica dentro de
+  `if sys.platform == ...`, sem mudar o comportamento no Windows (os amigos usam Windows); PR de plataforma diz em qual sistema foi
+  testado. Não muda D-002 (continua nada para celular). Levantamento em `../00_CENTRAL/ARCHITECTURE.md` ("Windows × Mac") e lista em
+  `../04_IMPLEMENTATIONS/BACKLOG.md` ("Paridade no Mac").
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,
