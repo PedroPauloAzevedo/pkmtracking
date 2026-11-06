@@ -17,6 +17,7 @@
 
 | `a10_limiar_incerto.py` | Limiar do deck "incerto" (D-042), reaproveitando o a8 sem alterá-lo | 4 (D-042) |
 | `a11_faixas_dependencia.py` | Faixas do Meta/Matchups estreitas demais? Qual correção acerta (metades por jogador) | 6 (D-041) |
+| `a12_etapas_ataque.py` | O roteiro do ataque dos juízes (ordem do dano, prêmios em nocautes simultâneos) aparece nos logs? | — (Judge Ball, 06/11) |
 | `p_estrategia.py` | P1–P7 (rota, corrida, prêmios checados, troca, disrupção, stall/mill, sequência) — **pronto, não aplicado** | — (trava de amostra: P1 50, P3 100, demais 300 partidas) |
 | `p0_viabilidade_estrategica.py` | O que os logs permitem na análise estratégica (rota, corrida, prêmios checados, disrupção, mill)? | — (estratégia; `knowledge/STRATEGIC_CONCEPTS.md`) |
 

@@ -58,3 +58,22 @@ revelado. Conceitos (prize mapping, racing, checking, trade, stall, lock, disrup
 `STRATEGIC_CONCEPTS.md` (matriz de observabilidade); matemática: `PRIZE_ANALYSIS.md`, `CONTROL_AND_DISRUPTION.md`,
 `DECISION_ANALYSIS.md`. Fatos medidos (p0, 83 partidas): 55% terminam por desistência, 0 por deck acabado; a rota de prêmios
 executada é observável; a contagem de prêmios no turno 3–6 quase não diz quem vence.
+
+## 8. Sequência completa de um ataque (roteiro dos juízes) e o que o log mostra
+Fonte: "Roadmap to Pokémon TCG attacks", Karin Siehs, rev. nov/2024, em Judge Ball (registro em `RESEARCH_REGISTER.md`). Resume o
+Rulebook (SV8) e as decisões do Compendium; o resumo do Rulebook de 2026 já está em `docs/regras-standard.md` (ordem do ataque e do
+dano, Checkup). O que o roteiro **acrescenta** é o que vem depois do dano:
+0 escolher o ataque → A anunciar → B efeitos que cancelam → C Confuso → D escolhas (sem executar) → E requisitos → F efeitos antes do
+dano → G calcular o dano (base → efeitos no atacante → Fraqueza → Resistência → efeitos no defensor; base ≤ 0 pula para H) →
+**colocar o dano** → H efeitos do ataque (inclusive os pendentes de D) → I efeitos disparados pelo ataque → J checar nocautes →
+K efeitos disparados pelo nocaute → **L executar os nocautes: 1 descartar os nocauteados; 2 o adversário pega os prêmios dele
+primeiro; 3 você pega os seus; 4 o adversário troca o Ativo; 5 você troca o seu** → M efeitos disparados por executar nocautes
+(volta a J) → N checar vitória → fim do ataque → efeitos de "fim do turno" → turno acaba → Checkup.
+Notas do roteiro: a checagem de nocautes vale para **todos os Pokémon ao mesmo tempo**; as condições de vitória também, para os dois
+jogadores, depois que a sequência de efeitos disparados termina.
+**Conferido nos logs (a12, 83 partidas):** a ordem do dano aparece no `Damage breakdown` (Fraqueza = dobro do subtotal com os efeitos
+do atacante, 36/36; Resistência depois deles, 7/7); nos nocautes ao mesmo tempo, o adversário de quem joga pega primeiro (8/8);
+vários nocautes do mesmo dono viram um só "took N" (10/12). **Uso:** (a) o replay e o leitor podem confiar nessa ordem das linhas;
+(b) o "dano necessário" de uma rota de prêmios (`PRIZE_ANALYSIS.md`) deve aplicar a Fraqueza **depois** dos bônus do atacante — um
+bônus de +30 vale +60 contra um Pokémon com Fraqueza; (c) o `Damage breakdown` mostra a Fraqueza/Resistência real do defensor e os
+bônus de dano usados (Black Belt's Training, Premium Power Pro, Brave Bangle) — dado observável que o Coletor ainda não lê (G24).

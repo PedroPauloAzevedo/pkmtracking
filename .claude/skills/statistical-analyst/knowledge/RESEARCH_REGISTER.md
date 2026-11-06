@@ -50,6 +50,18 @@ jogador (não é evidência); **mat** = matemática/método. Nenhuma fonte abaix
 Descartadas: páginas geradas automaticamente (afirmavam limite de 7 cartas na mão — falso), páginas de Pokémon TCG Pocket (outras
 regras) e calculadoras que tratam prêmios como parte do baralho sem dizer.
 
+## Judge Ball (06/11/2026) — site indicado pelo Pedro, varrido no navegador
+Pergunta: o que o site tem sobre o Pokémon TCG e o que acrescenta ao projeto? Antes conferido: `docs/regras-standard.md` já resume o
+Rulebook de set/2026 (ordem do ataque e do dano, Checkup, desempate) e os manuais de torneio e de penalidades de 1º/set/2026.
+| Página | Conteúdo | Tipo | Conclusão |
+|---|---|---|---|
+| https://www.judgeball.com/guidebook/tcg/attack-steps/ | Imagem "Roadmap to Pokémon TCG attacks" (Karin Siehs, rev. nov/2024; base Rulebook SV8 + Compendium) | def (resumo de regra feito por juíza; não oficial) | **Novo para o projeto:** etapas depois do dano (efeitos disparados, ordem de executar nocautes e de pegar prêmios, checagem simultânea). Conferido nos logs (a12). Resumo em `POKEMON_TCG_MODEL.md`, seção 8 |
+| atalhos `/rulebook`, `/tcg`, `/trh`, `/errata`, `/banned`, `/lh` | redirecionam para PDFs oficiais em pokemon.com (Rulebook 30c, TCG Tournament Handbook, Tournament Rules Handbook, errata, cartas banidas, manual da loja) | oficial | Os mesmos documentos que `docs/regras-standard.md` já usa (errata e banidas: conferir na rotina mensal, `RULES_BASE.md`) |
+| `/guidebook/community-resources/` | Compendium de decisões (compendium.pokegym.net), Judge Manual (PDF), "Ask the Rules Team" | referência | **Útil para dúvidas de interação de cartas** (o replay depende disso); decisão de juiz, não evidência estatística |
+| `/guidebook/community-resources/important-posts/` | Posts de funcionários da TPCi sobre interações (2020–2021) | op | Eras antigas (V/VMAX): fora do Standard atual |
+| `/archives/tcg-rulebooks/` | Manuais de coleções antigas (Base Set → EX...) | histórico | Fora do escopo (só Standard, D-001) |
+| `/filling-out-a-match-slip/`, `/championship-series-events/`, `/rating-zones/`, `/faqs/`, guias do Professor e do organizador, VGC, GO | Organização de torneio, programa de juízes, outros jogos | — | Sem uso para as análises (confirma só que torneio é melhor de 3 com empate) |
+
 ## Lacunas que podem pedir pesquisa externa (ainda não pesquisadas)
 - Modelos de habilidade com mudança no tempo (ex.: Bradley-Terry dinâmico, Glicko) para épocas do meta — só se G3 for priorizada.
 - Avaliação de decisões com informação escondida em jogos de cartas (modelagem de crença sobre a mão do adversário) — G6.

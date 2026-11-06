@@ -20,6 +20,8 @@
 ## Ramos e pastas
 - `main` = o que está no GitHub. Tudo entra por Pull Request e só o Pedro junta (D-043).
 - `fix/erros-replay`: ramo dos erros de replay (worktree próprio; caminho em `CLAUDE.local.md`). Continua aberto para os próximos.
+- `docs/etapas-de-ataque` (06/11, sem commit): pesquisa no Judge Ball (roteiro do ataque dos juízes) conferida nos logs (experimento a12
+  da Skill): registros em `BATTLE_LOG_FORMAT.md`, `EVIDENCE.md` e na Skill (`POKEMON_TCG_MODEL.md` seção 8, `RESEARCH_REGISTER.md`, G24). Só documentação.
 - Ramos já juntados ou publicados (podem ser apagados): `icones-painel`, `nb2-faixas-incerto`, `publica-2026.11.06-1`,
   `versoes-2026.11.05-4-e-5`, `statistical-analyst`, `replay-premios`, `docs-project-knowledge`, `corrige-modo-automatico`, `replay-maos`.
 - Outros ramos no GitHub que não são deste projeto de trabalho (ex.: diagnósticos de outro trabalho do Pedro): não mexer.

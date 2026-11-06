@@ -15,6 +15,8 @@
    G20, atribuição de prêmios por nocaute no resumo, que muda o Coletor). Os experimentos estratégicos P1–P7
    (`tools/estrategia.py`, `experiments/p_estrategia.py`) ficam desligados até haver amostra (P1 50, P3 100, demais 300 partidas).
    Para usar a ponte numa cópia nova: `python -I .claude/skills/statistical-analyst/tools/marcar_copia.py <cópia>` antes.
+   Novo em 06/11: G24 (ler o `Damage breakdown` dos logs) e a causa de parte do G20 (um "took N" para vários nocautes), do
+   experimento a12 (ramo `docs/etapas-de-ataque`, sem commit).
 5. **Quando sair a próxima coleção:** acrescentar a linha dela em `tracker/colecoes.py` (`COLECOES`, com a data de lançamento nos
    EUA) numa versão nova, se ela ainda não estiver no TCGdex. Conferir se o TCG Live continuou liberando na véspera, às 10h do
    Pacífico (D-036).
