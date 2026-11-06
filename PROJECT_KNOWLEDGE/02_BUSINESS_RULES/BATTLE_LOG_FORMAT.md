@@ -1,6 +1,6 @@
 # Formato do Battle Log (e como o programa interpreta cada linha)
 
-> Atualizado em 05/11/2026. Conhecimento tirado dos logs reais do Pedro e dos amigos (dezenas de partidas, 02–05/11/2026).
+> Atualizado em 06/11/2026. Conhecimento tirado dos logs reais do Pedro e dos amigos (dezenas de partidas, 02–05/11/2026).
 > Usado por `tracker/leitor.py`, `tracker/replay.py` (mesa e mãos) e `tracker/decks.py`. Nos exemplos, **Ana exportou o log**
 > e **Bia é a adversária** (nomes fictícios). Achou uma linha nova ou uma "mania" nova? Registre aqui.
 
@@ -91,6 +91,13 @@ jogada (todas as outras compras de quem exportou têm nome).
   pelo Slowking). O dono vem certo. Várias linhas seguidas com o mesmo nome = Pokémon diferentes atingidos pelo mesmo golpe.
 - Cura em dois formatos: `Ana healed 30 damage from Ana's X.` e `- Ana's Hydrapple ex healed 30 damage.`
 - Sem efeito: `- Damage to Fan Rotom was prevented.`, `- Effects of Phantom Dive did not affect Team Rocket's Mimikyu.`
+- **`- Damage breakdown:`** (170 blocos em 83 partidas, 06/11/2026; o programa ainda não lê): parcelas na **ordem do cálculo de dano
+  das regras** — `• Base damage`, depois o que vem do atacante (`• (Supporter) Black Belt's Training: 40 damage`, `• (Item) Premium
+  Power Pro`, `• 3 attached Energy: 120 damage`, `• Pokémon ex: 90 damage`, `• 2 heads: 100 damage`), depois `• Weakness to Grass: X`
+  (X = o subtotal até ali, isto é, o dobro: 36 de 36) e `• Resistance to Fighting: -30 damage` (ou o que leva a 0: 7 de 7), e
+  `• Total damage`. Manias: a parcela `• Damage: 170 damage` às vezes vem **repetida** (conte uma vez); 42 blocos não têm
+  `Total damage` (só `• 4 Pokémon: 240 damage`, dano "por alguma coisa"); a linha do ataque pode trazer
+  `... took 10 more damage because of Grass Weakness.` Efeito do lado do defensor ("recebe 20 a menos") não apareceu nenhuma vez.
 
 ## 7. Nocaute
 - `Bia's Budew was Knocked Out!` (às vezes "is now Knocked Out"). Dois Pokémon de mesmo nome podem cair em linhas seguidas.
@@ -103,6 +110,10 @@ jogada (todas as outras compras de quem exportou têm nome).
   Ana's Dreepy.`), em cartas como Crushing Hammer e na Ignition Energy. Nos logs reais (05/11/2026): 136 depois de nocaute (soltas),
   4 depois do "took 3 Prize cards" (soltas), 129 de recuo, 44 de cartas como Crushing Hammer e 5 da Ignition Energy (sublinhas).
   Com dois Pokémon de mesmo nome o log não diz de qual saiu: o replay decide pelo contexto (`../01_MODULES/REPLAY.md`, D-035).
+- **Nocautes ao mesmo tempo** (ex.: Cursed Blast derruba o alvo e o próprio Dusknoir): as linhas de nocaute vêm juntas, depois os
+  descartes, depois os prêmios — **primeiro o adversário de quem joga o turno**, depois quem joga (8 de 8 casos com as duas linhas,
+  06/11/2026), como no roteiro do ataque dos juízes (Judge Ball). Vários nocautes do mesmo dono juntos viram **um**
+  `took N Prize cards` com a soma (10 de 12): só pela linha não dá para dividir esse N entre os nocauteados (`resumo.nocautes`).
 
 ## 8. Mão ↔ baralho e descarte
 | Linha | Significado |

@@ -142,6 +142,18 @@ substituições: as linhas acima continuam valendo no recorte em que foram medid
 | Força geral (Bradley-Terry) × chute | ECE10 0,006 (o menor) com log-loss 0,6921 × 0,6931: ECE baixo sem poder de previsão |
 | a4 refeito com a ponte só leitura e a versão 2026.11.06-1 | mesmos números de 06/11 (hash igual com 12 algarismos) |
 
+## Etapas do ataque nos logs (06/11/2026, experimento a12 da Skill)
+Roteiro dos juízes (Judge Ball, rev. nov/2024) conferido em 83 partidas reais (cópia marcada, só leitura).
+| Medida | Resultado |
+|---|---|
+| Blocos `Damage breakdown` | 170 (128 com `Total damage`; 35 com a parcela `Damage` repetida) |
+| Fraqueza = dobro do subtotal com os efeitos do atacante | 36 de 36 (6 depois de bônus do atacante) |
+| Resistência −30 ou até 0, depois dos efeitos do atacante | 7 de 7 (3 depois de bônus) |
+| Efeitos do lado do defensor no breakdown | 0 |
+| Nocautes ao mesmo tempo dos dois jogadores: o adversário de quem joga pega prêmio primeiro | 8 de 8 (9 casos, 1 sem as duas linhas) |
+| Vários nocautes do mesmo dono juntos → um só "took N" | 10 de 12 |
+Resultado em `.claude/skills/statistical-analyst/experiments/resultados/a12_*.json`.
+
 ## Onde estão os scripts dessas medições
 Os experimentos e1–e10 estão no repositório. Os scripts das medições do replay, das mãos e da simulação do modo automático foram
 escritos durante as sessões e ficaram **fora do repositório** (no computador do Pedro; ver `CLAUDE.local.md`). O método está descrito
