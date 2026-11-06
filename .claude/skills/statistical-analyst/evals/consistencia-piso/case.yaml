@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: consistencia-piso
+expected_outcome: |
+  Identifica tracker/probabilidades.py (carta/ate_compras), explica que a conta é exata para sorteio puro e não considera buscas (é um piso, D-031), distingue probabilidade exata de simulação, não chama de bug, e indica a lacuna da simulação com efeitos (BACKLOG 8 / G9).

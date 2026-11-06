@@ -1,6 +1,6 @@
 # Índice da documentação do projeto
 
-> Atualizado em 05/11/2026. Este repositório é a **fonte de verdade** do projeto: tudo o que uma sessão nova precisa saber
+> Atualizado em 06/11/2026. Este repositório é a **fonte de verdade** do projeto: tudo o que uma sessão nova precisa saber
 > está aqui ou no código. Conversas antigas do Claude Code e a memória automática do Claude **não** são fonte oficial.
 
 ## Como usar este índice
@@ -47,6 +47,8 @@
 | [`DECISIONS.md`](../03_DECISIONS/DECISIONS.md) | Registro numerado das decisões (e do que foi pesquisado e descartado) | Antes de propor mudança de rumo; ao registrar decisão nova |
 | [`EVIDENCE.md`](../03_DECISIONS/EVIDENCE.md) | Medições que sustentam as decisões (experimentos e1–e10, replay, mãos, modo automático) | Antes de trocar um algoritmo; para repetir uma medição |
 | [`MISSION_REPORT_2026-11-02.md`](../03_DECISIONS/MISSION_REPORT_2026-11-02.md) | Relatório completo da missão de 2/nov (pesquisas, matemática, medições, riscos) | Só ao mexer em análises/estatística a fundo |
+| [`STATISTICAL_INVENTORY_2026-11-06.md`](../03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md) | Inventário de cada método matemático/estatístico: fórmula, parâmetros, testes, experimentos refeitos em 06/11 e classificação (documentado → validado) | Antes de mexer, confiar ou propor troca de qualquer análise |
+| [`STATISTICAL_AUDIT_2026-11-06.md`](../03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md) | Auditoria do motor estatístico: 10 achados (comprovados, descartados, recomendações) | Antes de confiar numa tela de análise ou propor mudança nela |
 
 ## 04_IMPLEMENTATIONS — o que fazer, o que está em curso, o que foi feito
 | Documento | O que tem | Ler quando |
@@ -70,6 +72,7 @@
 | `docs/regras-standard.md` | Base de regras do Standard. **É lida pelo programa**: não mudar de lugar nem o formato da tabela de marcas |
 | `novidades.json` | O que mudou em cada versão, do ponto de vista de quem usa (o programa mostra na tela) |
 | `testes/`, `testes/experimentos/` | Testes de regressão, segurança, replay e telas; experimentos de medição |
+| `.claude/skills/statistical-analyst/` | Skill de matemática e estatística: matriz dos métodos (`knowledge/KNOWN_METHODS.md`), fórmulas, lacunas, ferramentas (`tools/`), experimentos de auditoria e testes. O Claude Code a carrega sozinho quando a tarefa é de análise |
 
 ## Fora do GitHub (só no computador do Pedro)
 | Arquivo | O que é |

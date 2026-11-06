@@ -1,6 +1,6 @@
 # Evidências: medições que sustentam as decisões
 
-> Atualizado em 05/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
+> Atualizado em 06/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
 > Resultados completos dos experimentos 1 a 9 e da análise de ACE SPEC: `MISSION_REPORT_2026-11-02.md` (não repetidos aqui).
 
 ## Experimentos em `testes/experimentos/` (rodar numa cópia; os que gravam no banco, só com dados de teste)
@@ -102,6 +102,23 @@ que o log não mostra ligando (habilidades, cartas que aceleram) ou de custos re
 | Janela 1280×720 | não achou (0,42) | achou (0,88) |
   Custo: ~0,1 s a cada 2 s na vigia normal; busca ampla ~0,5 s (a cada 30 s com tamanho conhecido); confirmação em tela inteira
   só no tamanho que chegou perto. → D-015. **Falta confirmar com o jogo real.**
+
+## Auditoria estatística (06/11/2026, código `76a2005`)
+Cópia de teste com os dados do Pedro (33 torneios, 44.651 partidas, 5.695 listas). Scripts em
+`.claude/skills/statistical-analyst/experiments/a1..a6`, resultados em `experiments/resultados/*.json`. Detalhes e leitura em
+`STATISTICAL_AUDIT_2026-11-06.md`.
+| Medida | Resultado |
+|---|---|
+| Taxa de quem tem lista × sem lista (Labs / online) | 61,9% × 50,3% / 52,1% × 27,9%; +4,0 a +6,1 pp nos 12 decks mais jogados |
+| Confronto ajustado: log-loss no teste, k = 16 × 24 | 0,6776 × 0,6778; diferença −0,0002 [−0,0010; +0,0010]; calibração ±1,5 pp |
+| Confronto ajustado com < 10 jogos × chute 50% | +0,0053 [−0,0083; +0,0214] (sem diferença clara) |
+| Efeito das cartas (L2 = 300) × deck sozinho | −0,0007 [−0,0020; +0,0003]; 0 de 392 cartas "prováveis" |
+| Identificação, 2 / 5 / 12 cartas: ícones, NB2, regra do programa | 19,0 / 52,3 / 74,4%; 63,6 / 84,4 / 91,8%; 51,2 / 83,3 / 92,0% |
+| Variantes: marcas da tela × Holm × BH (q < 0,10) | 7 × 2 × 7 (de 87 testes) |
+| ICC das partidas de um jogador nos torneios | −0,015 (efeito de desenho 1,00) |
+| Partida melhor de 3 × jogo único (Labs, 128 confrontos) | 4,35 pp mais longe de 50% em média |
+Os experimentos e1, e3, e5, e6, e9 e e10 foram refeitos no mesmo dia (`STATISTICAL_INVENTORY_2026-11-06.md`, seção 4); o e2 tem a
+coluna "atual" com vazamento (achado 9). → D-039.
 
 ## Onde estão os scripts dessas medições
 Os experimentos e1–e10 estão no repositório. Os scripts das medições do replay, das mãos e da simulação do modo automático foram

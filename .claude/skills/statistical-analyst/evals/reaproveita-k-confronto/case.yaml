@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: reaproveita-k-confronto
+expected_outcome: |
+  Encontra a medição já feita (auditoria a2 / achado 2) em vez de pesquisar de novo ou refazer do zero; conclui que 12–32 empatam (diferença k16−k24 com faixa contendo 0) e que não vale trocar; cita D-017; não altera o programa.

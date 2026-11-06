@@ -1,0 +1,62 @@
+{
+ "experimento": "a3_efeito_cartas",
+ "quando": "2026-11-06T00:51:08",
+ "semente": 21,
+ "parametros": {
+  "peso": 300.0,
+  "corte": 0.7
+ },
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.05-6"
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "impressao": "02e41a162acc"
+ },
+ "resultado": {
+  "decks": 18,
+  "partidas_teste": 6372,
+  "taxa_real_teste": 57.66,
+  "taxa_esperada_pelos_confrontos": 46.71,
+  "taxa_esperada_confrontos_sem_empates": 51.37,
+  "M2_menos_M1_por_torneio": {
+   "estimativa": -0.0006530687337320647,
+   "baixo": -0.0020217540466056375,
+   "alto": 0.00025593429983621855,
+   "repeticoes": 2000,
+   "grupos": 10,
+   "semente": 21,
+   "provavel": false,
+   "linhas": 6372
+  },
+  "M2_menos_M1_por_jogador": {
+   "estimativa": -0.0006530687337320647,
+   "baixo": -0.001754974537482353,
+   "alto": 0.0003872494156977798,
+   "repeticoes": 2000,
+   "grupos": 1044,
+   "semente": 21,
+   "provavel": false,
+   "linhas": 6372
+  },
+  "M1_menos_M0_por_torneio": {
+   "estimativa": -0.02520871241700428,
+   "baixo": -0.03624709273249945,
+   "alto": -0.00645164538593944,
+   "repeticoes": 2000,
+   "grupos": 10,
+   "semente": 21,
+   "provavel": true,
+   "linhas": 6372
+  }
+ }
+}

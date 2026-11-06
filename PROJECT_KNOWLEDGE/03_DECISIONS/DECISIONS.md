@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 05/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 06/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -95,6 +95,12 @@
   v2026.11.02-7, exp. 10). Ganho de previsão pequeno, mas bem melhor que o método bruto com/sem.
 - **D-031 · Consistência com contas exatas (hipergeométrica), mulligan como condição** (02/11, exp. 1). Não simula; não considera
   efeitos de cartas (piso).
+- **D-039 · Skill "Statistical Analyst" dentro do repositório, em `.claude/skills/statistical-analyst/`** (06/11/2026, pedido do
+  Pedro com autorização para todas as fases). *Por quê:* o repositório é a fonte de verdade (D-026) e a Skill só tem conhecimento,
+  ferramentas e experimentos sem dado pessoal (um teste da própria Skill confere isso). Ela usa as funções do Coletor pela
+  `tools/ponte.py` em vez de copiá-las e traz só contas que o programa não tem. Vai junto para quem atualiza (o atualizador copia o
+  zip inteiro; não faz mal: o programa não lê essa pasta). Achados que pedem mudança no programa ficam como recomendação
+  (`STATISTICAL_AUDIT_2026-11-06.md`, `GAPS_AND_ROADMAP.md`) até o Pedro decidir.
 
 ## Engenharia, distribuição e processo
 - **D-022 · Dependências com teto de versão grande** (`flask<4`, `pillow<14`, `opencv-python<6`...) (02/11). Uma atualização nunca

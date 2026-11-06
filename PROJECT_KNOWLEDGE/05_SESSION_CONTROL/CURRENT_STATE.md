@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-> Atualizado em 05/11/2026, no fim da sessão das épocas de coleção, do "Ver todas" e do descarte no replay (publicadas a 2026.11.05-4 a -6). **Atualize este arquivo no fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
+> Atualizado em 06/11/2026, na sessão da Skill "Statistical Analyst" (inventário dos métodos estatísticos). **Atualize este arquivo no fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
 - **Publicada na `main` do GitHub: 2026.11.05-6** (commit `2600e4c`, 05/11/2026, junto com a -4 e a -5):
@@ -13,7 +13,9 @@
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.05-6 (igual ao GitHub).
+- `main` = 2026.11.05-6 + documentação (`76a2005`, igual ao GitHub).
+- `statistical-analyst` (06/11, a partir da `main`, commit `Skill Statistical Analyst`): a Skill em `.claude/skills/statistical-analyst/`, o inventário e a auditoria em `../03_DECISIONS/` e trechos de
+  `INDEX.md`, `DECISIONS.md`, `EVIDENCE.md`, `IN_PROGRESS.md`, `NEXT_STEPS.md` e aqui. Não muda código do programa.
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.
 
@@ -40,6 +42,11 @@
   biblioteca baixa sozinha; até lá, as cartas dela aparecem como retângulo com o nome.
 
 ## Alertas
+- **Inventário estatístico (06/11):** várias análises usam só as listas do topo dos torneios (viés de seleção), o k = 24 do
+  confronto ajustado foi reconferido e a identificação do deck pelo NB2 foi medida sem vazamento.
+  A auditoria (`../03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md`) confirmou o viés das listas do topo e a mistura de 1 jogo com
+  melhor de 3 em "seu resultado × meta"; mostrou que o k = 24 continua bom, que a reserva pelos ícones **piora** a identificação do
+  deck e que o experimento e2 passou a vazar o teste. **Nada foi mudado no programa**; as recomendações esperam o Pedro.
 - O instalador .exe que existe (fora do GitHub, no computador do Pedro) é da versão **2026.11.02-2**; quem instala por ele se
   atualiza sozinho depois. Não há Release no GitHub.
 - O estudo de um **servidor central para análises coletivas** foi feito numa sessão que foi apagada; só sobrou um resumo
