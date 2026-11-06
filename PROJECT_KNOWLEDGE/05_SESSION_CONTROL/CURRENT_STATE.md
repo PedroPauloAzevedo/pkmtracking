@@ -3,6 +3,10 @@
 > Atualizado em 06/11/2026, na sessão da Skill "Statistical Analyst" (inventário dos métodos estatísticos). **Atualize este arquivo no fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
+- **06/11/2026: publicada a 2026.11.06-2** (depois da 2026.11.06-1, `9c6519b`): deck do adversário sempre pelo NB2 (D-040), marca
+  "incerto" com confiança < 0,6 (D-042) e faixas das telas de torneio com a dependência entre partidas do mesmo jogador (D-041);
+  e2 corrigido. 4 testes OK; marca conferida na tela numa cópia com os dados do Pedro. Detalhes em `../04_IMPLEMENTATIONS/DONE.md`.
+  A rodada de hardening da Skill (06/11) **não** está neste commit: segue sem commit na pasta do projeto.
 - **Publicada na `main` do GitHub: 2026.11.05-6** (commit `2600e4c`, 05/11/2026, junto com a -4 e a -5):
   - 2026.11.05-4 — Biblioteca de cartas não para a atualização inteira por uma carta que o TCGdex não entrega (D-034);
   - 2026.11.05-5 — campo **Época** nas análises (D-036), "Ver todas" e lista de partidas mais rápida (D-037), descarte no replay (D-035);

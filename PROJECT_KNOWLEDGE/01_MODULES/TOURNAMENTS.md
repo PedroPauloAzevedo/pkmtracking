@@ -55,3 +55,9 @@
 ## Testes
 `testes/teste_tracker.py` monta um torneio sintético no formato do Labs e do RK9 e confere meta, matchups e CSV.
 Experimentos: e2 (identificar deck), e3 (matchups), e5/e9 (variantes e ACE SPEC), e6 (uso de cartas), e10 (efeito de cada carta).
+
+## Faixas com a dependência entre partidas (v2026.11.06-2, D-041)
+No Meta (taxa de cada deck, matriz) e no perfil do deck, a faixa de 95% considera que várias partidas de um torneio são do mesmo
+jogador: `analises.dependencia_torneios` calcula o ICC dos resultados por jogador nas partidas da seleção e o número de jogadores de
+cada conta; `efeito_desenho` = 1 + (m − 1)·ICC; `placar(..., efeito)` devolve a faixa mais larga e `efeito_desenho`, mostrado na
+dica da faixa (`taxaHtml`). Taxas iguais. Custo: +0,2 s no `meta()` com os dados do Pedro.

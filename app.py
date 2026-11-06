@@ -857,7 +857,7 @@ def _csv(cabecalho, linhas, nome):
 def exportar_partidas():
     dados = analises.analise_pessoal(config.ler_config()["nick"], jogador=_jogador_pedido())
     campos = ["id", "data", "dono", "eu", "adversario", "resultado", "comecei", "meu_deck", "deck_adv",
-              "premios_eu", "premios_adv", "turnos", "motivo", "primeiro_ko_meu", "mulligan_eu", "tags", "notas"]
+              "premios_eu", "premios_adv", "turnos", "motivo", "primeiro_ko_meu", "mulligan_eu", "tags", "notas", "deck_adv_incerto"]
     return _csv(campos, [[l[c] for c in campos] for l in dados["partidas"]], "minhas_partidas.csv")
 
 

@@ -31,7 +31,9 @@ const S = { status: null, ultimaVista: null, selTorneios: [], top: 0, corte: 32,
 /* ---------------- componentes reutilizáveis ---------------- */
 function taxaHtml(g) {
   if (!g || g.taxa == null) return '<span class="muted">–</span>';
-  return `<span class="wr">${pct(g.taxa)}</span> <span class="ic">${g.ic_baixo != null ? `${fmt(g.ic_baixo, 0)}–${fmt(g.ic_alto, 0)}%` : ''}</span>`;
+  // D-041: nas telas de torneio a faixa já considera que várias partidas são do mesmo jogador (efeito_desenho)
+  const dica = g.efeito_desenho ? ` title="Faixa provável de 95%. Considera que várias partidas são do mesmo jogador num torneio: cada ${fmt(g.efeito_desenho, 2)} partidas valem como 1 independente."` : '';
+  return `<span class="wr">${pct(g.taxa)}</span> <span class="ic"${dica}>${g.ic_baixo != null ? `${fmt(g.ic_baixo, 0)}–${fmt(g.ic_alto, 0)}%` : ''}</span>`;
 }
 function barraDivergente(taxa) {
   if (taxa == null) return '<div class="div-barra"></div>';
@@ -285,6 +287,9 @@ function icones(v) {
   return ics.map(i => `<img class="ico" src="/icone/${encodeURIComponent(i)}" alt="" loading="lazy">`).join('');
 }
 const deckHtml = v => v ? `<span class="cel-carta">${icones(v)}${esc(nomeDeck(v))}</span>` : '<span class="muted">—</span>';
+// D-042: deck do adversário adivinhado com pouca certeza (poucas cartas vistas ou cartas de vários decks)
+const TITULO_INCERTO = 'Deck adivinhado com pouca certeza: o adversário mostrou poucas cartas ou cartas usadas por vários decks. Nesses casos o palpite acerta só cerca de 1 em cada 3 vezes. Se você sabe o deck, escolha-o na partida.';
+const incertoHtml = l => l && l.deck_adv_incerto ? ` <span class="pill n" title="${TITULO_INCERTO}">incerto</span>` : '';
 function seletorDeck(id, valor, palpite) {
   const conhecido = !valor || S.arq[valor];
   return `<div class="row" style="flex-wrap:nowrap;gap:6px;min-width:0"><span id="${id}-ico" class="cel-carta">${icones(valor || palpite)}</span>

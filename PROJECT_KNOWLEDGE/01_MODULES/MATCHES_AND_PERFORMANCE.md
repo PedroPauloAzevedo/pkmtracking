@@ -39,6 +39,12 @@ aberturas (cartas jogadas nos 2 primeiros turnos) **separadas por quem começou*
 turno em que perdeu o controle), ritmo (turno do 1º ataque e do 1º prêmio) e cartas jogadas (taxa quando saiu × não saiu).
 Filtro Todas / Começando / Indo em segundo. Mínimo de 3 partidas por item.
 
+## Deck do adversário "incerto" (v2026.11.06-2, D-042)
+`analises.visao` devolve `deck_adv_incerto` quando o deck do adversário foi adivinhado pelo NB2 com confiança abaixo de
+`decks.LIMIAR_INCERTO` (0,6); o painel mostra a marca "incerto" na lista de partidas e na partida (`incertoHtml`, `base.js`), e o
+CSV de partidas tem a coluna no fim. Deck escolhido à mão nunca é incerto. As estatísticas não tiram essas partidas (decisão do Pedro:
+só a marca).
+
 ## Desempenho do programa
 `analise_pessoal` guarda em memória a lista de partidas (`banco.marcar_mudanca` avisa quando muda). A identificação do deck de
 cada partida usa contas sobre as listas dos torneios (`decks._modelo_nb`, `_assinaturas`, `arquetipos`) que ficam guardadas até os
