@@ -79,8 +79,11 @@ jogada (todas as outras compras de quem exportou têm nome).
   Acontece com Cursed Blast (Dusclops/Dusknoir), Phantom Dive (Dragapult ex, contadores no Banco) e outros.
   Quando o dono escrito é o próprio jogador, o programa decide assim: (1) se esse Pokémon é nocauteado logo depois, o dono é quem
   o perdeu; (2) se veio de um ataque/habilidade do jogador e o adversário tem um Pokémon com esse nome, é do adversário;
-  (3) senão vale o escrito — é o caso do Estádio **Risky Ruins** (`Risky Ruins was activated.` / `- Bia put 2 damage counters on
-  Bia's Dreepy.` no Básico que a própria Bia acabou de jogar).
+  (3) senão vale o escrito.
+- **Estádio Risky Ruins** (`Risky Ruins was activated.` + `- X put 2 damage counters on <dono do Estádio>'s Y.`): os contadores vão
+  no Básico Y que **X** acabou de pôr no Banco, mas o jogo escreve como dono **quem jogou o Estádio**. Ex.: com o Risky Ruins da
+  Ana, `Bia played Budew to the Bench.` → `- Bia put 2 damage counters on Ana's Budew.` — o Budew é da Bia. O dono é sempre X
+  (visto em todas as ocorrências de uma partida real de 06/11/2026; corrigido no replay, D-045).
 - `- Ana put a damage counter on Ana's Latias ex.` = **1** contador ("a", não número).
 - `- Ana moved 3 damage counters from Ana's Munkidori to Ana's Dhelmise.` (Adrena-Brain do Munkidori): tira de um Pokémon do
   jogador e põe num do **adversário**; o dono do destino vem errado do mesmo jeito.

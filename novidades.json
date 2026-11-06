@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.06-3",
+    "data": "2026-11-06",
+    "titulo": "Replay: dano do Estádio Risky Ruins no Pokémon certo",
+    "mudancas": [
+      "Correção no replay: com o Estádio Risky Ruins em jogo, os 2 contadores de dano de um Pokémon Básico posto no Banco às vezes iam para o Pokémon de mesmo nome do outro jogador. O jogo escreve no log o nome de quem jogou o Estádio como se fosse o dono do Pokémon; agora o replay põe o dano em quem acabou de jogar o Básico. Vale também para as partidas antigas."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.06-3\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra o replay de qualquer partida com Risky Ruins."
+    ]
+  },
+  {
     "versao": "2026.11.06-2",
     "data": "2026-11-06",
     "titulo": "Deck do adversário mais certeiro e aviso quando ele é só um palpite",

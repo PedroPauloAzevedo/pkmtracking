@@ -65,6 +65,10 @@
   do irmão que continuava em jogo. O contexto resolve: no recuo a frase vem em sublinha; depois do nocaute, em linha solta.
   Medição em `EVIDENCE.md` (descartes que não tiravam nada: 41 → 0; tirados do irmão em jogo: 2 → 0; ataques com Energia de
   menos: 78 → 73, nenhum caso novo).
+- **D-045 · Replay: os contadores do Risky Ruins vão para o Básico de quem o jogou, não para o do dono do Estádio** (06/11/2026,
+  v2026.11.06-3; erro visto pelo Pedro num replay com dois Budew). *Por quê:* depois de `Risky Ruins was activated.` o jogo escreve
+  `X put 2 damage counters on <dono do Estádio>'s Y`; o Y é sempre o Básico que X acabou de pôr no Banco. O replay confiava no dono
+  escrito quando ele era outro jogador. Medição em `EVIDENCE.md` (55 de 145 linhas com o dono trocado; estados impossíveis 1742 → 1660).
 - **D-036 · Análises por época de coleção: no TCG Live a época começa na véspera do lançamento, às 10h do Pacífico; nos torneios,
   na segunda sexta-feira depois do lançamento** (05/11/2026, v2026.11.05-5; pedido do Pedro). *Por quê:* cada coleção nova pode
   mudar o meta. O jogo libera a coleção um dia antes das lojas, às 10h do horário do Pacífico (visto nas coleções recentes); a

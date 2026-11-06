@@ -317,7 +317,12 @@ def gerar(texto, regras, _correcoes=None):
         (ex.: Cursed Blast do Dusclops, Phantom Dive do Dragapult ex). Quem é o dono de verdade:
           1. se Y é nocauteado logo em seguida, o dono é quem perdeu o Pokémon;
           2. se veio de um ataque ou habilidade de X ("X's ... used ...") e o adversário tem um Y, é do adversário;
-          3. senão, vale o que está escrito (ex.: Estádio Risky Ruins pondo contadores no Básico que X acabou de jogar)."""
+          3. senão, vale o que está escrito.
+        Exceção: o Estádio Risky Ruins ("Risky Ruins was activated.") põe contadores no Básico que X acabou de jogar no Banco,
+        e o jogo escreve como dono quem pôs o ESTÁDIO em jogo (ex.: "Bia put 2 damage counters on Ana's Budew." logo depois de
+        "Bia played Budew to the Bench.", com o Risky Ruins da Ana). O dono é sempre X."""
+        if ultima_principal == "Risky Ruins was activated.":
+            return j
         if dono_escrito != j:
             return dono_escrito
         for seguinte in linhas[n_linha:n_linha + 6]:
