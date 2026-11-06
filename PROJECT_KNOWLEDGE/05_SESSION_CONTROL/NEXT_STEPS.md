@@ -3,7 +3,7 @@
 > Atualizado em 06/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
 > **Atualize este arquivo no fim de toda sessão.** Sempre pergunte ao Pedro antes de começar algo grande.
 
-0. **Revisar e juntar o PR do ramo `icones-painel`** (Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base
+0. ~~**Revisar e juntar o PR do ramo `icones-painel`**~~ **Feito em 06/11 (PR #1, `d0d0a58`).** (Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base
    estratégica, ferramentas P1–P7 não aplicadas). Só a Skill e documentação; nenhum código do Coletor muda além do que já está na
    `main` (2026.11.06-1 e -2).
 1. **Skill "Statistical Analyst" (publicada em 06/11, `49664da`):** o Pedro escolhe quais recomendações da auditoria viram trabalho — sugestão de ordem em
@@ -43,7 +43,7 @@
 - **Skill — ferramentas estratégicas prontas (06/11, sem commit, NÃO aplicadas por decisão do Pedro):** `tools/estrategia.py` e
   `experiments/p_estrategia.py` (P1–P7, com trava: P1 50, P3 100, demais 300 partidas). Rodar quando houver amostra suficiente.
 
-**Acréscimo de 06/11/2026 (preparação para dois desenvolvedores; ramo `docs/preparar-dois-devs`, por Pull Request):**
+**Acréscimo de 06/11/2026 (preparação para dois desenvolvedores; juntado pelo PR #2):**
 - PR #2 juntado na `main` (`66440fe`). Pedro: configurar o GitHub (`00_CENTRAL/COLLABORATION.md`, seção 9) e convidar o segundo dev.
 - Segundo dev: primeiro dia (`COLLABORATION.md`, seção 2) e o item **M1** do BACKLOG (conferir o básico no Mac), que diz quais dos
   itens M2–M7 são reais.
