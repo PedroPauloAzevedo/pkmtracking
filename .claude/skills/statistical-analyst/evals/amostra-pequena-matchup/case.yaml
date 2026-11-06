@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: amostra-pequena-matchup
+expected_outcome: |
+  Calcula a faixa de Wilson de 8/12 (~39–86%) com a função do programa, diz que a amostra não confirma nada, aponta que o número do torneio é de partida melhor de 3 e precisa ser convertido para jogo único (70% por partida ≈ 63% por jogo), em linguagem simples.

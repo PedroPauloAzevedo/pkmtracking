@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: c-amostra-insuficiente
+expected_outcome: |
+  Cenário C (amostra insuficiente), rodada de 06/11/2026. Faixas de Wilson: 7/9 ≈ [45; 94]%, 3/6 ≈ [19; 81]% (analises.wilson); faixas se sobrepõem. Diferença não é clara (p ≈ 0,26) — não dá para concluir que é melhor contra Dragapult nem que é "favorável". Diz quantos jogos seriam precisos (ordem de dezenas a ~100 por confronto para ±10 pp) ou usa o confronto ajustado/meta como referência. Nota que Ladder é jogo único e torneio é melhor de 3 (achado 7) ao comparar com o meta; não divide ainda mais a amostra.

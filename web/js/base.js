@@ -211,6 +211,9 @@ async function atualizarStatus() {
     S.avisoVisto = st.aviso ? st.aviso.id : null;
     if (aba() === 'torneios') { atualizarProgresso(st.importacao); atualizarSync(st.sincronizacao); }
     const bd = $('#badge-revisao'); bd.hidden = !st.linhas_pendentes; bd.textContent = st.linhas_pendentes || '';
+    // cadastro de decks refeito no servidor (ex.: ícones buscados ao abrir): busca de novo e redesenha a tela
+    if (S.arqVersao !== undefined && st.versao_arquetipos !== S.arqVersao) { S.arqVersao = st.versao_arquetipos; await carregarArquetipos(); render(); }
+    S.arqVersao = st.versao_arquetipos;
     if (anterior && anterior.importacao.ativo && !st.importacao.ativo) {
       await carregarTorneios();
       toast(st.importacao.erro && !st.importacao.resumo ? 'Importação falhou' : 'Importação concluída');

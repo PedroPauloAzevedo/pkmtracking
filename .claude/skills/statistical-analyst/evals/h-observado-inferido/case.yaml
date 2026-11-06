@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: h-observado-inferido
+expected_outcome: |
+  Cenário H (observado × inferido × desconhecido), rodada de 06/11/2026. Prêmios pegos = OBSERVADO no log ("took a Prize card"; replay conferido 253/253). Mão do adversário no turno 4 = DESCONHECIDO (só o que foi revelado; o replay estima/pouco observável); não inventa. Deck do adversário = INFERIDO (NB2/ícones; confiança e limites). Rare Candy na mão inicial = PROBABILIDADE do modelo (hipergeométrica dada a lista), não observado (a não ser que o log mostre a mão do próprio jogador — aí observado para o próprio lado).

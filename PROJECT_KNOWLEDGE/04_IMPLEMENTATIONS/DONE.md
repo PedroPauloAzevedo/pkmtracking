@@ -1,11 +1,13 @@
 # Concluído: histórico técnico por versão
 
-> Atualizado em 05/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
+> Atualizado em 06/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
 > `git log`. Aqui fica o que **não** está em nenhum dos dois: o porquê técnico, nomes no código e o que foi testado.
 > Mais recente primeiro. Versões publicadas na `main` de `PedroPauloAzevedo/pkmtracking`.
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| 2026.11.06-1 | 06/11/2026 | (sem commit) | Ícones dos decks aparecem sem recarregar o painel |
+| (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
 | 2026.11.05-6 | 05/11/2026 | `2600e4c` | Partidas: filtro do deck do adversário; ícones dos decks de volta |
 | 2026.11.05-5 | 05/11/2026 | `2600e4c` | Épocas de coleção nas análises, "Ver todas" consertado e replay com o descarte certo |
 | 2026.11.05-4 | 05/11/2026 | `2600e4c` | Biblioteca de cartas: carta que o TCGdex não entrega não para a atualização |
@@ -22,6 +24,19 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.06-1 — Ícones sem recarregar (erro visto pelo Pedro)
+- `decks.versao_arquetipos` (aumenta em `salvar_arquetipos`), em `/api/status`; `atualizarStatus` (base.js) busca de novo os decks
+  e redesenha quando muda. Teste: `teste_tracker.py` seção 8. Conferido numa cópia com o cadastro zerado: 0 ícones ao abrir, 214
+  sem recarregar uns segundos depois. Os 4 testes OK.
+
+## (Skill) Statistical Analyst — 06/11/2026, `49664da`
+- `.claude/skills/statistical-analyst/` (D-039): `SKILL.md`; `knowledge/` (matriz dos métodos com classe A–F e evidência, fórmulas,
+  modelo do jogo, lacunas G0–G15, registro de pesquisas); `tools/ponte.py` (usa o `tracker` de uma cópia) e `tools/sa_tools.py`
+  (log-loss, calibração, bootstrap agrupado, ICC, Holm/BH, melhor de 3, `registrar`); `experiments/a1..a6` com resultados;
+  `tests/` (20 testes) e `evals/` (4 cenários: 16/16 com a Skill, 12/16 sem).
+- `03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md` e `STATISTICAL_AUDIT_2026-11-06.md` (10 achados). Nenhum código do programa mudou;
+  as recomendações esperam o Pedro (`GAPS_AND_ROADMAP.md`).
 
 ## 2026.11.05-6 — Filtros de deck em Partidas e ícones dos decks (pedidos do Pedro)
 - `web/js/partidas.js`: `S.filtroPartidas.adv`, campos "Deck do jogador" e "Deck do adversário" (opções em ordem de `nomeDeck`).

@@ -1,0 +1,140 @@
+{
+ "experimento": "a4_identificacao",
+ "quando": "2026-11-06T00:52:12",
+ "semente": 7,
+ "parametros": {
+  "corte": 0.7,
+  "amostra": 1500
+ },
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.05-6"
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "impressao": "02e41a162acc"
+ },
+ "resultado": {
+  "por_cartas": {
+   "2": {
+    "icones": 19.0,
+    "nb2": 63.6,
+    "programa": 51.2,
+    "nb2_decide": 62.8,
+    "acerto_quando_decide": 79.5
+   },
+   "3": {
+    "icones": 35.3,
+    "nb2": 74.9,
+    "programa": 69.7,
+    "nb2_decide": 83.2,
+    "acerto_quando_decide": 82.8
+   },
+   "5": {
+    "icones": 52.3,
+    "nb2": 84.4,
+    "programa": 83.3,
+    "nb2_decide": 94.7,
+    "acerto_quando_decide": 87.5
+   },
+   "8": {
+    "icones": 69.4,
+    "nb2": 89.8,
+    "programa": 89.8,
+    "nb2_decide": 98.4,
+    "acerto_quando_decide": 90.9
+   },
+   "12": {
+    "icones": 74.4,
+    "nb2": 91.8,
+    "programa": 92.0,
+    "nb2_decide": 99.4,
+    "acerto_quando_decide": 92.3
+   }
+  },
+  "teste": 1408,
+  "calibracao_nb2": {
+   "faixas": [
+    {
+     "de": 0.0,
+     "ate": 0.1,
+     "n": 3,
+     "previsto": 0.07294633473408406,
+     "real": 0.0
+    },
+    {
+     "de": 0.1,
+     "ate": 0.2,
+     "n": 57,
+     "previsto": 0.16518185934130128,
+     "real": 0.12280701754385964
+    },
+    {
+     "de": 0.2,
+     "ate": 0.3,
+     "n": 211,
+     "previsto": 0.24864658354186556,
+     "real": 0.24170616113744076
+    },
+    {
+     "de": 0.3,
+     "ate": 0.4,
+     "n": 241,
+     "previsto": 0.35189782161478794,
+     "real": 0.37344398340248963
+    },
+    {
+     "de": 0.4,
+     "ate": 0.5,
+     "n": 355,
+     "previsto": 0.4575299728282402,
+     "real": 0.4422535211267606
+    },
+    {
+     "de": 0.5,
+     "ate": 0.6,
+     "n": 350,
+     "previsto": 0.5515121762271444,
+     "real": 0.4714285714285714
+    },
+    {
+     "de": 0.6,
+     "ate": 0.7,
+     "n": 433,
+     "previsto": 0.6541908075301809,
+     "real": 0.6443418013856813
+    },
+    {
+     "de": 0.7,
+     "ate": 0.8,
+     "n": 411,
+     "previsto": 0.7470650657165242,
+     "real": 0.7128953771289538
+    },
+    {
+     "de": 0.8,
+     "ate": 0.9,
+     "n": 632,
+     "previsto": 0.853560232487532,
+     "real": 0.7958860759493671
+    },
+    {
+     "de": 0.9,
+     "ate": 1.0,
+     "n": 4347,
+     "previsto": 0.9822608906721714,
+     "real": 0.9546813894639982
+    }
+   ],
+   "ece": 0.030879287143815465
+  }
+ }
+}

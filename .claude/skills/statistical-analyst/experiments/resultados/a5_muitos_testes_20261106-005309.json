@@ -1,0 +1,142 @@
+{
+ "experimento": "a5_muitos_testes",
+ "quando": "2026-11-06T00:53:09",
+ "semente": null,
+ "parametros": {
+  "decks": 12
+ },
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.05-6"
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "impressao": "02e41a162acc"
+ },
+ "resultado": {
+  "variantes": {
+   "dragapult-ex": {
+    "testes": 8,
+    "marcadas": 1
+   },
+   "basic-box-m": {
+    "testes": 9,
+    "marcadas": 0
+   },
+   "n-zoroark": {
+    "testes": 11,
+    "marcadas": 0
+   },
+   "slowking-scr": {
+    "testes": 8,
+    "marcadas": 0
+   },
+   "dhelmise-pbl": {
+    "testes": 11,
+    "marcadas": 0
+   },
+   "alakazam-dudunsparce": {
+    "testes": 5,
+    "marcadas": 1
+   },
+   "ogerpon-meganium-hydrapple": {
+    "testes": 7,
+    "marcadas": 2
+   },
+   "dragapult-blaziken": {
+    "testes": 4,
+    "marcadas": 2
+   },
+   "dragapult-dusknoir": {
+    "testes": 8,
+    "marcadas": 0
+   },
+   "festival-lead": {
+    "testes": 3,
+    "marcadas": 0
+   },
+   "mega-excadrill-ex": {
+    "testes": 9,
+    "marcadas": 0
+   },
+   "alakazam-dusknoir": {
+    "testes": 4,
+    "marcadas": 1
+   }
+  },
+  "regressao": {
+   "dragapult-ex": {
+    "cartas": 38,
+    "provaveis": 0
+   },
+   "basic-box-m": {
+    "cartas": 50,
+    "provaveis": 0
+   },
+   "n-zoroark": {
+    "cartas": 40,
+    "provaveis": 0
+   },
+   "slowking-scr": {
+    "cartas": 38,
+    "provaveis": 0
+   },
+   "dhelmise-pbl": {
+    "cartas": 39,
+    "provaveis": 0
+   },
+   "alakazam-dudunsparce": {
+    "cartas": 41,
+    "provaveis": 0
+   },
+   "ogerpon-meganium-hydrapple": {
+    "cartas": 21,
+    "provaveis": 0
+   },
+   "dragapult-blaziken": {
+    "cartas": 16,
+    "provaveis": 0
+   },
+   "dragapult-dusknoir": {
+    "cartas": 33,
+    "provaveis": 0
+   },
+   "festival-lead": {
+    "cartas": 27,
+    "provaveis": 0
+   },
+   "mega-excadrill-ex": {
+    "cartas": 32,
+    "provaveis": 0
+   },
+   "alakazam-dusknoir": {
+    "cartas": 17,
+    "provaveis": 0
+   }
+  },
+  "resumo_variantes": {
+   "testes": 87,
+   "marcadas_pela_tela": 7,
+   "p_abaixo_005": 12,
+   "esperadas_por_acaso": 4.4,
+   "sobrevivem_holm": 2,
+   "sobrevivem_bh_q010": 7
+  },
+  "resumo_regressao": {
+   "testes": 392,
+   "marcadas_pela_tela": 0,
+   "p_abaixo_005": 0,
+   "esperadas_por_acaso": 19.6,
+   "sobrevivem_holm": 0,
+   "sobrevivem_bh_q010": 0
+  }
+ }
+}

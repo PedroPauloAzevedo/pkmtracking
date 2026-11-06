@@ -1,0 +1,64 @@
+{
+ "experimento": "a6_melhor_de_3",
+ "quando": "2026-11-06T00:53:39",
+ "semente": null,
+ "parametros": {},
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.05-6"
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "impressao": "02e41a162acc"
+ },
+ "resultado": {
+  "confrontos": 128,
+  "afastamento_medio_pp": 4.35,
+  "maior": [
+   {
+    "a": "dhelmise-pbl",
+    "b": "n-zoroark",
+    "partida": 12.3,
+    "jogo": 21.9
+   },
+   {
+    "a": "n-zoroark",
+    "b": "dhelmise-pbl",
+    "partida": 87.7,
+    "jogo": 78.1
+   },
+   {
+    "a": "festival-lead",
+    "b": "crustle-dri",
+    "partida": 85.1,
+    "jogo": 75.7
+   },
+   {
+    "a": "crustle-dri",
+    "b": "festival-lead",
+    "partida": 14.9,
+    "jogo": 24.3
+   },
+   {
+    "a": "mega-excadrill-ex",
+    "b": "crustle-dri",
+    "partida": 92.5,
+    "jogo": 83.2
+   }
+  ],
+  "exemplos_formula": {
+   "45%": 42.5,
+   "55%": 57.5,
+   "60%": 64.8,
+   "65%": 71.8
+  }
+ }
+}

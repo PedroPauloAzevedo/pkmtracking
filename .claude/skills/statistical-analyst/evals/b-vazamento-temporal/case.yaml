@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: b-vazamento-temporal
+expected_outcome: |
+  Cenário B (vazamento temporal), rodada de 06/11/2026. Identifica vazamento: as listas de teste estão no treino (e sorteio aleatório mistura torneios/épocas). Exige separação no tempo por torneio, com o modelo montado só com o treino (como a4/a8; o e2 tem o mesmo problema — achado 9). Dá o número sem vazamento: ~92% com 12 cartas sorteadas (a4) e/ou ~90–92% com cartas vistas até T6–T8 (a8); diz que cartas sorteadas ≠ vistas. Não aceita os 95% como "o programa acerta 95%"; diz o que mais distorce (classes desbalanceadas, acerto por deck).

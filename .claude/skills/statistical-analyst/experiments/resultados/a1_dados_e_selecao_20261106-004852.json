@@ -1,0 +1,227 @@
+{
+ "experimento": "a1_dados_e_selecao",
+ "quando": "2026-11-06T00:48:52",
+ "semente": null,
+ "parametros": {},
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.05-6"
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "impressao": "02e41a162acc"
+ },
+ "resultado": {
+  "selecao": {
+   "labs/sem lista": {
+    "jogadores": 2625,
+    "partidas": 29380,
+    "taxa": 50.3
+   },
+   "labs/com lista": {
+    "jogadores": 1983,
+    "partidas": 25239,
+    "taxa": 61.9
+   },
+   "online/sem lista": {
+    "jogadores": 1807,
+    "partidas": 5751,
+    "taxa": 27.9
+   },
+   "online/com lista": {
+    "jogadores": 3712,
+    "partidas": 21402,
+    "taxa": 52.1
+   }
+  },
+  "selecao_por_deck": {
+   "dragapult-ex": {
+    "todos": 55.1,
+    "com_lista": 60.2,
+    "n_todos": 16105,
+    "n_com": 9231
+   },
+   "basic-box-m": {
+    "todos": 54.9,
+    "com_lista": 59.9,
+    "n_todos": 6508,
+    "n_com": 3730
+   },
+   "n-zoroark": {
+    "todos": 53.6,
+    "com_lista": 57.6,
+    "n_todos": 5551,
+    "n_com": 3321
+   },
+   "slowking-scr": {
+    "todos": 53.6,
+    "com_lista": 58.2,
+    "n_todos": 5150,
+    "n_com": 2703
+   },
+   "dragapult-blaziken": {
+    "todos": 52.1,
+    "com_lista": 57.3,
+    "n_todos": 3848,
+    "n_com": 1904
+   },
+   "dhelmise-pbl": {
+    "todos": 52.3,
+    "com_lista": 56.7,
+    "n_todos": 3694,
+    "n_com": 2150
+   },
+   "dragapult-dusknoir": {
+    "todos": 52.9,
+    "com_lista": 58.6,
+    "n_todos": 3652,
+    "n_com": 1683
+   },
+   "alakazam-dudunsparce": {
+    "todos": 52.7,
+    "com_lista": 58.7,
+    "n_todos": 3592,
+    "n_com": 1968
+   },
+   "ogerpon-meganium-hydrapple": {
+    "todos": 54.1,
+    "com_lista": 58.7,
+    "n_todos": 3094,
+    "n_com": 1887
+   },
+   "festival-lead": {
+    "todos": 55.1,
+    "com_lista": 60.1,
+    "n_todos": 2800,
+    "n_com": 1638
+   },
+   "mega-excadrill-ex": {
+    "todos": 51.7,
+    "com_lista": 56.6,
+    "n_todos": 2577,
+    "n_com": 1334
+   },
+   "crustle-dri": {
+    "todos": 54.7,
+    "com_lista": 59.1,
+    "n_todos": 2335,
+    "n_com": 1368
+   }
+  },
+  "resultados_por_fonte": {
+   "labs": {
+    "W": 19942,
+    "sem_adversario": 16,
+    "L": 7719,
+    "T": 4232
+   },
+   "online": {
+    "W": 6333,
+    "sem_adversario": 0,
+    "L": 6303,
+    "T": 122
+   }
+  },
+  "por_rodada": {
+   "1": {
+    "W": 3277,
+    "L": 2188,
+    "T": 505
+   },
+   "2": {
+    "W": 3226,
+    "L": 2119,
+    "T": 490
+   },
+   "3": {
+    "W": 2975,
+    "T": 428,
+    "L": 2005
+   },
+   "4": {
+    "W": 2739,
+    "L": 1705,
+    "T": 427
+   },
+   "5": {
+    "L": 1483,
+    "T": 376,
+    "W": 2481
+   },
+   "6": {
+    "L": 1218,
+    "W": 2275,
+    "T": 335
+   },
+   "7": {
+    "L": 945,
+    "W": 2055,
+    "T": 344
+   },
+   "8": {
+    "L": 723,
+    "W": 1745,
+    "T": 486
+   },
+   "9": {
+    "L": 462,
+    "W": 1033,
+    "T": 221
+   },
+   "10": {
+    "L": 344,
+    "W": 944,
+    "T": 169
+   },
+   "11": {
+    "L": 307,
+    "W": 931,
+    "T": 171
+   },
+   "12": {
+    "L": 231,
+    "W": 979,
+    "T": 160
+   },
+   "13": {
+    "L": 169,
+    "W": 860,
+    "T": 136
+   },
+   "14": {
+    "L": 118,
+    "T": 106,
+    "W": 690
+   },
+   "15": {
+    "L": 3,
+    "W": 32
+   },
+   "16": {
+    "L": 1,
+    "W": 21
+   },
+   "17": {
+    "L": 1,
+    "W": 9
+   },
+   "18": {
+    "W": 3
+   }
+  },
+  "dependencia": {
+   "jogadores": 5513,
+   "partidas_por_jogador": 7.6,
+   "icc": -0.0152,
+   "efeito_desenho": 1.0
+  }
+ }
+}

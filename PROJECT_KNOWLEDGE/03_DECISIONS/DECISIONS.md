@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 05/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 06/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -82,7 +82,9 @@
 - **D-038 · Ícones dos decks: ler a coluna nova do Labs e nunca apagar um ícone gravado** (05/11/2026, v2026.11.05-6; ícones
   sumidos em Partidas). *Por quê:* a página de decks do Labs passou a pôr o ícone fora do link do deck; o programa lia vazio e
   regravava o cadastro, apagando 122 dos 134 ícones. Ler os dois formatos e não aceitar lista vazia por cima evita que a próxima
-  mudança de layout apague tudo de novo; refazer a lista ao abrir conserta quem já perdeu os ícones.
+  mudança de layout apague tudo de novo; refazer a lista ao abrir conserta quem já perdeu os ícones. Em 2026.11.06-1 o painel
+  passou a buscar a lista de novo quando ela muda no servidor (`versao_arquetipos` em `/api/status`): no Coletor do Pedro o cadastro
+  foi refeito 19 s depois de abrir, mas a janela já tinha carregado a lista sem ícones.
 
 ## Análises e algoritmos
 - **D-017 · Melhoria de algoritmo só com medição contra o atual, nos mesmos dados** (até 02/11; firme). Manter a versão antiga quando
@@ -95,6 +97,25 @@
   v2026.11.02-7, exp. 10). Ganho de previsão pequeno, mas bem melhor que o método bruto com/sem.
 - **D-031 · Consistência com contas exatas (hipergeométrica), mulligan como condição** (02/11, exp. 1). Não simula; não considera
   efeitos de cartas (piso).
+- **D-039 · Skill "Statistical Analyst" dentro do repositório, em `.claude/skills/statistical-analyst/`** (06/11/2026, pedido do
+  Pedro com autorização para todas as fases). *Por quê:* o repositório é a fonte de verdade (D-026) e a Skill só tem conhecimento,
+  ferramentas e experimentos sem dado pessoal (um teste da própria Skill confere isso). Ela usa as funções do Coletor pela
+  `tools/ponte.py` em vez de copiá-las e traz só contas que o programa não tem. Vai junto para quem atualiza (o atualizador copia o
+  zip inteiro; não faz mal: o programa não lê essa pasta). Achados que pedem mudança no programa ficam como recomendação
+  (`STATISTICAL_AUDIT_2026-11-06.md`, `GAPS_AND_ROADMAP.md`) até o Pedro decidir.
+- **D-040 · Identificação do deck: NB2 sempre que houver modelo; ícones só sem modelo** (06/11/2026, decisão do Pedro; **publicado na 2026.11.06-2,
+  `101da5f`**). *Por quê:* a8 — com cartas vistas realistas e sem vazamento, o NB2 acerta mais nos turnos 1–2 (+5,9 e +1,7 pp).
+  *Custo aceito:* decks raros pioram (F1 macro 0,53 × 0,58 no turno 2). Muda D-019. Implementar com a medição do a8 refeita na versão
+  nova (D-017) e corrigir o e2 junto.
+- **D-041 · Faixas das telas de torneio (Meta, Matchups) com a dependência entre partidas do mesmo jogador** (06/11/2026, decisão do
+  Pedro; **publicado na 2026.11.06-2, `101da5f`**). *Por quê:* a7 — ICC de todos os jogadores +0,063;
+  *medido depois no a11:* nas partidas das telas o ICC é 0,015 e as faixas ficam só ~2% mais largas (cobertura 93,1% → 95,3%). Não muda nenhuma porcentagem, só a largura das faixas e as marcas de "diferença provável". Antes de implementar, medir
+  quantas marcas mudam e escolher entre fator fixo e cálculo por deck.
+- **D-042 · Deck do adversário marcado como "incerto" quando a confiança é baixa** (06/11/2026, decisão do Pedro; **publicado na 2026.11.06-2,
+  `101da5f`**). *Por quê:* a8 — a confiança do NB2 é exagerada (inclinação 0,56) e com 1–2 cartas vistas o acerto é ~60%. O
+  limiar do "incerto" sai de medição (curva de acerto por confiança do a8), não de chute.
+- **Proteção da instalação real na ponte da Skill** (06/11/2026, decisão do Pedro; feito): a ponte também lê
+  `~/.sa_pastas_protegidas`, arquivo pessoal fora do repositório (`tools/ponte.py`; teste em `tests/test_ponte.py`).
 
 ## Engenharia, distribuição e processo
 - **D-022 · Dependências com teto de versão grande** (`flask<4`, `pillow<14`, `opencv-python<6`...) (02/11). Uma atualização nunca

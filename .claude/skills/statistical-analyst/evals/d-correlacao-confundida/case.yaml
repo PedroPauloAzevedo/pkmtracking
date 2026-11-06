@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: d-correlacao-confundida
+expected_outcome: |
+  Cenário D (correlação confundida), rodada de 06/11/2026. Associação ≠ causa (observacional; D-021): quem joga 2 pode ser outro deck/jogador/época. Listas só do topo (achado 1): as taxas com lista são infladas e selecionadas pelo resultado. Cita a regressão/efeito das cartas: nenhuma carta com efeito claro (0 de 392; sem ganho sobre o deck sozinho, a3). Recomendação prudente: não decidir pela tela; se quiser testar, comparação controlada (mesmo deck, adversário, faixa) e/ou mais dados.

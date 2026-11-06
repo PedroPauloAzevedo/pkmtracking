@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-> Atualizado em 05/11/2026, no fim da sessão das épocas de coleção, do "Ver todas" e do descarte no replay (publicadas a 2026.11.05-4 a -6). **Atualize este arquivo no fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
+> Atualizado em 06/11/2026, na sessão da Skill "Statistical Analyst" (inventário dos métodos estatísticos). **Atualize este arquivo no fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
 - **Publicada na `main` do GitHub: 2026.11.05-6** (commit `2600e4c`, 05/11/2026, junto com a -4 e a -5):
@@ -8,12 +8,18 @@
   - 2026.11.05-5 — campo **Época** nas análises (D-036), "Ver todas" e lista de partidas mais rápida (D-037), descarte no replay (D-035);
   - 2026.11.05-6 — filtros "Deck do jogador" e "Deck do adversário" em Partidas; ícones dos decks de volta (D-038).
   Histórico técnico em `../04_IMPLEMENTATIONS/DONE.md`.
-- O Coletor do Pedro estava na 2026.11.05-3 às 19:55 de 05/11; o aviso de versão nova deve aparecer para ele e para os amigos.
+- O Coletor do Pedro está na 2026.11.05-6 desde 06/11 00:33. O cadastro de decks dele foi refeito com os ícones 19 s depois, mas a
+  janela do painel só mostra os ícones depois de recarregar (F5).
+- **Publicada em 06/11: 2026.11.06-1** (commit `9c6519b`, a partir do worktree `publica-2026.11.06-1`): o painel busca de novo
+  nomes e ícones dos decks quando o cadastro muda no servidor (`versao_arquetipos` em `/api/status`). 4 testes OK.
 - O repositório `PedroPauloAzevedo/pkmtracking` é **público** e não tem Releases.
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.05-6 (igual ao GitHub).
+- `main` = 2026.11.06-1 (`9c6519b`) + Skill "Statistical Analyst" (igual ao GitHub).
+- `icones-painel` (base `76a2005`, ramo atual desta pasta, **sem commit**): o mesmo código da 2026.11.06-1 (já publicado) e o
+  trabalho do hardening da Skill, sem commit. Antes de um commit daqui, trazer a `main` nova.
+- `statistical-analyst`: publicado na `main` em 06/11 (`49664da`).
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.
 
@@ -40,6 +46,11 @@
   biblioteca baixa sozinha; até lá, as cartas dela aparecem como retângulo com o nome.
 
 ## Alertas
+- **Inventário estatístico (06/11):** várias análises usam só as listas do topo dos torneios (viés de seleção), o k = 24 do
+  confronto ajustado foi reconferido e a identificação do deck pelo NB2 foi medida sem vazamento.
+  A auditoria (`../03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md`) confirmou o viés das listas do topo e a mistura de 1 jogo com
+  melhor de 3 em "seu resultado × meta"; mostrou que o k = 24 continua bom, que a reserva pelos ícones **piora** a identificação do
+  deck e que o experimento e2 passou a vazar o teste. **Nada foi mudado no programa**; as recomendações esperam o Pedro.
 - O instalador .exe que existe (fora do GitHub, no computador do Pedro) é da versão **2026.11.02-2**; quem instala por ele se
   atualiza sozinho depois. Não há Release no GitHub.
 - O estudo de um **servidor central para análises coletivas** foi feito numa sessão que foi apagada; só sobrou um resumo
@@ -48,6 +59,15 @@
   Pedro; ver `EVIDENCE.md`).
 - Antes de cada commit de documentação, conferir `git diff --stat`: o `7a9850f` apagou este arquivo sem ninguém perceber.
 - Coleção nova que ainda não está no TCGdex precisa entrar à mão em `tracker/colecoes.py` (`NEXT_STEPS.md`, item 2).
+
+## Rodada de hardening da Skill (acréscimo de 06/11/2026, sem commit)
+- Ponte da Skill agora é **só leitura com trava na execução** (banco `mode=ro` + autorizador do SQLite, funções de escrita bloqueadas,
+  vigia contra gravação de arquivos, rede e programas); exige `config.json` na porta 8799 e a marca `dados/COPIA_DE_TESTE.json`.
+  `test_ponte.py` (22), `test_sa_tools.py` (31) e `test_referencias.py` OK; os 4 testes de entrega do Coletor OK numa cópia.
+- Revisões de conclusão: independência entre partidas só vale para quem tem lista (todos: ICC +0,063); identificação — NB2 melhor na
+  acurácia, regra atual melhor para decks raros; NB2 confiante demais (inclinação 0,56); confronto ajustado pior que 50% em 4 de 10
+  torneios de teste online pequenos. Nada mudou no programa. `../03_DECISIONS/STATISTICAL_HARDENING_2026-11-06.md`.
+- Não verificado: identificação com o deck do adversário de verdade (não há gabarito nos logs); Ladder sem amostra para independência.
 
 ## Ambiente
 Pastas, instalações, cópias de teste e recursos privados do computador do Pedro: `CLAUDE.local.md` (fora do GitHub).

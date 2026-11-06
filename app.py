@@ -108,6 +108,7 @@ def status():
         "biblioteca": cartas.progresso,
         "atualizacao": atualizador.estado,
         "linhas_pendentes": _contar_pendentes(),
+        "versao_arquetipos": decks.versao_arquetipos[0],  # mudou: o painel busca de novo nomes e ícones dos decks
         "bandeja": MODO["bandeja"],
         "windows": atalhos.disponivel(),
         "janela_propria": janela.disponivel(),

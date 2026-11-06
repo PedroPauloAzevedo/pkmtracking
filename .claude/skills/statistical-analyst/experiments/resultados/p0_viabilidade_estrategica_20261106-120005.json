@@ -1,0 +1,342 @@
+{
+ "id": "p0_viabilidade_estrategica-20261106120005-03ef24a7",
+ "experimento": "p0_viabilidade_estrategica",
+ "quando": "2026-11-06T12:00:05-03:00",
+ "semente": null,
+ "parametros": {
+  "valor_premio": "Mega ex 3, ex 2, resto 1",
+  "N_p3": 53
+ },
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.06-1",
+  "coletor": {
+   "commit": null,
+   "versao": "2026.11.06-1",
+   "tracker_sha": "482a927b8db25107"
+  },
+  "skill": {
+   "commit": "76a2005998d9059e489d01ae2c4af579df88e2c3",
+   "mudancas_sem_commit": true,
+   "ferramentas_sha": "8557c5c5f1bb8bba"
+  },
+  "script": {
+   "arquivo": "p0_viabilidade_estrategica.py",
+   "sha256": "22db565b6d6a06e55c58a96e3c89d8484c4ad65ae2fd05edd50b71971f5508c7"
+  },
+  "copia": {
+   "copia": "4557894c5064",
+   "versao_coletor": "2026.11.06-1",
+   "codigo_tracker": "482a927b8db25107",
+   "porta": 8799,
+   "marca_criada_em": "2026-11-06T08:24:19"
+  }
+ },
+ "ambiente": {
+  "python": "3.15.2",
+  "implementacao": "CPython",
+  "sistema": "Windows",
+  "sqlite": "3.53.4",
+  "pacotes": {
+   "numpy": "2.5.4",
+   "requests": "2.34.2"
+  },
+  "hash_aleatorio": 1
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "partidas_de": "2026-10-29T19:49:42",
+  "partidas_ate": "2026-11-05T21:51:25",
+  "por_tabela": {
+   "partidas": {
+    "linhas": 83,
+    "sha256": "5c687442ff653bc032d51229d0ddb5c6dea13d19a7415231a19e0b7bec4e2190"
+   },
+   "torneios": {
+    "linhas": 33,
+    "sha256": "b42e1b09cf53758550973c0f4bed27e7e31969e50d44c463029ecb6658ac02cf"
+   },
+   "t_jogadores": {
+    "linhas": 10127,
+    "sha256": "273047255a877fca44bc49d7015494e6821c37b061f080361416f1a83e37c99d"
+   },
+   "t_partidas": {
+    "linhas": 44651,
+    "sha256": "84761954923f26ca6e424c1dbedf27d7538d1f0409c4643d165f485bd5b1b675"
+   },
+   "t_listas": {
+    "linhas": 144060,
+    "sha256": "13540e31f46d7051fa272f8abccdaa16632b61de9442573356c7c866e243f83c"
+   },
+   "arquetipos": {
+    "linhas": 134,
+    "sha256": "d44b56704238804105ada90b1a87075f66db61b431bbb15c7898aade031cb8eb"
+   },
+   "meus_decks": {
+    "linhas": 2,
+    "sha256": "6913c703afc5ab58b96311c63543446b7ae29e161d21bdb02350c502049db8ad"
+   }
+  },
+  "impressao": "b2be20d1e8e029b7d64cf66151b8eca4169ac72d4fa54b390e27258868156457",
+  "impressao_contagens": "02e41a162acc",
+  "metodo": "sha256 das linhas ordenadas por todas as colunas, por tabela; impressao = sha256 do manifesto",
+  "limitacoes": []
+ },
+ "filtros": {
+  "partidas": "com vencedor",
+  "p3": "lista ligada, mão inicial listada, sem mulligan, lista de 60 que contém a mão"
+ },
+ "dados_usados": {
+  "partidas": 83,
+  "p3_partidas": 14
+ },
+ "resultado": {
+  "partidas": 83,
+  "p1": {
+   "mapas_executados_por_quem_venceu_por_premios": {
+    "3-3": 5,
+    "2-2-2": 3,
+    "3-1-2": 3,
+    "1-1-2-2": 3,
+    "1-1-2-1-1": 3,
+    "1-1-1-3": 2,
+    "1-1-4": 2,
+    "1-3-1-1": 2,
+    "1-3-2": 2,
+    "3-2-1": 2,
+    "2-1-3": 2,
+    "1-2-2-1": 2,
+    "2-3-1": 1,
+    "1-1-1-1-2": 1,
+    "1-1-1-1-1-1": 1,
+    "2-1-1-2": 1
+   },
+   "nocautes": 372,
+   "premios_iguais_ao_valor_pelo_nome": 284,
+   "fracao_coerente": 0.763,
+   "divergencias": {
+    "esperado 1, registrado 0": 22,
+    "esperado 1, registrado 2": 18,
+    "esperado 1, registrado 3": 15,
+    "esperado 2, registrado 0": 14,
+    "esperado 2, registrado 1": 7,
+    "esperado 3, registrado 0": 4,
+    "esperado 1, registrado 4": 3,
+    "esperado 2, registrado 3": 3,
+    "esperado 3, registrado 1": 1,
+    "esperado 3, registrado 2": 1
+   }
+  },
+  "p2": {
+   "T2": {
+    "partidas_com_lider": 5,
+    "lider_venceu": 2,
+    "taxa": 0.4,
+    "wilson": [
+     11.8,
+     76.9
+    ]
+   },
+   "T3": {
+    "partidas_com_lider": 22,
+    "lider_venceu": 10,
+    "taxa": 0.455,
+    "wilson": [
+     26.9,
+     65.3
+    ]
+   },
+   "T4": {
+    "partidas_com_lider": 38,
+    "lider_venceu": 15,
+    "taxa": 0.395,
+    "wilson": [
+     25.6,
+     55.3
+    ]
+   },
+   "T5": {
+    "partidas_com_lider": 46,
+    "lider_venceu": 25,
+    "taxa": 0.543,
+    "wilson": [
+     40.2,
+     67.8
+    ]
+   },
+   "T6": {
+    "partidas_com_lider": 50,
+    "lider_venceu": 27,
+    "taxa": 0.54,
+    "wilson": [
+     40.4,
+     67.0
+    ]
+   },
+   "T7": {
+    "partidas_com_lider": 50,
+    "lider_venceu": 34,
+    "taxa": 0.68,
+    "wilson": [
+     54.2,
+     79.2
+    ]
+   },
+   "T8": {
+    "partidas_com_lider": 48,
+    "lider_venceu": 32,
+    "taxa": 0.667,
+    "wilson": [
+     52.5,
+     78.3
+    ]
+   },
+   "T9": {
+    "partidas_com_lider": 49,
+    "lider_venceu": 39,
+    "taxa": 0.796,
+    "wilson": [
+     66.4,
+     88.5
+    ]
+   },
+   "T10": {
+    "partidas_com_lider": 31,
+    "lider_venceu": 24,
+    "taxa": 0.774,
+    "wilson": [
+     60.2,
+     88.6
+    ]
+   },
+   "T11": {
+    "partidas_com_lider": 28,
+    "lider_venceu": 28,
+    "taxa": 1.0,
+    "wilson": [
+     87.9,
+     100
+    ]
+   },
+   "T12": {
+    "partidas_com_lider": 16,
+    "lider_venceu": 15,
+    "taxa": 0.938,
+    "wilson": [
+     71.7,
+     98.9
+    ]
+   },
+   "T13": {
+    "partidas_com_lider": 8,
+    "lider_venceu": 7,
+    "taxa": 0.875,
+    "wilson": [
+     52.9,
+     97.8
+    ]
+   },
+   "T14": {
+    "partidas_com_lider": 7,
+    "lider_venceu": 5,
+    "taxa": 0.714,
+    "wilson": [
+     35.9,
+     91.8
+    ]
+   }
+  },
+  "p3": {
+   "partidas": 14,
+   "partidas_com_6_premios_revelados": 3,
+   "por_copias_restantes": {
+    "1": {
+     "cartas_partida": 115,
+     "observado": 3,
+     "esperado": 8.02,
+     "z_aprox": -1.85
+    },
+    "2": {
+     "cartas_partida": 113,
+     "observado": 20,
+     "esperado": 16.11,
+     "z_aprox": 1.02
+    },
+    "3": {
+     "cartas_partida": 91,
+     "observado": 22,
+     "esperado": 20.66,
+     "z_aprox": 0.31
+    },
+    "4": {
+     "cartas_partida": 32,
+     "observado": 9,
+     "esperado": 9.21,
+     "z_aprox": -0.07
+    }
+   },
+   "total_observado": 54,
+   "total_esperado": 54.0,
+   "ao_menos_uma_copia_premiada": {
+    "n": 71,
+    "brier": 0.171,
+    "previsto_medio": 0.2342,
+    "real": 0.2254
+   }
+  },
+  "d": {
+   "motivos_de_fim": {
+    "Desistência": 46,
+    "Pegou todos os prêmios": 35,
+    "Sem Pokémon em jogo": 2
+   },
+   "jogadas_de_disrupcao_por_categoria": {
+    "mão": 68,
+    "habilidade (estádio)": 33,
+    "banco (puxar)": 103,
+    "energia": 45
+   },
+   "partidas_com_categoria": {
+    "mão": 47,
+    "habilidade (estádio)": 28,
+    "banco (puxar)": 54,
+    "energia": 18
+   },
+   "acoes_por_turno_mediana": 8,
+   "acoes_por_turno_p90": 19,
+   "lista_disrupcao_usada": {
+    "Iono": "mão",
+    "Judge": "mão",
+    "Unfair Stamp": "mão",
+    "Xerosic's Machinations": "mão",
+    "Eri": "mão",
+    "Crushing Hammer": "energia",
+    "Enhanced Hammer": "energia",
+    "Team Rocket's Watchtower": "habilidade (estádio)",
+    "Path to the Peak": "habilidade (estádio)",
+    "Boss's Orders": "banco (puxar)",
+    "Prime Catcher": "banco (puxar)",
+    "Counter Catcher": "banco (puxar)",
+    "Lost Vacuum": "ferramenta/estádio",
+    "Tool Scrapper": "ferramenta"
+   }
+  }
+ },
+ "resultado_sha256": "2a33d79ee644270618ccffbb8d4b2951baff05679148b49c5ecadcb546ef958e",
+ "resultado_sha256_12alg": "b81d3af43e5e3136b869558499694cb5656c1a4f6e6a4357c50015a8b39c9728",
+ "arquivos_saida": [],
+ "limitacoes": [
+  "cópia do Coletor sem git: identidade do código = versao.txt + hash de tracker/*.py",
+  "Skill com mudanças sem commit: vale o hash das ferramentas, não só o commit",
+  "ordem de conjuntos de texto aleatória por processo: reprodução exata até ~12 algarismos"
+ ],
+ "formato_registro": 2
+}

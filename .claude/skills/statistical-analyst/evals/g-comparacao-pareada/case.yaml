@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: g-comparacao-pareada
+expected_outcome: |
+  Cenário G (comparação pareada de modelos), rodada de 06/11/2026. Diz que a diferença bruta não basta: precisa da diferença pareada nas MESMAS partidas, com faixa de incerteza. Bootstrap agrupado por torneio (partidas do mesmo torneio não são independentes); a2: −0,0002 [−0,0010; +0,0010] → sem diferença clara. Menciona fora da amostra/separação no tempo e que log-loss menor por 0,0002 é ruído na escala do chute (0,6931). Conclusão correta: não dá para dizer que A é melhor; sugere critério (faixa não contém 0) e manter o atual (D-017).

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: f-pesquisa-redundante
+expected_outcome: |
+  Cenário F (pesquisa redundante), rodada de 06/11/2026. Procura primeiro no projeto (KNOWN_METHODS/auditoria/EVIDENCE/RESEARCH_REGISTER) antes de pesquisar fora. Cita a evidência interna: k 12–32 empatam (a2: 0,6778; k16 − k24 = −0,0002 [−0,0010; +0,0010]); o k do e3 muda com o corte. Não faz pesquisa externa desnecessária (ou, se fizer, é curta, justificada e registra/explica por que não muda a conclusão). Recomenda manter k = 24 (mudança só com medição, D-017).

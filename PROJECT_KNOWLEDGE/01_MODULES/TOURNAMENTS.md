@@ -1,6 +1,6 @@
 # Campeonatos: importação e análises de meta
 
-> Atualizado em 05/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
+> Atualizado em 06/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
 > `tracker/estrategia.py`, `tracker/variantes.py`, `tracker/regressao.py`, `tracker/decks.py` (arquétipos, ícones),
 > `web/js/campeonatos.js`. Fórmulas e limites: `../02_BUSINESS_RULES/STATISTICS.md`. Decisões: D-018 a D-021.
 
@@ -43,6 +43,9 @@
 - Lista de ícones vazia **nunca apaga** a gravada (em 05/11/2026 a página nova zerou os ícones de 122 de 134 decks).
 - Ao abrir, se a maioria dos decks estiver sem ícone, o programa refaz a lista (`limitless.atualizar_arquetipos`, os 2 torneios
   mais recentes do Labs). Decks que não aparecem nesses torneios continuam sem ícone até aparecerem num torneio importado.
+- O painel carrega nomes e ícones uma vez (`carregarArquetipos`). Desde 2026.11.06-1 cada gravação do cadastro aumenta
+  `decks.versao_arquetipos`, que vai em `/api/status`; quando muda, o painel busca de novo e redesenha (antes a janela aberta
+  antes do conserto ficava sem ícones até o F5).
 
 ## Limites conhecidos
 - Labs e o índice do Limitless são HTML: mudança de layout quebra a importação dos grandes eventos (e já zerou os ícones uma vez).

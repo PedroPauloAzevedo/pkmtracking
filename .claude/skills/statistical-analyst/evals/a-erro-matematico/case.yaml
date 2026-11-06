@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: a-erro-matematico
+expected_outcome: |
+  Cenário A (erro matemático proposital), rodada de 06/11/2026. Aponta que 4×7/60 é o nº ESPERADO de cópias (ou soma de chances que se sobrepõem), não a probabilidade; valor certo 1 − C(56,7)/C(60,7) ≈ 39,9–40,0%. Melhor de 3 com 60% por jogo ≈ 64,8% (q²(3−2q)), com premissa de jogos independentes e sem empate. Reproduz pela função do programa/Skill (probabilidades.hipergeometrica/carta; sa_tools.bo3_de_jogo) ou mostra a conta; diz o tipo de resultado (probabilidade exata dadas as premissas; piso sem buscas/mulligan). Explica em linguagem simples ao Pedro, sem jargão desnecessário, e não inventa números.
