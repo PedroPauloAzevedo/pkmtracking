@@ -9,7 +9,8 @@ memória automática do Claude **não** são fonte: se algo importante só exist
 
 **Dois desenvolvedores (desde 06/11/2026, D-043/D-044):** o Pedro e um segundo desenvolvedor no Mac, cada um com o próprio Claude
 Code. O `CLAUDE.local.md` de cada computador diz com quem você está falando (fale com essa pessoa do mesmo jeito simples). Tudo
-entra na `main` por Pull Request e **só o Pedro junta**. Regras: `PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md`.
+entra na `main` por Pull Request e **só o Pedro junta** — no computador dele, quando ele pede "publicar", o próprio Claude abre o PR
+e junta (D-047). Regras: `PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md`.
 
 ## Protocolo de toda sessão
 **Início**
@@ -39,7 +40,8 @@ módulo alterado → seu documento em `01_MODULES/`; medição → `03_DECISIONS
 - **Versão nova:** `versao.txt` (`AAAA.MM.DD-N`) + topo de `novidades.json` + `DONE.md` + passo a passo para os amigos no chat (D-024).
 - **Git:** um ramo por tarefa (`feature/`, `fix/`, `refactor/`, `docs/`, `chore/`); **commit e push só quando a pessoa daquele
   computador pedir**, e só no próprio ramo; nada direto na `main`: Pull Request com o modelo de `.github/`, e **só o Pedro junta**
-  (D-043); autor `Claude <noreply@anthropic.com>`; `.bat` e `COMECE_AQUI.txt` em CRLF, o resto em LF (D-025, `.gitattributes`).
+  (D-043) — no computador do Pedro, "publicar" = abrir o PR **e juntar** (`gh pr merge --merge`), sem esperar o clique dele (D-047);
+  PR do segundo desenvolvedor continua esperando o Pedro; autor `Claude <noreply@anthropic.com>`; `.bat` e `COMECE_AQUI.txt` em CRLF, o resto em LF (D-025, `.gitattributes`).
 - **Banco ou contrato mudou** (coluna, rota `/api`, campo de `dados_json`): registrar em `00_CENTRAL/DATA_MODEL.md` ou
   `API_CONTRACTS.md` no mesmo PR. Código de uma plataforma só dentro de `if sys.platform == ...`, sem mudar o Windows (D-044).
 - **O repositório é público:** nada de caminhos do computador do Pedro, nicks reais, e-mail, pasta do Drive, links ou códigos

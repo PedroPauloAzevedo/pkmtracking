@@ -18,7 +18,8 @@
   "Nova versão disponível".
 
 ## Ramos e pastas
-- `main` = o que está no GitHub. Tudo entra por Pull Request e só o Pedro junta (D-043).
+- `main` = o que está no GitHub. Tudo entra por Pull Request e só o Pedro junta (D-043); no computador dele, o "publicar" autoriza o
+  Claude a abrir e juntar o PR (D-047).
 - `fix/erros-replay`: ramo dos erros de replay (worktree próprio; caminho em `CLAUDE.local.md`). Continua aberto para os próximos.
 - `docs/etapas-de-ataque` (06/11, sem commit): pesquisa no Judge Ball (roteiro do ataque dos juízes) conferida nos logs (experimento a12
   da Skill): registros em `BATTLE_LOG_FORMAT.md`, `EVIDENCE.md` e na Skill (`POKEMON_TCG_MODEL.md` seção 8, `RESEARCH_REGISTER.md`, G24). Só documentação.

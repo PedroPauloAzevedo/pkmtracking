@@ -150,6 +150,11 @@
   estão (aceito pelo Pedro: tirar exigiria reescrever o histórico). *Por quê:* a `main` é baixada pelo atualizador dos amigos sem
   conferência de assinatura, então só código revisado pode chegar lá. Regras em `../00_CENTRAL/COLLABORATION.md`; a proteção da
   `main` no GitHub é configurada pelo Pedro (seção 9 de lá).
+- **D-047 · No computador do Pedro, "publicar" = o Claude abre o PR e junta** (06/11/2026, decisão do Pedro; ajusta D-043).
+  *Por quê:* o Pedro não quer clicar para aprovar as próprias mudanças. O pedido "publicar" dele já é a aprovação: o Claude roda os
+  testes de entrega, faz o commit, envia o ramo, abre o PR com o modelo e junta (`gh pr merge --merge`). O PR continua no histórico.
+  Não vale para o segundo desenvolvedor: o PR dele espera o Pedro. No GitHub, a regra "Main" (hoje desligada) já deixa o
+  administrador passar; se ela for ligada, o Pedro continua juntando sem aprovação, e o segundo dev precisa da aprovação dele.
 - **D-044 · Mac como plataforma de uso completo, prioridade do segundo desenvolvedor** (06/11/2026, decisão do Pedro). O segundo
   desenvolvedor usa Mac e vai priorizar fazer o programa funcionar por inteiro nele. Código de uma plataforma fica dentro de
   `if sys.platform == ...`, sem mudar o comportamento no Windows (os amigos usam Windows); PR de plataforma diz em qual sistema foi
