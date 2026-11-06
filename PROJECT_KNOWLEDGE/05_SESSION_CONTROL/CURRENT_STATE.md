@@ -19,9 +19,9 @@
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.06-2 (`101da5f`) + Skill "Statistical Analyst" de `55a000f` (igual ao GitHub).
-- `icones-painel` (pasta do projeto): a rodada de hardening da Skill e a base estratégica, juntadas com a `main` nova; vai por PR
-  para revisão. O código da 2026.11.06-1 que estava aqui sem commit é idêntico ao da `main`.
+- `main` (`d0d0a58`, igual ao GitHub) = programa 2026.11.06-2 + PR #2 (preparação para dois desenvolvedores, `66440fe`) + PR #1
+  (rodada de hardening da Skill e base estratégica, juntado em 06/11). Nada mais espera commit.
+- `icones-painel` e `docs/preparar-dois-devs`: já juntados na `main` (podem ser apagados).
 - `statistical-analyst`: publicado na `main` em 06/11 (`49664da`).
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.
@@ -75,7 +75,7 @@
 ## Ambiente
 Pastas, instalações, cópias de teste e recursos privados do computador do Pedro: `CLAUDE.local.md` (fora do GitHub).
 
-## Preparação para dois desenvolvedores (acréscimo de 06/11/2026, ramo `docs/preparar-dois-devs`, por Pull Request)
+## Preparação para dois desenvolvedores (acréscimo de 06/11/2026, juntado na `main` pelo PR #2)
 - Decidido pelo Pedro: segundo desenvolvedor no **Mac**, com prioridade de paridade no Mac (D-044); **só o Pedro junta PR na `main`**
   (D-043); repositório continua **público**; e-mail e nick antigos no histórico ficam como estão.
 - Criados: `.gitattributes`, `.github/pull_request_template.md`, `.github/CODEOWNERS`, `CLAUDE.local.example.md`,
