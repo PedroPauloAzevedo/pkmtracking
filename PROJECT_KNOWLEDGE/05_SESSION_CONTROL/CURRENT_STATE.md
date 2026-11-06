@@ -13,9 +13,8 @@
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.05-6 + documentação (`76a2005`, igual ao GitHub).
-- `statistical-analyst` (06/11, a partir da `main`, commit `Skill Statistical Analyst`): a Skill em `.claude/skills/statistical-analyst/`, o inventário e a auditoria em `../03_DECISIONS/` e trechos de
-  `INDEX.md`, `DECISIONS.md`, `EVIDENCE.md`, `IN_PROGRESS.md`, `NEXT_STEPS.md` e aqui. Não muda código do programa.
+- `main` = 2026.11.05-6 + documentação + Skill "Statistical Analyst" (`49664da` e o registro da publicação; igual ao GitHub).
+- `statistical-analyst`: publicado na `main` em 06/11 (`49664da`).
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.
 

@@ -3,8 +3,7 @@
 > Atualizado em 06/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
 > **Atualize este arquivo no fim de toda sessão.** Sempre pergunte ao Pedro antes de começar algo grande.
 
-1. **Skill "Statistical Analyst" (commit no ramo `statistical-analyst`, não publicado):** publicar quando o Pedro pedir (ver
-   `IN_PROGRESS.md`); depois, ele escolhe quais recomendações da auditoria viram trabalho — sugestão de ordem em
+1. **Skill "Statistical Analyst" (publicada em 06/11, `49664da`):** o Pedro escolhe quais recomendações da auditoria viram trabalho — sugestão de ordem em
    `.claude/skills/statistical-analyst/knowledge/GAPS_AND_ROADMAP.md` (corrigir o e2; identificação só pelo NB2; aviso de "listas do
    topo"; converter o meta para jogo único).
 2. **Confirmar o modo automático numa partida real** (versão 2026.11.05-1 ou mais nova) lendo o `dados/programa.log` do Coletor

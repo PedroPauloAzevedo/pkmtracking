@@ -15,13 +15,3 @@
   volta (jogo minimizado ou fechado): o modo automático esquece o tamanho dos botões e procura de novo. É o esperado; só vira problema
   se ele demorar a achar os botões depois.
 - **Se falhar:** seguir "Como investigar" em `../01_MODULES/CAPTURE.md` (imagens só da janela do jogo, D-016).
-
-## Skill "Statistical Analyst" (pedida pelo Pedro em 06/11/2026)
-- **Situação:** as 6 fases feitas em 06/11; **commit no ramo `statistical-analyst`, não publicado** (arquivos: `.claude/skills/statistical-analyst/`,
-  `../03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md`, `../03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md` e trechos de `INDEX.md`,
-  `DECISIONS.md` (D-039), `EVIDENCE.md`, `CURRENT_STATE.md`, `NEXT_STEPS.md` e aqui). Nenhum método do programa foi alterado.
-  Testes da Skill: `tests/test_sa_tools.py` e `tests/test_referencias.py` OK; 4 cenários em `evals/` rodados com e sem a Skill:
-  16/16 critérios com a Skill, 12/16 sem (`.claude/skills/statistical-analyst/tests/RELATORIO_TESTES_2026-11-06.md`).
-- **Falta:** publicar quando o Pedro pedir (`merge --ff-only` na `main` + push; se a 2026.11.06-1 for publicada antes, refazer o
-  ramo sobre a `main` nova, porque os dois saíram do `76a2005`) e o Pedro decidir as recomendações da auditoria (`.claude/skills/statistical-analyst/knowledge/GAPS_AND_ROADMAP.md`).
-- **Regra:** qualquer troca de método, número ou tela passa pelo Pedro (D-017).
