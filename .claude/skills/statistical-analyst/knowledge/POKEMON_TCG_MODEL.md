@@ -1,6 +1,6 @@
 # O Pokémon TCG visto pela matemática (e o que os dados do Coletor mostram ou não)
 
-> Atualizado em 06/11/2026. Regras completas: `PROJECT_KNOWLEDGE/02_BUSINESS_RULES/STANDARD_AND_GAME_RULES.md` e
+> Atualizado em 06/11/2026 (seção 7: representação estratégica). Regras completas: `PROJECT_KNOWLEDGE/02_BUSINESS_RULES/STANDARD_AND_GAME_RULES.md` e
 > `docs/regras-standard.md`. Formato do log: `PROJECT_KNOWLEDGE/02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Só formato Standard (D-001).
 
 ## 1. Fatos do jogo que entram nas contas
@@ -49,3 +49,12 @@ Tudo no Coletor é observacional. Uma carta jogada **por causa** do estado (ex.:
 associada a derrota sem causá-la; partidas longas mostram mais cartas (viés de duração); jogadores melhores escolhem listas
 diferentes (confundimento). Para dizer "essa decisão ajuda", seria preciso comparar situações iguais em que a decisão variou
 (pareamento por estado, experimento do próprio jogador), e mesmo assim com cautela.
+
+## 7. Representação estratégica (06/11/2026)
+O jogo como **corrida de prêmios com informação escondida**: estado = (prêmios restantes dos dois lados, mesa com PS/dano/Energia/
+valor de prêmio de cada Pokémon, mão e baralho de cada um, Estádio, vez). Valor de prêmio: ex 2, Mega ex 3, demais 1 (cartas podem
+alterar). Para quem exportou o log, conhecidos: mesa, a própria mão e os próprios prêmios **depois** de pegos; do adversário, só o
+revelado. Conceitos (prize mapping, racing, checking, trade, stall, lock, disrupção, mill, sequência) e o que dá para medir:
+`STRATEGIC_CONCEPTS.md` (matriz de observabilidade); matemática: `PRIZE_ANALYSIS.md`, `CONTROL_AND_DISRUPTION.md`,
+`DECISION_ANALYSIS.md`. Fatos medidos (p0, 83 partidas): 55% terminam por desistência, 0 por deck acabado; a rota de prêmios
+executada é observável; a contagem de prêmios no turno 3–6 quase não diz quem vence.

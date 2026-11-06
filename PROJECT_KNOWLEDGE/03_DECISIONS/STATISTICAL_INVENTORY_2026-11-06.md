@@ -80,6 +80,10 @@ contra uma referência independente precisa ser feita por nós (seção 3).
   (variantes, uso de cartas, carta × matchup). Nas partidas pessoais (Ladder) a independência é mais razoável. Não há correção de
   comparações múltiplas em telas com dezenas de faixas. *Auditoria (achado 6): nos torneios o ICC medido é ≈ 0 (efeito de
   desenho 1,00), então a premissa de independência se sustenta ali; a correção de comparações múltiplas continua faltando (achado 5).*
+  *Revisão 06/11 (a7): o ICC ≈ 0 é dos jogadores com lista; com todos os jogadores de torneio é +0,063 (Labs +0,096), e as faixas
+  das telas que juntam todas as partidas (Meta, Matchups) ficam até ~25% estreitas demais. `STATISTICAL_HARDENING_2026-11-06.md`, D.1.*
+  *(Corrigido em 06/11 pelo a11: nas telas de Meta/Matchups — decks dos dois lados conhecidos, empate = não-vitória — o ICC é
+  0,015 (Labs 0,032) e as faixas antigas cobriam 93–96% em vez de 95%; o "até ~25%" valia só para o recorte do a7.)*
 
 ### M3 · Força dos decks (Bradley-Terry) — `estrategia.forcas`
 - **Modelo:** P(A vence B) = sA/(sA+sB). Algoritmo MM de Hunter (2004), 200 iterações, normalizado pela média geométrica.
@@ -173,7 +177,7 @@ contra uma referência independente precisa ser feita por nós (seção 3).
   (+0,3). Com os dados de hoje o M5 **não é mais o melhor** entre os que usam a ACE SPEC, mas todas as diferenças são de décimos de
   milésimo, pequenas demais para escolher entre eles. A conclusão de D-020 (versões descrevem, não preveem) continua de pé.
 - **Riscos:** o teste trata cada partida como independente, mas a unidade real é a lista/jogador (~8 partidas cada) → p-valores
-  pequenos demais; vários testes por deck sem correção; usa o placar final do jogador (V/D/E do torneio), com o mesmo viés de seleção do M7.
+  pequenos demais *(revisão 06/11: entre jogadores com lista o ICC medido é ≈ 0, então este risco é pequeno aqui — a7)*; vários testes por deck sem correção; usa o placar final do jogador (V/D/E do torneio), com o mesmo viés de seleção do M7.
 
 ### M10 · k-medoides + silhueta — `variantes.variantes_por_semelhanca`
 - k de 2 a 4, 5 tentativas, até 300 listas (sorteio com semente 42), silhueta ≥ 0,25, grupo ≥ 8% e ≥ 8 listas. Mantido como

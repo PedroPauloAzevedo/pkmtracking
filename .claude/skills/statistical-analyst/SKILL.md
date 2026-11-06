@@ -14,11 +14,18 @@ Leia, nesta ordem e só o necessário:
 1. `knowledge/KNOWN_METHODS.md` — **matriz de cada método**: onde está (arquivo e função), parâmetros, classe de confiabilidade
    (A–F), evidência e o que **não** está demonstrado. É o atalho para "qual função faz essa conta?".
 2. `PROJECT_KNOWLEDGE/03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md` — os 10 achados da auditoria (o que é problema comprovado,
-   o que foi descartado). Se a pergunta toca num achado, comece por ele.
+   o que foi descartado). Se a pergunta toca num achado, comece por ele. Depois, `STATISTICAL_HARDENING_2026-11-06.md` (revisões
+   dos achados 4 e 6, calibração a fundo, ponte só leitura e registro dos experimentos).
 3. `PROJECT_KNOWLEDGE/03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md` — ficha completa de cada método (fórmula, premissas).
 4. `knowledge/FORMULAS.md` (derivações e premissas), `knowledge/POKEMON_TCG_MODEL.md` (o jogo visto pela matemática e o que o
    log não mostra), `knowledge/GAPS_AND_ROADMAP.md` (o que falta, priorizado), `knowledge/RESEARCH_REGISTER.md` (pesquisas já feitas).
-5. Regras do projeto que valem aqui: `PROJECT_KNOWLEDGE/02_BUSINESS_RULES/STATISTICS.md` (números das telas),
+5. **Pergunta de estratégia de partida** (prêmios, corrida, troca, stall, lock, disrupção, mill, sequência, "foi a jogada certa?"):
+   primeiro `knowledge/STRATEGIC_CONCEPTS.md` (definições, níveis de afirmação e **matriz de observabilidade** — diz se o dado
+   existe); depois o específico: `PRIZE_ANALYSIS.md` (rota, corrida, prêmios checados com N/m/k por estado, troca),
+   `CONTROL_AND_DISRUPTION.md` (stall, lock, disrupção, mill, checklist de causalidade), `DECISION_ANALYSIS.md` (sequência, recursos,
+   as quatro rotas: possível × executável × robusta × executada). Fontes já pesquisadas: `RESEARCH_REGISTER.md` ("Estratégia").
+   Para medir: `tools/estrategia.py` + `experiments/p_estrategia.py` (trava de amostra mínima; abaixo dela não conclua nada).
+6. Regras do projeto que valem aqui: `PROJECT_KNOWLEDGE/02_BUSINESS_RULES/STATISTICS.md` (números das telas),
    `03_DECISIONS/DECISIONS.md` (D-017 a D-021, D-031 e "Pesquisado e descartado"), `03_DECISIONS/EVIDENCE.md`.
 
 Por que nessa ordem: os documentos de cima já resumem os de baixo; ler o código só depois evita refazer uma investigação pronta.
@@ -52,7 +59,16 @@ E também: descrição × associação × previsão × causa × simulação × r
 - **Amostras pessoais pequenas**: ~50 partidas → faixa de ±14 pp numa taxa de 50%. Divida por deck/adversário e quase nada conclui.
 - **Muitos testes juntos**: corrija (Holm para "nenhum falso", Benjamini-Hochberg para "poucos falsos"); 12 de 87 p < 0,05 nas
   variantes, mas só 2 resistem a Holm.
-- Independência entre partidas de um mesmo jogador **foi medida e se sustenta nos torneios** (ICC ≈ 0) — não "corrija" sem medir.
+- **Independência depende do recorte (a7):** entre jogadores **com lista** o ICC é ≈ 0 (análises de cartas, versões, regressão);
+  com **todos** os jogadores de torneio é +0,063 (Labs +0,096): porém nas partidas das telas de Meta/Matchups (decks conhecidos, empate =
+  não-vitória) o ICC é só 0,015 (a11): faixas ~2% estreitas; corrigido na v2026.11.06-2 (D-041). Ladder: sem poder para concluir; jogos dentro da melhor de 3: não mensurável. Diga o recorte.
+- **ECE baixo não prova calibração (a8, a9):** compare com o piso de ruído, veja a inclinação (`recalibracao_logistica`) e quebre por
+  grupo (`calibracao_detalhada`, `calibracao_por_grupo`). O NB2 tem ECE 3 pp mas inclinação 0,56 — confiança exagerada: não leia
+  a confiança dele como probabilidade (e uma confiança baixa tende a subestimar o acerto). No confronto ajustado, a força geral tem
+  o menor ECE e quase não prevê.
+- **Estratégia (p0):** o log mostra o que aconteceu, não a intenção nem as alternativas; mão e prêmios do adversário são escondidos;
+  55% das partidas terminam por desistência (censura); 0 por deck acabado. Opinião de guia de estratégia não é evidência.
+- **Classes desbalanceadas (identificação):** acurácia favorece os decks comuns; olhe também F1 macro / acurácia balanceada (a8).
 
 ## 5. Como trabalhar
 **Responder uma pergunta / explicar um número:** localize a função em `KNOWN_METHODS.md`, abra o código, reproduza a conta numa
@@ -73,18 +89,22 @@ Registre fonte, data e conclusão em `RESEARCH_REGISTER.md`. Divergência entre 
 ## 6. Executar contas e experimentos com segurança
 - **Sempre numa cópia** do programa com `dados/config.json` na porta 8799 (`CLAUDE.md`; a pasta e as cópias do computador do Pedro
   estão em `CLAUDE.local.md`). Banco real só para leitura (`?mode=ro`). Rode com `python -I`.
-- `tools/ponte.py` carrega o `tracker` de uma cópia e recusa a porta errada:
-  `from ponte import carregar; t = carregar(r"<cópia>"); t.analises.wilson(7, 10)`.
+- `tools/ponte.py` carrega o `tracker` de uma cópia **em modo só leitura, com trava na execução** (banco `mode=ro` + autorizador do
+  SQLite, funções de escrita bloqueadas, vigia que barra gravar arquivo, rede e programas externos). Só aceita uma pasta com
+  `dados/config.json` na porta 8799 e a marca `dados/COPIA_DE_TESTE.json` (crie com `python -I tools/marcar_copia.py <cópia>`, em
+  outro processo); recusa `.venv`, `.git` e as pastas de `SA_PASTAS_PROTEGIDAS`:
+  `from ponte import carregar; t = carregar(r"<cópia>"); t.analises.wilson(7, 10)`. Erro `EscritaBloqueada` = a análise tentou
+  gravar; não contorne — grave resultados só por `sa_tools.registrar`.
 - `tools/sa_tools.py` traz **só o que o programa não tem**: log-loss/Brier/calibração, bootstrap agrupado, diferença pareada,
   ICC e efeito de desenho, Holm/BH, melhor de 3 ↔ jogo, teste de proporções com n efetivo, `registrar` (grava resultado com semente,
   versão e impressão dos dados; nunca sobrescreve). Detalhes em `tools/README.md`.
-- Experimentos de auditoria em `experiments/a1..a6` (só leem o banco; gravam o resultado em `experiments/resultados/`, dentro do
+- Experimentos de auditoria em `experiments/a1..a11` e de estratégia em `experiments/p0..`  (só leem o banco; gravam o resultado em `experiments/resultados/`, dentro do
   repositório — para uma exploração que não deve ficar como evidência, defina `SA_SAIDA=<pasta do rascunho>` antes de rodar). Novo experimento: copie o padrão deles (cabeçalho com pergunta, desenho,
   separação, semente; resultado por `registrar` em `experiments/resultados/`). Os experimentos do programa ficam em `testes/experimentos/`.
 - Resultados gravados não podem ter nick, nome de jogador do Pedro ou de amigos, nem caminho do computador dele: o repositório é público
   (D-026, D-027). Torneios públicos e nomes de decks podem.
 - Depois de mexer nas ferramentas: `python -I .claude/skills/statistical-analyst/tests/test_sa_tools.py` e
-  `python -I .claude/skills/statistical-analyst/tests/test_referencias.py` → `OK`.
+  `python -I .claude/skills/statistical-analyst/tests/test_referencias.py` e `.../tests/test_ponte.py` e `.../tests/test_estrategia.py` → `OK`.
 
 ## 7. Formato do relatório
 Para toda análise relevante (pode ser curto, mas com todos os itens):

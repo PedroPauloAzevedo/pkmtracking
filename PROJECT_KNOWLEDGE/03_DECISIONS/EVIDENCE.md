@@ -120,6 +120,21 @@ Cópia de teste com os dados do Pedro (33 torneios, 44.651 partidas, 5.695 lista
 Os experimentos e1, e3, e5, e6, e9 e e10 foram refeitos no mesmo dia (`STATISTICAL_INVENTORY_2026-11-06.md`, seção 4); o e2 tem a
 coluna "atual" com vazamento (achado 9). → D-039.
 
+### Rodada de hardening da Skill (06/11/2026) — `STATISTICAL_HARDENING_2026-11-06.md`
+Experimentos `a7`–`a9` (só leem; registro completo em `.claude/skills/statistical-analyst/experiments/resultados/`). Revisões, não
+substituições: as linhas acima continuam valendo no recorte em que foram medidas.
+| Medição | Resultado |
+|---|---|
+| ICC por recorte (torneios, W/L; faixa por bootstrap de jogadores) | com lista −0,015 [−0,020; −0,011]; sem lista +0,034; **todos +0,063 [+0,059; +0,068]**; Labs +0,096; online −0,010 |
+| Identificação com cartas vistas realistas (a8), turno 1 / 2 / 6: ícones, NB2, programa | 31,7 / 53,1 / 78,1%; 63,4 / 81,0 / 91,0%; 57,5 / 79,3 / 91,3% |
+| Programa − NB2 (erro), turnos 1 e 2 | +5,9 pp [+4,1; +7,2]; +1,7 pp [+0,5; +2,7] — mas F1 macro no turno 2: programa 0,58 × NB2 0,53 |
+| Vazamento do cadastro de ícones no a4 (ícones: cadastro de todos − só treino) | −0,3 a 0,0 pp (sem diferença clara) |
+| Identificação real (18 partidas, 1 deck), turno 2 / fim: ícones, NB2 = programa | 16,7 / 77,8%; 66,7 / 88,9% |
+| Calibração do NB2 (a8) | ECE10 0,031 [0,024; 0,043], piso 0,006; inclinação 0,56 ± 0,02 (confiança exagerada) |
+| Calibração do confronto ajustado k = 24 (a9) | ECE10 0,015 [0,007; 0,030], piso 0,009; inclinação 0,81 ± 0,05; pior que 50% em 4 de 10 torneios de teste |
+| Força geral (Bradley-Terry) × chute | ECE10 0,006 (o menor) com log-loss 0,6921 × 0,6931: ECE baixo sem poder de previsão |
+| a4 refeito com a ponte só leitura e a versão 2026.11.06-1 | mesmos números de 06/11 (hash igual com 12 algarismos) |
+
 ## Onde estão os scripts dessas medições
 Os experimentos e1–e10 estão no repositório. Os scripts das medições do replay, das mãos e da simulação do modo automático foram
 escritos durante as sessões e ficaram **fora do repositório** (no computador do Pedro; ver `CLAUDE.local.md`). O método está descrito

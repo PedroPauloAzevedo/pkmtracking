@@ -19,7 +19,10 @@
 ## 2. Taxas e incerteza
 - Taxa = V/(V + D + E). **Wilson** (z = 1,96): centro (p + z²/2n)/(1 + z²/n), margem z√(p(1−p)/n + z²/4n²)/(1 + z²/n). Melhor que
   "p ± 1,96√(p(1−p)/n)" com n pequeno ou p perto de 0/1 (não sai de [0, 1]).
-- **Premissa:** partidas independentes com a mesma chance. Nos torneios o ICC medido é ≈ 0 (a1), então vale ali.
+- **Premissa:** partidas independentes com a mesma chance. *Revisto em 06/11 (a7):* entre jogadores **com lista** o ICC é ≈ 0
+  (−0,015); com **todos** os jogadores de torneio é +0,063 [+0,059; +0,068] (Labs +0,096; online ≈ 0). Vale para análises só com
+  listas; nas que juntam todas as partidas, use o efeito de desenho. Ladder: não medido com poder; melhor de 3 por dentro: não
+  mensurável. (Antes dizia "nos torneios o ICC é ≈ 0, então vale ali" — conclusão tirada só do topo.)
 - **Efeito de desenho (Kish):** n_ef = n / (1 + (m − 1)·ICC), m = partidas por grupo. Use quando o ICC medido for > 0.
 - **Muitos testes:** Holm (multiplica o i-ésimo menor p por m − i + 1, monotônico) controla "algum falso positivo";
   Benjamini-Hochberg (p_(i)·m/i, monotônico de cima para baixo) controla a fração de falsos entre os achados.
@@ -37,13 +40,13 @@
 ## 4. Regressão logística com freio (`tracker/regressao.py`)
 - logit P(V) = offset + b₀ + Σ b_c·Δcópias_c, offset = logit(confronto ajustado). Freio L2 λ: maximiza log-verossimilhança − ½λ‖b‖²
   (= posterior com prior normal de variância 1/λ). Newton/IRLS; erro padrão = √diag((XᵀWX + Λ)⁻¹) (aproximação de Laplace).
-- **Premissas:** observações independentes (ok, a1); efeito linear por cópia em logit; amostra representativa — **falha**: só listas do
+- **Premissas:** observações independentes (ok entre jogadores com lista, a1/a7); efeito linear por cópia em logit; amostra representativa — **falha**: só listas do
   topo (achado 1). "Provável" = |b| > 1,96·erro, sem correção de comparações múltiplas (com λ = 300, nenhuma carta passa: a5).
 
 ## 5. Naive Bayes da identificação (`tracker/decks.py`)
 - nota(d) = log π_d + Σ_{c vista} log((n_dc + β·(g_c + 1)/(N + 2)) / (n_d + β)), π_d = fração de listas do deck, g_c = listas com a
   carta, N = listas. Confiança = softmax das notas. Só cartas vistas entram (não ver ≠ não ter).
-- **Premissas:** cartas independentes dado o deck (falsa, mas a calibração medida ficou com erro de ±3 pp, a4); prior = meta do topo
+- **Premissas:** cartas independentes dado o deck (falsa; ECE de ±3 pp no a4, mas inclinação de calibração 0,56 no a8: a confiança é exagerada — o ECE sozinho escondia); prior = meta do topo
   de todos os torneios importados (pode diferir do Ladder e da época atual).
 
 ## 6. Previsões: como medir

@@ -6,6 +6,7 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| (Skill) | 06/11/2026 | (este PR, ramo `icones-painel`) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
 | 2026.11.06-2 | 06/11/2026 | (ver `git log`: "v2026.11.06-2") | Deck do adversário pelo NB2, marca "incerto" e faixas do meta com a dependência entre partidas |
 | 2026.11.06-1 | 06/11/2026 | (ver `git log`: "v2026.11.06-1") | Ícones dos decks aparecem sem recarregar o painel |

@@ -1,6 +1,6 @@
 # Campeonatos: importação e análises de meta
 
-> Atualizado em 05/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
+> Atualizado em 06/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
 > `tracker/estrategia.py`, `tracker/variantes.py`, `tracker/regressao.py`, `tracker/decks.py` (arquétipos, ícones),
 > `web/js/campeonatos.js`. Fórmulas e limites: `../02_BUSINESS_RULES/STATISTICS.md`. Decisões: D-018 a D-021.
 

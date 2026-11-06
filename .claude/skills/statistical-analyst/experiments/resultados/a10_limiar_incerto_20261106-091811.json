@@ -1,0 +1,222 @@
+{
+ "id": "a10_limiar_incerto-20261106091811-2c77803b",
+ "experimento": "a10_limiar_incerto",
+ "quando": "2026-11-06T09:18:11-03:00",
+ "semente": 2611,
+ "parametros": {
+  "limiares": [
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   0.85,
+   0.9,
+   0.95,
+   0.98
+  ],
+  "alvo": 0.9,
+  "regra": "nb2_senao_icones_so_sem_modelo"
+ },
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.06-1",
+  "coletor": {
+   "commit": null,
+   "versao": "2026.11.06-1",
+   "tracker_sha": "482a927b8db25107"
+  },
+  "skill": {
+   "commit": "76a2005998d9059e489d01ae2c4af579df88e2c3",
+   "mudancas_sem_commit": true,
+   "ferramentas_sha": "8557c5c5f1bb8bba"
+  },
+  "script": {
+   "arquivo": "a10_limiar_incerto.py",
+   "sha256": "be1553d458a5dc578d197843bff054d5c8b5f41768957c1f3378179b11e5ad8f"
+  },
+  "copia": {
+   "copia": "4557894c5064",
+   "versao_coletor": "2026.11.06-1",
+   "codigo_tracker": "482a927b8db25107",
+   "porta": 8799,
+   "marca_criada_em": "2026-11-06T08:24:19"
+  }
+ },
+ "ambiente": {
+  "python": "3.15.2",
+  "implementacao": "CPython",
+  "sistema": "Windows",
+  "sqlite": "3.53.4",
+  "pacotes": {
+   "numpy": "2.5.4",
+   "requests": "2.34.2"
+  },
+  "hash_aleatorio": 1
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "partidas_de": "2026-10-29T19:49:42",
+  "partidas_ate": "2026-11-05T21:51:25",
+  "por_tabela": {
+   "partidas": {
+    "linhas": 83,
+    "sha256": "5c687442ff653bc032d51229d0ddb5c6dea13d19a7415231a19e0b7bec4e2190"
+   },
+   "torneios": {
+    "linhas": 33,
+    "sha256": "b42e1b09cf53758550973c0f4bed27e7e31969e50d44c463029ecb6658ac02cf"
+   },
+   "t_jogadores": {
+    "linhas": 10127,
+    "sha256": "273047255a877fca44bc49d7015494e6821c37b061f080361416f1a83e37c99d"
+   },
+   "t_partidas": {
+    "linhas": 44651,
+    "sha256": "84761954923f26ca6e424c1dbedf27d7538d1f0409c4643d165f485bd5b1b675"
+   },
+   "t_listas": {
+    "linhas": 144060,
+    "sha256": "13540e31f46d7051fa272f8abccdaa16632b61de9442573356c7c866e243f83c"
+   },
+   "arquetipos": {
+    "linhas": 134,
+    "sha256": "d44b56704238804105ada90b1a87075f66db61b431bbb15c7898aade031cb8eb"
+   },
+   "meus_decks": {
+    "linhas": 2,
+    "sha256": "6913c703afc5ab58b96311c63543446b7ae29e161d21bdb02350c502049db8ad"
+   }
+  },
+  "impressao": "b2be20d1e8e029b7d64cf66151b8eca4169ac72d4fa54b390e27258868156457",
+  "impressao_contagens": "02e41a162acc",
+  "metodo": "sha256 das linhas ordenadas por todas as colunas, por tabela; impressao = sha256 do manifesto",
+  "limitacoes": []
+ },
+ "filtros": {
+  "base": "linhas do a8 (mesma semente e dados)"
+ },
+ "dados_usados": {
+  "identificacoes": 8275,
+  "impressao_linhas": "3c76ecc065f0f1d83587358242a1f1c88a52d0c21b717ec6835d4d3221b0d05f"
+ },
+ "resultado": {
+  "regra": "nb2_senao_icones_so_sem_modelo",
+  "alvo_acerto_nao_marcadas": 0.9,
+  "limiares": {
+   "0.5": {
+    "marcadas": 0.06876132930513595,
+    "acerto_marcadas": 0.3339191564147627,
+    "acerto_nao_marcadas": 0.8967038671165326,
+    "marcadas_turno_1_2": 0.16862003780718338
+   },
+   "0.6": {
+    "marcadas": 0.10078549848942599,
+    "acerto_marcadas": 0.36930455635491605,
+    "acerto_nao_marcadas": 0.9127805402499664,
+    "marcadas_turno_1_2": 0.22533081285444234
+   },
+   "0.7": {
+    "marcadas": 0.16688821752265862,
+    "acerto_marcadas": 0.49239681390296886,
+    "acerto_nao_marcadas": 0.9312445604873804,
+    "marcadas_turno_1_2": 0.3534971644612476
+   },
+   "0.8": {
+    "marcadas": 0.21389728096676738,
+    "acerto_marcadas": 0.5406779661016949,
+    "acerto_nao_marcadas": 0.9443504996156803,
+    "marcadas_turno_1_2": 0.41323251417769374
+   },
+   "0.85": {
+    "marcadas": 0.24084592145015105,
+    "acerto_marcadas": 0.5609633718013045,
+    "acerto_nao_marcadas": 0.9522445081184336,
+    "marcadas_turno_1_2": 0.45368620037807184
+   },
+   "0.9": {
+    "marcadas": 0.2821752265861027,
+    "acerto_marcadas": 0.6008565310492505,
+    "acerto_nao_marcadas": 0.9590909090909091,
+    "marcadas_turno_1_2": 0.504725897920605
+   },
+   "0.95": {
+    "marcadas": 0.3850151057401813,
+    "acerto_marcadas": 0.6782799748901444,
+    "acerto_nao_marcadas": 0.9705246610336019,
+    "marcadas_turno_1_2": 0.6151228733459357
+   },
+   "0.98": {
+    "marcadas": 0.46960725075528703,
+    "acerto_marcadas": 0.7228512609366958,
+    "acerto_nao_marcadas": 0.9776714513556619,
+    "marcadas_turno_1_2": 0.6892249527410208
+   }
+  },
+  "por_faixa_confianca": {
+   "0.0": {
+    "n": 5,
+    "acerto": 0.0
+   },
+   "0.1": {
+    "n": 26,
+    "acerto": 0.11538461538461539
+   },
+   "0.2": {
+    "n": 163,
+    "acerto": 0.22699386503067484
+   },
+   "0.3": {
+    "n": 133,
+    "acerto": 0.2781954887218045
+   },
+   "0.4": {
+    "n": 242,
+    "acerto": 0.4669421487603306
+   },
+   "0.5": {
+    "n": 265,
+    "acerto": 0.44528301886792454
+   },
+   "0.6": {
+    "n": 547,
+    "acerto": 0.680073126142596
+   },
+   "0.7": {
+    "n": 389,
+    "acerto": 0.712082262210797
+   },
+   "0.8": {
+    "n": 565,
+    "acerto": 0.7893805309734513
+   },
+   "0.9": {
+    "n": 5940,
+    "acerto": 0.9590909090909091
+   }
+  },
+  "real": {
+   "identificacoes": 126,
+   "marcadas": 10,
+   "acerto_marcadas": 0.0,
+   "acerto_nao_marcadas": 0.8103448275862069
+  },
+  "limiar_escolhido": 0.6
+ },
+ "resultado_sha256": "a427d19bb06f18f2e56b0ac628f2717b1820d7a5861866ee9be49ef6cf0bc985",
+ "resultado_sha256_12alg": "afb4155ab1a4050cee990907dbd92a0775c9283af8ecea9d513074f1c1bf20e2",
+ "arquivos_saida": [],
+ "limitacoes": [
+  "cópia do Coletor sem git: identidade do código = versao.txt + hash de tracker/*.py",
+  "Skill com mudanças sem commit: vale o hash das ferramentas, não só o commit",
+  "ordem de conjuntos de texto aleatória por processo: reprodução exata até ~12 algarismos"
+ ],
+ "formato_registro": 2
+}

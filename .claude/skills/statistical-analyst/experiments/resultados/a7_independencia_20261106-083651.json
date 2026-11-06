@@ -1,0 +1,238 @@
+{
+ "id": "a7_independencia-20261106083651-b5265e3c",
+ "experimento": "a7_independencia",
+ "quando": "2026-11-06T08:36:51-03:00",
+ "semente": 17,
+ "parametros": {
+  "repeticoes": 300,
+  "minimo_partidas_por_jogador": 2
+ },
+ "codigo": {
+  "commit": "(sem git)",
+  "versao": "2026.11.06-1",
+  "coletor": {
+   "commit": null,
+   "versao": "2026.11.06-1",
+   "tracker_sha": "482a927b8db25107"
+  },
+  "skill": {
+   "commit": "76a2005998d9059e489d01ae2c4af579df88e2c3",
+   "mudancas_sem_commit": true,
+   "ferramentas_sha": "d3308e9be6bf7c48"
+  },
+  "script": {
+   "arquivo": "a7_independencia.py",
+   "sha256": "52400121f4f473b58fe4acf6e063b651baba6b77ec0f0275d11a681ce99b1ed1"
+  },
+  "copia": {
+   "copia": "4557894c5064",
+   "versao_coletor": "2026.11.06-1",
+   "codigo_tracker": "482a927b8db25107",
+   "porta": 8799,
+   "marca_criada_em": "2026-11-06T08:24:19"
+  }
+ },
+ "ambiente": {
+  "python": "3.15.2",
+  "implementacao": "CPython",
+  "sistema": "Windows",
+  "sqlite": "3.53.4",
+  "pacotes": {
+   "numpy": "2.5.4",
+   "requests": "2.34.2"
+  },
+  "hash_aleatorio": 1
+ },
+ "dados": {
+  "tabelas": {
+   "partidas": 83,
+   "torneios": 33,
+   "t_jogadores": 10127,
+   "t_partidas": 44651,
+   "t_listas": 144060
+  },
+  "torneios_de": "2026-08-28",
+  "torneios_ate": "2026-11-01",
+  "partidas_de": "2026-10-29T19:49:42",
+  "partidas_ate": "2026-11-05T21:51:25",
+  "por_tabela": {
+   "partidas": {
+    "linhas": 83,
+    "sha256": "5c687442ff653bc032d51229d0ddb5c6dea13d19a7415231a19e0b7bec4e2190"
+   },
+   "torneios": {
+    "linhas": 33,
+    "sha256": "b42e1b09cf53758550973c0f4bed27e7e31969e50d44c463029ecb6658ac02cf"
+   },
+   "t_jogadores": {
+    "linhas": 10127,
+    "sha256": "273047255a877fca44bc49d7015494e6821c37b061f080361416f1a83e37c99d"
+   },
+   "t_partidas": {
+    "linhas": 44651,
+    "sha256": "84761954923f26ca6e424c1dbedf27d7538d1f0409c4643d165f485bd5b1b675"
+   },
+   "t_listas": {
+    "linhas": 144060,
+    "sha256": "13540e31f46d7051fa272f8abccdaa16632b61de9442573356c7c866e243f83c"
+   },
+   "arquetipos": {
+    "linhas": 134,
+    "sha256": "d44b56704238804105ada90b1a87075f66db61b431bbb15c7898aade031cb8eb"
+   },
+   "meus_decks": {
+    "linhas": 2,
+    "sha256": "6913c703afc5ab58b96311c63543446b7ae29e161d21bdb02350c502049db8ad"
+   }
+  },
+  "impressao": "b2be20d1e8e029b7d64cf66151b8eca4169ac72d4fa54b390e27258868156457",
+  "impressao_contagens": "02e41a162acc",
+  "metodo": "sha256 das linhas ordenadas por todas as colunas, por tabela; impressao = sha256 do manifesto",
+  "limitacoes": []
+ },
+ "filtros": {
+  "resultados": "só W/L (empates fora)",
+  "torneios": "todos os importados (sem filtro de formato, como o a1)"
+ },
+ "dados_usados": {
+  "jogadores_torneio": 17306,
+  "partidas_pessoais": 83,
+  "impressao_sequencias": "53f2fb45edf463889455eddacfd5d3cad206b01011061eee1cbe0785d23c1e11"
+ },
+ "resultado": {
+  "icc": {
+   "com_lista": {
+    "jogadores": 5513,
+    "partidas_por_jogador": 7.6,
+    "icc": -0.0152,
+    "ic95": [
+     -0.0198,
+     -0.0112
+    ],
+    "efeito_desenho_no_limite_superior": 1.0
+   },
+   "sem_lista": {
+    "jogadores": 7291,
+    "partidas_por_jogador": 4.68,
+    "icc": 0.034,
+    "ic95": [
+     0.0285,
+     0.0406
+    ],
+    "efeito_desenho_no_limite_superior": 1.149
+   },
+   "todos": {
+    "jogadores": 12804,
+    "partidas_por_jogador": 5.94,
+    "icc": 0.0634,
+    "ic95": [
+     0.0587,
+     0.0679
+    ],
+    "efeito_desenho_no_limite_superior": 1.336
+   },
+   "fonte_labs": {
+    "jogadores": 7902,
+    "partidas_por_jogador": 6.5,
+    "icc": 0.0961,
+    "ic95": [
+     0.0898,
+     0.1017
+    ],
+    "efeito_desenho_no_limite_superior": 1.559
+   },
+   "fonte_online": {
+    "jogadores": 4902,
+    "partidas_por_jogador": 5.04,
+    "icc": -0.0098,
+    "ic95": [
+     -0.0177,
+     -0.001
+    ],
+    "efeito_desenho_no_limite_superior": 1.0
+   }
+  },
+  "mao_quente": {
+   "com_lista": {
+    "depois_de_vitoria": 0.6208,
+    "depois_de_derrota": 0.6408,
+    "diferenca": -0.02,
+    "ic95_aprox": [
+     -0.0306,
+     -0.0094
+    ],
+    "pares": 36413
+   },
+   "sem_lista": {
+    "depois_de_vitoria": 0.4421,
+    "depois_de_derrota": 0.3582,
+    "diferenca": 0.0839,
+    "ic95_aprox": [
+     0.0722,
+     0.0956
+    ],
+    "pares": 26851
+   },
+   "todos": {
+    "depois_de_vitoria": 0.5608,
+    "depois_de_derrota": 0.4846,
+    "diferenca": 0.0762,
+    "ic95_aprox": [
+     0.0683,
+     0.0841
+    ],
+    "pares": 63264
+   }
+  },
+  "pessoal": {
+   "jogador_A": {
+    "partidas": 47,
+    "taxa": 0.745,
+    "teste_sequencias": {
+     "sequencias": 19,
+     "esperado": 18.87,
+     "z": 0.05,
+     "p": 0.96
+    },
+    "depois_de_vitoria": 0.735,
+    "depois_de_derrota": 0.75
+   },
+   "jogador_B": {
+    "partidas": 21,
+    "taxa": 0.762,
+    "teste_sequencias": {
+     "sequencias": 11,
+     "esperado": 8.62,
+     "z": 1.499,
+     "p": 0.134
+    },
+    "depois_de_vitoria": 0.667,
+    "depois_de_derrota": 1.0
+   },
+   "jogador_C": {
+    "partidas": 15,
+    "taxa": 0.667,
+    "teste_sequencias": {
+     "sequencias": 5,
+     "esperado": 7.67,
+     "z": -1.623,
+     "p": 0.105
+    },
+    "depois_de_vitoria": 0.8,
+    "depois_de_derrota": 0.5
+   }
+  },
+  "nao_mensuravel": [
+   "jogos dentro de uma partida melhor de 3 (só o resultado da partida é guardado)"
+  ]
+ },
+ "resultado_sha256": "f4df6dbc0cfad224b10b7ce145cbe7428288cd7ca0653c2a9e36b6057772d10f",
+ "resultado_sha256_12alg": "6409a5b5a68d10a3cbdd2675eb85563a66182866bb14aad7cda387f1b5ac72c8",
+ "arquivos_saida": [],
+ "limitacoes": [
+  "cópia do Coletor sem git: identidade do código = versao.txt + hash de tracker/*.py",
+  "Skill com mudanças sem commit: vale o hash das ferramentas, não só o commit",
+  "ordem de conjuntos de texto aleatória por processo: reprodução exata até ~12 algarismos"
+ ],
+ "formato_registro": 2
+}

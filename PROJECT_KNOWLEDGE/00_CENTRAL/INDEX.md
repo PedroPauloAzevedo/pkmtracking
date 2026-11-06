@@ -52,6 +52,7 @@
 | [`MISSION_REPORT_2026-11-02.md`](../03_DECISIONS/MISSION_REPORT_2026-11-02.md) | Relatório completo da missão de 2/nov (pesquisas, matemática, medições, riscos) | Só ao mexer em análises/estatística a fundo |
 | [`STATISTICAL_INVENTORY_2026-11-06.md`](../03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md) | Inventário de cada método matemático/estatístico: fórmula, parâmetros, testes, experimentos refeitos em 06/11 e classificação (documentado → validado) | Antes de mexer, confiar ou propor troca de qualquer análise |
 | [`STATISTICAL_AUDIT_2026-11-06.md`](../03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md) | Auditoria do motor estatístico: 10 achados (comprovados, descartados, recomendações) | Antes de confiar numa tela de análise ou propor mudança nela |
+| [`STATISTICAL_HARDENING_2026-11-06.md`](../03_DECISIONS/STATISTICAL_HARDENING_2026-11-06.md) | Rodada de hardening da Skill: ponte só leitura, registro dos experimentos, revisão da independência e da identificação, calibração a fundo, avaliação A–H | Junto com a auditoria; antes de usar a ponte ou citar independência, identificação ou calibração |
 
 ## 04_IMPLEMENTATIONS — o que fazer, o que está em curso, o que foi feito
 | Documento | O que tem | Ler quando |

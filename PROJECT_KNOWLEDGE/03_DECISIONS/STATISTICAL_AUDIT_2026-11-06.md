@@ -21,6 +21,10 @@
 | 9 | O e2 ainda mede o que diz medir | **Refutado** (coluna "atual" mudou de significado e usa dados do teste) | Média (evidência) |
 | 10 | Empates e o lado do jogador 1 | **Descrito**: 13,3% de empates no Labs (1,0% online); no Labs o jogador 1 vence 72% das decididas | Baixa (modelos simétricos) |
 
+> **Revisão de 06/11/2026 (rodada de hardening, `STATISTICAL_HARDENING_2026-11-06.md`):** o achado 6 vale **só para jogadores com
+> lista**; com todos os jogadores o ICC é +0,063 [+0,059; +0,068] (a7). O achado 4 foi confirmado com cartas vistas de forma realista
+> (a8), com a ressalva de que a regra do programa é melhor para os decks raros. O texto abaixo fica como estava (histórico).
+
 ---
 
 ## Achado 1 — Listas só do topo: as análises por carta e por versão olham só para quem foi bem
@@ -85,6 +89,10 @@
 6. **Recomendação (precisa de decisão e versão nova):** testar "NB2 sempre que houver modelo; ícones só sem modelo" contra a regra
    atual também com cartas vistas de verdade (partidas em que o deck do adversário é conhecido: o mesmo jogo pelos dois lados, ou
    listas de Meus decks ligadas). Corrigir o e2 (ver achado 9).
+7. **Revisão (06/11, a8):** com cartas vistas de forma realista e sem nenhuma informação do teste no treino (nem o cadastro de
+   ícones, que aqui vinha de todos os torneios — efeito medido ≤ 0,3 pp), o NB2 ganha da regra do programa na acurácia nos turnos 1–2
+   (+5,9 e +1,7 pp), mas perde no F1 macro (0,53 × 0,58 no turno 2): a reserva pelos ícones ajuda os decks raros. A confiança do NB2
+   é exagerada (inclinação 0,56), apesar do ECE de 3 pp. Ver `STATISTICAL_HARDENING_2026-11-06.md`, D.2 e D.3.
 
 ## Achado 5 — Muitos testes ao mesmo tempo
 - **Método:** a5 — `variantes.variantes` e `regressao.efeito_cartas` como estão, 12 decks mais jogados; Holm e Benjamini-Hochberg.
@@ -102,6 +110,12 @@
 - **Interpretação:** o sistema suíço junta quem está com o mesmo placar, e isso anula a "mão quente" de cada jogador. As faixas de
   Wilson e os valores-p por partida **não** estão estreitos demais por esse motivo. Hipótese descartada; vale só para os torneios (no
   Ladder não foi medido).
+- **Revisão (06/11, a7 — `STATISTICAL_HARDENING_2026-11-06.md`, D.1):** a conclusão acima foi tirada de uma amostra escolhida pelo
+  resultado (só quem tem lista = o topo). Com faixa por bootstrap de jogadores: com lista −0,015 [−0,020; −0,011]; sem lista +0,034;
+  **todos +0,063 [+0,059; +0,068]; Labs +0,096** (efeito de desenho até ~1,6); online ≈ 0. Ou seja: independência razoável nas
+  análises que usam só listas (cartas, versões, regressão); **não** nas que juntam todas as partidas de torneio (meta, matchups,
+  confronto ajustado). Ladder: sem poder para concluir; jogos dentro da melhor de 3: não mensurável. Ausência de evidência não prova
+  independência.
 
 ## Achado 7 — "Seu resultado × meta": 1 jogo contra melhor de 3
 - **Problema:** `analise_pessoal` põe ao lado da sua taxa (jogos únicos do Ladder) a taxa do confronto nos torneios (partidas melhor de 3).

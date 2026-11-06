@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: e-logs-incompletos
+expected_outcome: |
+  Cenário E (logs incompletos), rodada de 06/11/2026. Com ~2 cartas o acerto é baixo (a4: 51–64% com 2 cartas; a8 turno 1–2: ~57–81%); a resposta é inferida, não observada. Explica a regra: NB2 se confiança ≥ 0,5, senão ícones (e palpite pelo dano); aponta que a confiança do NB2 é otimista/descalibrada no topo. Diz que Dusknoir + Rare Candy cabem em vários decks (ex.: alakazam-dusknoir, dragapult-dusknoir) — ambíguo. Recomenda tratar como incerto/corrigir manualmente o deck do adversário; não inventa a "chance exata" sem medir.

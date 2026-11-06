@@ -19,8 +19,9 @@
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.06-1 + Skill "Statistical Analyst" (igual ao GitHub). A 2026.11.06-1 saiu do ramo `publica-2026.11.06-1`
-  (worktree separado); o ramo `icones-painel` da pasta do projeto ficou com o mesmo código, ainda sem commit.
+- `main` = 2026.11.06-2 (`101da5f`) + Skill "Statistical Analyst" de `55a000f` (igual ao GitHub).
+- `icones-painel` (pasta do projeto): a rodada de hardening da Skill e a base estratégica, juntadas com a `main` nova; vai por PR
+  para revisão. O código da 2026.11.06-1 que estava aqui sem commit é idêntico ao da `main`.
 - `statistical-analyst`: publicado na `main` em 06/11 (`49664da`).
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.
@@ -61,6 +62,15 @@
   Pedro; ver `EVIDENCE.md`).
 - Antes de cada commit de documentação, conferir `git diff --stat`: o `7a9850f` apagou este arquivo sem ninguém perceber.
 - Coleção nova que ainda não está no TCGdex precisa entrar à mão em `tracker/colecoes.py` (`NEXT_STEPS.md`, item 2).
+
+## Rodada de hardening da Skill (acréscimo de 06/11/2026, sem commit)
+- Ponte da Skill agora é **só leitura com trava na execução** (banco `mode=ro` + autorizador do SQLite, funções de escrita bloqueadas,
+  vigia contra gravação de arquivos, rede e programas); exige `config.json` na porta 8799 e a marca `dados/COPIA_DE_TESTE.json`.
+  `test_ponte.py` (22), `test_sa_tools.py` (31) e `test_referencias.py` OK; os 4 testes de entrega do Coletor OK numa cópia.
+- Revisões de conclusão: independência entre partidas só vale para quem tem lista (todos: ICC +0,063); identificação — NB2 melhor na
+  acurácia, regra atual melhor para decks raros; NB2 confiante demais (inclinação 0,56); confronto ajustado pior que 50% em 4 de 10
+  torneios de teste online pequenos. Nada mudou no programa. `../03_DECISIONS/STATISTICAL_HARDENING_2026-11-06.md`.
+- Não verificado: identificação com o deck do adversário de verdade (não há gabarito nos logs); Ladder sem amostra para independência.
 
 ## Ambiente
 Pastas, instalações, cópias de teste e recursos privados do computador do Pedro: `CLAUDE.local.md` (fora do GitHub).

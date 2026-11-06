@@ -113,6 +113,8 @@
 - **D-042 · Deck do adversário "incerto" com confiança do NB2 abaixo de 0,6** (06/11/2026, decisão do Pedro; v2026.11.06-2).
   Limiar pelo a10 (critério fixado antes: menor limiar com acerto ≥ 90% nas não marcadas). Ícones e palpite pelo dano não têm
   medida de confiança e não são marcados. Alternativa registrada: 0,9 (marcaria ~28%, que acertam ~60%).
+- **Proteção da instalação real na ponte da Skill** (06/11/2026, decisão do Pedro; feito): a ponte também lê
+  `~/.sa_pastas_protegidas`, arquivo pessoal fora do repositório (`tools/ponte.py`; teste em `tests/test_ponte.py`).
 
 ## Engenharia, distribuição e processo
 - **D-022 · Dependências com teto de versão grande** (`flask<4`, `pillow<14`, `opencv-python<6`...) (02/11). Uma atualização nunca
