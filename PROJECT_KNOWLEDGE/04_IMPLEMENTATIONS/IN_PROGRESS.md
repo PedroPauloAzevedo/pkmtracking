@@ -15,11 +15,3 @@
   volta (jogo minimizado ou fechado): o modo automático esquece o tamanho dos botões e procura de novo. É o esperado; só vira problema
   se ele demorar a achar os botões depois.
 - **Se falhar:** seguir "Como investigar" em `../01_MODULES/CAPTURE.md` (imagens só da janela do jogo, D-016).
-
-## Publicar a 2026.11.05-4, a -5 e a -6
-- **Situação:** prontas e testadas (4 testes OK) no ramo `versoes-2026.11.05-4-e-5`, sem commit.
-  - 2026.11.05-6: filtros Deck do jogador / Deck do adversário em Partidas e ícones dos decks de volta (D-038). Pedidas em 05/11.
-  - 2026.11.05-4: Biblioteca de cartas não para por uma carta (D-034). O Pedro pediu em 05/11 para não publicar ainda.
-  - 2026.11.05-5: épocas de coleção nas análises (D-036), "Ver todas" consertado e lista de partidas mais rápida (D-037), replay com
-    o descarte certo (D-035). Pedidas pelo Pedro em 05/11; ele ainda não pediu a publicação.
-- **Falta:** o Pedro pedir a publicação (passos em `../05_SESSION_CONTROL/NEXT_STEPS.md`, item 1).

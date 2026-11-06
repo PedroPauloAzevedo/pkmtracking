@@ -6,9 +6,9 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
-| 2026.11.05-6 | 05/11/2026 | (sem commit) | Partidas: filtro do deck do adversário; ícones dos decks de volta |
-| 2026.11.05-5 | 05/11/2026 | (sem commit) | Épocas de coleção nas análises, "Ver todas" consertado e replay com o descarte certo |
-| 2026.11.05-4 | 05/11/2026 | (sem commit) | Biblioteca de cartas: carta que o TCGdex não entrega não para a atualização |
+| 2026.11.05-6 | 05/11/2026 | `2600e4c` | Partidas: filtro do deck do adversário; ícones dos decks de volta |
+| 2026.11.05-5 | 05/11/2026 | `2600e4c` | Épocas de coleção nas análises, "Ver todas" consertado e replay com o descarte certo |
+| 2026.11.05-4 | 05/11/2026 | `2600e4c` | Biblioteca de cartas: carta que o TCGdex não entrega não para a atualização |
 | 2026.11.05-3 | 05/11/2026 | `c53abc5` | Filtro Jogador com qualquer combinação (publicada junto com a -2) |
 | 2026.11.05-2 | 05/11/2026 | `c53abc5` | Replay mostra os prêmios que o log revela (não saiu sozinha: foi junto com a -3) |
 | (documentação) | 05/11/2026 | `c100596` | Reorganização da documentação em `PROJECT_KNOWLEDGE/` |
