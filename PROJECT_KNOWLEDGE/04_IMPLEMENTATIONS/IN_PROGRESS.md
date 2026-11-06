@@ -15,3 +15,7 @@
   volta (jogo minimizado ou fechado): o modo automático esquece o tamanho dos botões e procura de novo. É o esperado; só vira problema
   se ele demorar a achar os botões depois.
 - **Se falhar:** seguir "Como investigar" em `../01_MODULES/CAPTURE.md` (imagens só da janela do jogo, D-016).
+
+## Preparar o projeto para dois desenvolvedores — ramo `docs/preparar-dois-devs`, Pedro (06/11/2026)
+- **Situação:** documentação, `.gitattributes`, `.gitignore` e `.github/` prontos, em Pull Request. Nenhum código do programa mudou.
+- **Falta:** o Pedro revisar e juntar o PR; configurar o GitHub (`../00_CENTRAL/COLLABORATION.md`, seção 9).

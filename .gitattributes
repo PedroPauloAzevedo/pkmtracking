@@ -1,0 +1,19 @@
+# Fins de linha fixos para todos, em qualquer computador (Windows ou Mac), sem depender do core.autocrlf de cada um.
+# Regra do projeto (D-025): tudo em LF; os .bat e o COMECE_AQUI.txt em CRLF (o Windows precisa).
+# Os CRLF ficam como "-text" (sem conversao): o Git guarda e entrega os bytes exatamente como estao, inclusive no zip
+# que o atualizador dos amigos baixa do GitHub.
+* text=auto eol=lf
+*.bat -text
+COMECE_AQUI.txt -text
+# Scripts do Mac precisam de LF (senão o Terminal não roda).
+*.command text eol=lf
+*.sh text eol=lf
+# Binários: nunca converter.
+*.png binary
+*.jpg binary
+*.ico binary
+*.exe binary
+*.zip binary
+*.db binary
+*.mp4 binary
+*.pdf binary

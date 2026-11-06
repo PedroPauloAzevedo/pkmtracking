@@ -7,12 +7,16 @@ aprendendo a programar: **fale com ele em português do Brasil, simples, sem jar
 **Este repositório é a fonte de verdade.** Tudo o que importa está em `PROJECT_KNOWLEDGE/` ou no código. Conversas antigas e a
 memória automática do Claude **não** são fonte: se algo importante só existir numa conversa, registre aqui.
 
+**Dois desenvolvedores (desde 06/11/2026, D-043/D-044):** o Pedro e um segundo desenvolvedor no Mac, cada um com o próprio Claude
+Code. O `CLAUDE.local.md` de cada computador diz com quem você está falando (fale com essa pessoa do mesmo jeito simples). Tudo
+entra na `main` por Pull Request e **só o Pedro junta**. Regras: `PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md`.
+
 ## Protocolo de toda sessão
 **Início**
 1. Ler `PROJECT_KNOWLEDGE/05_SESSION_CONTROL/CURRENT_STATE.md` e `NEXT_STEPS.md`.
 2. Abrir `PROJECT_KNOWLEDGE/00_CENTRAL/INDEX.md` e ler **só** os documentos que a tarefa pede (coluna "Ler quando").
-3. Se a tarefa envolver o computador do Pedro (pastas, instalação dele, pasta do Drive, recursos privados), ler `CLAUDE.local.md`
-   (existe só no computador dele; fica fora do GitHub).
+3. Se a tarefa envolver o computador de quem está usando (pastas, instalação, pasta do Drive, recursos privados), ler `CLAUDE.local.md`
+   (existe só naquele computador; fica fora do GitHub; modelo em `CLAUDE.local.example.md`).
 4. Antes de mexer num arquivo de código, ler a explicação no topo dele.
 
 **Durante** — decisão técnica → `03_DECISIONS/DECISIONS.md`; regra nova ou "mania" nova do log → `02_BUSINESS_RULES/`;
@@ -33,8 +37,11 @@ módulo alterado → seu documento em `01_MODULES/`; medição → `03_DECISIONS
 - **Banco e leitor:** coluna nova → migração em `banco.iniciar()` e INSERT com nomes de colunas; leitor mudou → `banco.VERSAO_LEITOR`;
   índice de cartas mudou → `cartas.VERSAO_INDICE`.
 - **Versão nova:** `versao.txt` (`AAAA.MM.DD-N`) + topo de `novidades.json` + `DONE.md` + passo a passo para os amigos no chat (D-024).
-- **Git:** um ramo por tarefa; **commit e push só quando o Pedro pedir**; publicar = `merge --ff-only` na `main` + push; autor
-  `Claude <noreply@anthropic.com>`; `.bat` e `COMECE_AQUI.txt` em CRLF, o resto em LF (D-025).
+- **Git:** um ramo por tarefa (`feature/`, `fix/`, `refactor/`, `docs/`, `chore/`); **commit e push só quando a pessoa daquele
+  computador pedir**, e só no próprio ramo; nada direto na `main`: Pull Request com o modelo de `.github/`, e **só o Pedro junta**
+  (D-043); autor `Claude <noreply@anthropic.com>`; `.bat` e `COMECE_AQUI.txt` em CRLF, o resto em LF (D-025, `.gitattributes`).
+- **Banco ou contrato mudou** (coluna, rota `/api`, campo de `dados_json`): registrar em `00_CENTRAL/DATA_MODEL.md` ou
+  `API_CONTRACTS.md` no mesmo PR. Código de uma plataforma só dentro de `if sys.platform == ...`, sem mudar o Windows (D-044).
 - **O repositório é público:** nada de caminhos do computador do Pedro, nicks reais, e-mail, pasta do Drive, links ou códigos
   privados, tokens ou senhas em arquivos publicados — isso vai em `CLAUDE.local.md` (D-026, D-027). Senhas e tokens nunca no chat.
 - `docs/regras-standard.md` é lido pelo programa: não mudar de lugar nem o formato da tabela de marcas e do item de promos.

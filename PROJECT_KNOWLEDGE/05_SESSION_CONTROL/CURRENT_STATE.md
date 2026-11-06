@@ -64,3 +64,16 @@
 
 ## Ambiente
 Pastas, instalações, cópias de teste e recursos privados do computador do Pedro: `CLAUDE.local.md` (fora do GitHub).
+
+## Preparação para dois desenvolvedores (acréscimo de 06/11/2026, ramo `docs/preparar-dois-devs`, por Pull Request)
+- Decidido pelo Pedro: segundo desenvolvedor no **Mac**, com prioridade de paridade no Mac (D-044); **só o Pedro junta PR na `main`**
+  (D-043); repositório continua **público**; e-mail e nick antigos no histórico ficam como estão.
+- Criados: `.gitattributes`, `.github/pull_request_template.md`, `.github/CODEOWNERS`, `CLAUDE.local.example.md`,
+  `00_CENTRAL/COLLABORATION.md`, `00_CENTRAL/API_CONTRACTS.md`, `00_CENTRAL/DATA_MODEL.md` (a seção do banco saiu do ARCHITECTURE).
+  Atualizados: `.gitignore`, `CLAUDE.md`, INDEX, ARCHITECTURE (tabela Windows × Mac), WORKFLOW (seções 6 e 9), OVERVIEW, DECISIONS
+  (D-043, D-044), BACKLOG ("Paridade no Mac" M1–M7 e arrumação para dois).
+- **Nenhum arquivo do programa mudou** (conferido por `git diff --stat main`); os 4 testes rodaram numa cópia deste ramo.
+- Auditoria de segurança (29 commits): nenhum token, senha ou arquivo de `dados/` no histórico; nada a revogar.
+- **Pendente no GitHub (só o Pedro faz):** proteger a `main`, convidar o segundo dev como Write, 2FA, apagar ramos ao juntar,
+  esconder o e-mail. Lista em `00_CENTRAL/COLLABORATION.md`, seção 9.
+- Nada disto foi testado num Mac (não há Mac aqui); o levantamento Windows × Mac é pela leitura do código.

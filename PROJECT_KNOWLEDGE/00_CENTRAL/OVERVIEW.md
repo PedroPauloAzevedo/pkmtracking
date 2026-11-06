@@ -1,6 +1,6 @@
 # Visão geral do Coletor TCG Live
 
-> Atualizado em 05/11/2026. O estado do momento (versão, pendências) fica em `../05_SESSION_CONTROL/CURRENT_STATE.md`.
+> Atualizado em 06/11/2026. O estado do momento (versão, pendências) fica em `../05_SESSION_CONTROL/CURRENT_STATE.md`.
 
 ## O que é
 Programa **local** que **grava e analisa as partidas de Pokémon TCG Live** e **importa campeonatos** para estudar o meta.
@@ -16,6 +16,8 @@ Roda no computador de quem joga, ao lado do jogo, com um painel no navegador (ou
 - **Dono:** Pedro (GitHub `PedroPauloAzevedo`). Trabalha com finanças, usa Excel, está aprendendo a programar:
   **toda explicação para ele é em português do Brasil, simples, sem jargão**, dizendo o que foi feito e por quê.
 - **Usuários:** o Pedro e cerca de 3 amigos, todos no Windows. O programa também roda no Mac, sem os extras do Windows.
+- **Desenvolvedores (desde 06/11/2026):** o Pedro e um segundo desenvolvedor, no Mac, cuja prioridade é o programa funcionar por
+  inteiro no Mac (D-044). Fluxo a dois: `COLLABORATION.md`.
 - Interface, mensagens e documentação em português do Brasil. O jogo é usado **em inglês** (o leitor depende disso).
 
 ## Limites de escopo (decisões firmes; ver `../03_DECISIONS/DECISIONS.md`)
