@@ -2,7 +2,7 @@
 
 > Atualizado em 05/11/2026. Código: `tracker/replay.py` (montagem), `tracker/decks.py` (`resolver_versoes`, `_limites_ps`),
 > `web/js/replay.js` (desenho). Rota: `/api/partidas/<id>/replay`. Tela: `#replay-<id>`.
-> Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013, D-032 e D-035. Medições: `../03_DECISIONS/EVIDENCE.md`.
+> Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013, D-032, D-035 e D-045. Medições: `../03_DECISIONS/EVIDENCE.md`.
 
 ## O que faz
 Para cada linha do log guarda uma "foto" (quadro): Pokémon Ativo e Banco de cada jogador (com dano, energias e ferramentas),
@@ -22,6 +22,8 @@ O replay é montado na hora em que a tela abre: corrigir o replay vale também p
 - **Contadores ambíguos:** quando o log não diz qual de dois Pokémon de mesmo nome recebeu contadores, o replay anota a
   escolha; se um nocaute depois fica com falta exatamente desse valor (pelos PS mínimos da carta, considerando os golpes que
   ela usou), o replay é montado de novo com a escolha corrigida (`_correcoes`, segunda passada).
+- **Risky Ruins** (desde 2026.11.06-3; D-045): os contadores logo depois de `Risky Ruins was activated.` são sempre do jogador que
+  escreveu a linha (ele acabou de pôr o Básico no Banco), mesmo que o log diga outro dono (`dono_dos_contadores`).
 - Night Stretcher (e Super Rod, Lillie's Determination) pegam do descarte/mão: não tiram o Pokémon da mesa.
 - **Carta presa descartada** (`dono_do_anexo`, desde 2026.11.05-5; D-035): `X was discarded from P's Y.` não diz de qual Pokémon
   saiu quando há dois com o mesmo nome. Sublinha logo depois de um recuo → o que recuou (`recuou`); linha solta depois do nocaute

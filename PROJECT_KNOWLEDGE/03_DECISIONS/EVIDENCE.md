@@ -64,6 +64,13 @@ mesmo resumo, que a regra antiga escondia em "Todos os jogadores").
 Nos dados de teste (`teste_tracker.py`: 14 partidas suas parecidas entre si, 1 da amiga e o outro lado de uma das suas) a regra
 antiga deixava **6 de 16** em "Todos"; a nova deixa **15** (as 14 + a da amiga; o outro lado do mesmo jogo conta uma vez). → D-033.
 
+## Risky Ruins no replay (06/11/2026, versão 2026.11.06-3)
+- Logs do Pedro e dos amigos: 145 linhas de contadores logo depois de `Risky Ruins was activated.`; em 55 o dono escrito é o outro
+  jogador (quem jogou o Estádio), e em todas o Básico é de quem pôs o Pokémon no Banco na linha anterior.
+- Replay da `main` × corrigido, 154 partidas (banco do Pedro só leitura + instalação antiga): 15 partidas mudam (935 quadros);
+  quadros com Pokémon em jogo com dano ≥ PS mínimo (impossível, inclui o quadro do golpe fatal antes da linha do nocaute):
+  1742 → 1660. → D-045.
+
 ## Carta presa descartada no replay (05/11/2026, versão 2026.11.05-5)
 135 partidas reais (o banco do Pedro, com as dos amigos, e a instalação antiga), versão publicada (2026.11.05-3) × nova:
 | Conferência | Antes | Depois |

@@ -96,6 +96,23 @@ Ana's Dragapult ex used Phantom Dive on Bia's Budew for 10 damage.
 confere("Phantom Dive no Banco do adversário + Risky Ruins no próprio",
         (m["Ana"]["pokemon"], m["Bia"]["pokemon"]), ([("Dragapult ex", 0), ("Dunsparce", 20)], [("Budew", 10), ("Dunsparce", 30)]))
 
+# 2b) Risky Ruins da Ana e a Bia põe um Básico no Banco: o jogo escreve "on Ana's Budew" (dono do Estádio), mas o Budew é da Bia.
+#     (visto num log real de 06/11/2026; os dois lados tinham um Budew)
+m = mesa("""
+Ana played Budew to the Active Spot.
+Bia played Dreepy to the Active Spot.
+
+Ana's Turn
+Ana played Risky Ruins to the Stadium spot.
+
+Bia's Turn
+Bia played Budew to the Bench.
+Risky Ruins was activated.
+- Bia put 2 damage counters on Ana's Budew.
+""")
+confere("Risky Ruins: contadores no Básico de quem o jogou, não do dono do Estádio",
+        (m["Ana"]["pokemon"], m["Bia"]["pokemon"]), ([("Budew", 0)], [("Dreepy", 0), ("Budew", 20)]))
+
 # 3) "put a damage counter" = 1 contador.
 m = mesa("""
 Ana played Dragapult ex to the Active Spot.
