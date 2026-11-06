@@ -235,6 +235,39 @@ function graficoPremios(r, a, b) {
     <div class="legenda"><span><i style="background:var(--p1)"></i>${esc(a)}</span><span><i style="background:var(--p2)"></i>${esc(b)}</span></div>`;
 }
 
+// Janela com o log da partida exatamente como veio do TCG Live (o texto guardado no banco), para copiar ou baixar
+// e colar em outra ferramenta. Copiar não grava a partida de novo: o Coletor reconhece o mesmo log e ignora.
+function mostrarLogOriginal(p) {
+  const fundo = document.createElement('div');
+  fundo.className = 'janela-fundo';
+  fundo.innerHTML = `<div class="janela" role="dialog" aria-label="Log original" style="width:min(900px,100%);max-height:88vh;display:flex;flex-direction:column;gap:10px">
+    <h2 style="margin:0">Log original da partida #${p.id}</h2>
+    <p class="muted" style="font-size:.85rem;margin:0">O texto como veio do TCG Live (${p.texto.split('\n').length} linhas). Copie e cole em outra ferramenta, ou baixe como arquivo .txt.</p>
+    <textarea id="log-texto" class="mono" readonly spellcheck="false" style="flex:1;min-height:50vh;resize:vertical;font-size:.8rem;white-space:pre;overflow:auto"></textarea>
+    <div class="row"><span class="grow"></span><button id="log-baixar">Baixar .txt</button><button id="log-fechar">Fechar</button><button class="primary" id="log-copiar">Copiar tudo</button></div>
+  </div>`;
+  document.body.appendChild(fundo);
+  const area = fundo.querySelector('#log-texto');
+  area.value = p.texto;
+  const fechar = () => fundo.remove();
+  fundo.onclick = e => { if (e.target === fundo) fechar(); };
+  fundo.querySelector('#log-fechar').onclick = fechar;
+  fundo.addEventListener('keydown', e => { if (e.key === 'Escape') fechar(); });
+  fundo.querySelector('#log-copiar').onclick = async () => {
+    try { await navigator.clipboard.writeText(p.texto); }
+    catch (e) { area.focus(); area.select(); document.execCommand('copy'); }  // navegador sem a área de transferência moderna
+    toast('Log copiado: é só colar na outra ferramenta');
+  };
+  fundo.querySelector('#log-baixar').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([p.texto], { type: 'text/plain;charset=utf-8' }));
+    a.download = `partida-${p.id}-${(p.capturada_em || '').slice(0, 10)}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  area.focus(); area.setSelectionRange(0, 0); area.scrollTop = 0;
+}
+
 async function renderDetalhe(id) {
   const vez = novaTela();
   const [p, listas] = await Promise.all([api('/api/partidas/' + id), api('/api/decks').catch(() => [])]);
@@ -245,7 +278,7 @@ async function renderDetalhe(id) {
   const pill = j => r.vencedor ? (r.vencedor === j ? '<span class="pill v">Venceu</span>' : '<span class="pill n">Perdeu</span>') : '';
   const linhas = [['Prêmios pegos','premios'],['Nocautes causados','nocautes'],['Dano total','dano'],['Ataques','ataques'],['Cartas jogadas','jogadas'],['Energias ligadas','energias'],['Evoluções','evolucoes'],['Mulligans','mulligans']];
   main.innerHTML = `
-    <div class="row"><button id="voltar">← Partidas</button><a class="btn primary" href="#replay-${p.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">▶ Ver replay</a><span class="grow"></span><span class="muted num">#${p.id} · ${fmtData(p.capturada_em, true)} · origem: ${esc(p.origem)}${p.dono ? ` · partida de <b>${esc(p.dono)}</b>` : ''}</span></div>
+    <div class="row"><button id="voltar">← Partidas</button><a class="btn primary" href="#replay-${p.id}" style="background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600">▶ Ver replay</a><button id="ver-log" title="O texto do log como veio do TCG Live, para copiar e colar em outra ferramenta">📄 Log original</button><span class="grow"></span><span class="muted num">#${p.id} · ${fmtData(p.capturada_em, true)} · origem: ${esc(p.origem)}${p.dono ? ` · partida de <b>${esc(p.dono)}</b>` : ''}</span></div>
     ${r.problemas?.length ? `<div class="aviso erro">Este log parece incompleto: ${esc(r.problemas.join('; '))}. Se você ainda tem o log no jogo, copie de novo; senão, apague esta partida ou deixe assim (ela fica fora das contas se faltar o resultado).</div>` : ''}
     <section class="panel">
       <div class="resultado">
@@ -282,6 +315,7 @@ async function renderDetalhe(id) {
       ${p.eventos.map(e => `<tr><td class="n">${e.linha}</td><td class="n">${e.turno}</td><td><span class="tipo ${e.tipo}">${esc(e.tipo)}</span></td><td>${esc(e.jogador)}</td><td>${esc(e.carta)}</td><td>${esc(e.alvo)}</td><td class="n">${e.valor ?? ''}</td><td class="mono">${esc(e.texto)}</td></tr>`).join('')}
       </tbody></table></div></section>`;
   $('#voltar').onclick = () => { location.hash = 'partidas'; };
+  $('#ver-log').onclick = () => mostrarLogOriginal(p);
   const valorMeu = ligarSeletorDeck('e-meu', v.meu_deck), valorAdv = ligarSeletorDeck('e-adv', v.deck_adv);
   $('#salvar').onclick = async () => {
     const lista = $('#e-lista').value;

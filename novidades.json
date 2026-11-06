@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.06-4",
+    "data": "2026-11-06",
+    "titulo": "Log original de cada partida, para copiar e colar em outra ferramenta",
+    "mudancas": [
+      "Minhas partidas: ao abrir uma partida, o botão \"Log original\" (ao lado de \"Ver replay\") mostra o texto do log exatamente como veio do TCG Live. Dá para copiar tudo com um clique ou baixar como arquivo .txt. Copiar não grava a partida de novo: o Coletor reconhece que é o mesmo log."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.06-4\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Em Minhas partidas, clique numa partida e depois em \"Log original\"."
+    ]
+  },
+  {
     "versao": "2026.11.06-3",
     "data": "2026-11-06",
     "titulo": "Replay: dano do Estádio Risky Ruins no Pokémon certo",

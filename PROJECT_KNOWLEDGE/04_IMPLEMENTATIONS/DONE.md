@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.06-4 | 06/11/2026 | (ver `git log`: "v2026.11.06-4") | Log original de cada partida (copiar / baixar .txt) |
 | 2026.11.06-3 | 06/11/2026 | (ver `git log`: "v2026.11.06-3") | Replay: dano do Risky Ruins no Pokémon certo |
 | 2026.11.06-2 | 06/11/2026 | (ver `git log`: "v2026.11.06-2") | Deck do adversário pelo NB2, marca "incerto" e faixas do meta com a dependência entre partidas |
 | 2026.11.06-1 | 06/11/2026 | (ver `git log`: "v2026.11.06-1") | Ícones dos decks aparecem sem recarregar o painel |
@@ -27,6 +28,11 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.06-4 — 06/11/2026 (pedido do Pedro)
+- `web/js/partidas.js`: botão "Log original" no detalhe da partida e `mostrarLogOriginal` (janela com o texto gravado, Copiar tudo,
+  Baixar .txt, Fechar/Esc). Nenhuma rota nova: `/api/partidas/<id>` já devolvia `texto`.
+- Teste: `teste_telas.py` (o texto da janela é igual ao gravado; a janela fecha). Os 4 testes OK.
 
 ## 2026.11.06-3 — 06/11/2026 (erro de replay visto pelo Pedro)
 - `tracker/replay.py`, `dono_dos_contadores`: depois de `Risky Ruins was activated.`, o dono é quem escreveu a linha (D-045).

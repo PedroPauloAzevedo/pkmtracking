@@ -202,6 +202,21 @@ def ver_todas_e_epocas(pagina):
         return (h.match(/sep-epoca/g) || []).length + '|' + /marca-epoca/.test(graficoLinhas([{ nome: 'x', valores: [1, 2] }], ['a', 'b'], { marcas: [{ i: 1, rotulo: e[0].nome }] })); }""")
     if sep != "2|true":
         problemas.append(f"separador de época na lista/gráfico: {sep}")
+    # "Log original" no detalhe da partida: a janela mostra o texto exatamente como foi gravado
+    try:
+        pid = pagina.evaluate("api('/api/partidas').then(d => d.partidas[0].id)")
+        pagina.evaluate("id => { location.hash = '#x'; location.hash = '#partida-' + id; }", pid)
+        pagina.wait_for_selector("#ver-log", timeout=20000)
+        pagina.click("#ver-log")
+        pagina.wait_for_selector("#log-texto", timeout=5000)
+        igual = pagina.evaluate("id => api('/api/partidas/' + id).then(p => document.querySelector('#log-texto').value === p.texto && p.texto.length > 100)", pid)
+        if not igual:
+            problemas.append("Log original: o texto da janela é diferente do log gravado")
+        pagina.click("#log-fechar")
+        if pagina.evaluate("!!document.querySelector('#log-texto')"):
+            problemas.append("Log original: a janela não fechou")
+    except Exception as e:
+        problemas.append(f"Log original: {str(e).splitlines()[0]}")
     return problemas
 
 
