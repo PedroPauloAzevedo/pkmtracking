@@ -1,6 +1,6 @@
 # Arquitetura
 
-> Atualizado em 05/11/2026. Mapa de onde cada coisa está. O "como" de cada função está na explicação no topo do arquivo de código.
+> Atualizado em 06/11/2026. Mapa de onde cada coisa está. O "como" de cada função está na explicação no topo do arquivo de código.
 
 ## Tecnologia
 - **Python 3.11+** (testado com 3.15) + **Flask** (servidor só em 127.0.0.1) + **SQLite** + painel **HTML/CSS/JS sem frameworks**.
@@ -30,6 +30,8 @@
 | `modelos/` | Imagens dos botões do modo automático (`LEIA-ME.txt`) |
 | `exemplos/log_de_exemplo.txt` | Log usado no primeiro uso guiado (o coletor reconhece e não grava) |
 | `instalador/` | `montar.py` (monta o programa com Python próprio) e `coletor.iss` (Inno Setup 6) |
+| `.github/` | Modelo de Pull Request e `CODEOWNERS` (fluxo a dois, [`COLLABORATION.md`](COLLABORATION.md)) |
+| `.gitattributes`, `.gitignore` | Fins de linha fixos (LF; `.bat` e `COMECE_AQUI.txt` guardados como estão, em CRLF) e o que nunca vai para o Git |
 | `testes/` | `teste_tracker.py`, `teste_seguranca.py`, `teste_replay.py`, `teste_telas.py`, `leitor-tcg-live.html`, `experimentos/e1..e10` |
 | `PROJECT_KNOWLEDGE/` | Esta documentação |
 | `*.bat`, `*.command`, `COMECE_AQUI.txt` | Instalar/abrir no Windows e no Mac (os `.bat` e o `COMECE_AQUI.txt` ficam em CRLF) |
@@ -70,19 +72,8 @@
 Também ficam fora do GitHub: `.venv/`, `modelos/minhas/` e `modelos/CREDITOS-FullBench.txt` (criados ao usar "Usar imagens prontas").
 
 ## Banco de dados (`dados/tracker.db`)
-Esquema em `banco.ESQUEMA`; colunas em **negrito** foram acrescentadas por migração em `banco.iniciar()`.
-- `partidas` (id, hash UNIQUE, capturada_em, origem [area_transferencia/automatico/manual/amigo], arquivo, texto, dados_json,
-  meu_deck, deck_adv, notas, tags, **deck_id**, **dono**). `dados_json` = saída do leitor, relida quando `banco.VERSAO_LEITOR`
-  (hoje **3**) muda ou quando as regras de leitura mudam.
-- `torneios` (id: Labs `0078` ou online `on-<id>`, nome, data, jogadores, rk9, importado_em, info_json, **fonte** labs/online, **formato**).
-- `t_jogadores` (torneio, labs_id, nome, nome_norm, pais, posicao, pontos, v, d, e, arquetipo, **ace_spec**); nos online, labs_id = nome_norm = usuário em minúsculas.
-- `t_partidas` (torneio, rodada, mesa, j1, j2, res1 W/L/T, arq1, arq2); j1/j2 casam com `t_jogadores.nome_norm`.
-- `t_listas` (torneio, labs_id, carta, set_code, numero, qtd, carta_id, carta_base); carta_id/carta_base = arte básica.
-- `arquetipos` (slug, nome, icones JSON, atualizado_em).
-- `meus_decks` (id, nome, arquetipo, lista, notas, ativo, criado_em, versao_de, **favorito**, **icones_manual**, **lista_oficial**);
-  `meus_decks_cartas` (deck_id, qtd, nome, set_code, numero, secao, carta_id, carta_base).
-- Regra: ao criar coluna, migração em `banco.iniciar()` e **INSERT sempre com o nome das colunas** (um INSERT posicional já quebrou).
-- Índice de cartas em `dados/cartas/` com `cartas.VERSAO_INDICE` (hoje **2**): aumentar remonta o índice.
+Tabelas, formato `dados_json` (saída do leitor) e o registro de migrações: [`DATA_MODEL.md`](DATA_MODEL.md).
+Contratos entre as camadas, imports em círculo e a lista das rotas `/api`: [`API_CONTRACTS.md`](API_CONTRACTS.md).
 
 ## Configurações (`dados/config.json`, padrões em `config.CONFIG_PADRAO`)
 Captura (`nick`, `coletor_ativo`, `intervalo_coletor`), modo automático (`modo_automatico`, `confianca_imagem` 0,85,
@@ -105,3 +96,19 @@ Captura (`nick`, `coletor_ativo`, `intervalo_coletor`), modo automático (`modo_
 | Google Drive para computador | Pasta compartilhada dos amigos (pasta local sincronizada) | Instalado à parte, não vem no instalador |
 | Edge/Chrome | Janela própria do painel (`--app`) e testes de tela | Já vêm no Windows (Edge) |
 | NuGet | Python oficial embutido no instalador (com sha256 conferido) | Só ao montar o instalador |
+
+## Windows × Mac (levantado no código em 06/11/2026; nada disto foi testado num Mac ainda)
+O código separa as plataformas com `sys.platform`/`platform.system()`. Prioridade do segundo desenvolvedor: paridade no Mac (D-044);
+o que falta está em `../04_IMPLEMENTATIONS/BACKLOG.md`, seção "Paridade no Mac".
+| Parte | Windows | Mac (pelo código) |
+|---|---|---|
+| Instalar / abrir | `instalar_windows.bat`, `iniciar_windows.bat`, instalador .exe (Inno Setup) | `instalar_mac.command`, `iniciar_mac.command` (Terminal aberto); sem instalador |
+| Captura pela área de transferência (`coletor.py`) | API do Windows | `pbpaste` (sem contador de mudança: compara o texto) |
+| Painel | Janela própria (Edge/Chrome `--app`, `janela.py`) | Aba do navegador padrão (`janela.py` só procura Edge/Chrome no Windows) |
+| Ícone perto do relógio (`bandeja.py`) | Sim (`pystray`, via `pythonw`) | Não: `app.py` só liga a bandeja no Windows |
+| Atalhos e iniciar com o sistema (`atalhos.py`) | Sim | Não (`disponivel()` só no Windows) |
+| Modo automático (`auto_export.py`) | Acha a janela do jogo, põe na frente, cobre o Continue | Sem achar a janela nem pôr na frente; busca na tela inteira; sem cobertura (`cobertura.py` é Win32); pede permissões de Gravação de Tela e Acessibilidade |
+| Pasta do Drive dos amigos (`compartilhar.py`) | Procura nas unidades fixas (`G:` etc.) | Procura em `~/Library/CloudStorage/GoogleDrive-*`; escolher pasta usa `tkinter` |
+| Atualizador (`atualizador.py`) | Reabre com janela nova | Reabre com `Popen` simples |
+| Diagnóstico (`diagnostico.py`) | Pastas do jogo no Windows | Conferir caminhos do jogo no Mac |
+| Teste de telas (`teste_telas.py`) | Edge ou Chrome | Chrome (canal `chrome` do Playwright) |

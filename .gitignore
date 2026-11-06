@@ -11,3 +11,8 @@ instalador/cache/
 # Arquivos do sistema
 .DS_Store
 Thumbs.db
+# Arquivos locais de cada desenvolvedor (antes ficavam só no .git/info/exclude de um computador)
+CLAUDE.local.md
+.claude/settings.local.json
+ferramentas/
+_arquivo_docs_antigos/

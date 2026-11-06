@@ -14,3 +14,8 @@
 4. **Perguntar ao Pedro se ele guardou o texto completo do estudo do servidor central** e, se sim, registrar em `BACKLOG.md`.
 5. **Trazer para `testes/experimentos/` os scripts de medição do replay, das mãos, dos prêmios e dos descartes** (hoje fora do
    repositório), para que qualquer sessão consiga repetir as medições de `EVIDENCE.md`. É código de teste: pedir autorização antes.
+
+**Acréscimo de 06/11/2026 (preparação para dois desenvolvedores; ramo `docs/preparar-dois-devs`, por Pull Request):**
+- Pedro: revisar e juntar o PR do ramo; depois configurar o GitHub (`00_CENTRAL/COLLABORATION.md`, seção 9) e convidar o segundo dev.
+- Segundo dev: primeiro dia (`COLLABORATION.md`, seção 2) e o item **M1** do BACKLOG (conferir o básico no Mac), que diz quais dos
+  itens M2–M7 são reais.
