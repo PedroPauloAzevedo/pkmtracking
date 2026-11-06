@@ -2,7 +2,7 @@
 
 > Atualizado em 05/11/2026. Código: `tracker/replay.py` (montagem), `tracker/decks.py` (`resolver_versoes`, `_limites_ps`),
 > `web/js/replay.js` (desenho). Rota: `/api/partidas/<id>/replay`. Tela: `#replay-<id>`.
-> Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013, D-032, D-035 e D-045. Medições: `../03_DECISIONS/EVIDENCE.md`.
+> Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013, D-032, D-035, D-045 e D-046. Medições: `../03_DECISIONS/EVIDENCE.md`.
 
 ## O que faz
 Para cada linha do log guarda uma "foto" (quadro): Pokémon Ativo e Banco de cada jogador (com dano, energias e ferramentas),
@@ -22,6 +22,12 @@ O replay é montado na hora em que a tela abre: corrigir o replay vale também p
 - **Contadores ambíguos:** quando o log não diz qual de dois Pokémon de mesmo nome recebeu contadores, o replay anota a
   escolha; se um nocaute depois fica com falta exatamente desse valor (pelos PS mínimos da carta, considerando os golpes que
   ela usou), o replay é montado de novo com a escolha corrigida (`_correcoes`, segunda passada).
+- **Listas de descarte** (`tirar_listados`, desde 2026.11.06-5; D-046): `N cards were discarded from P's Y.` + lista `•` tira de Y as
+  cartas presas listadas (pré-evoluções da lista não contam). Depois de nocaute a lista é completa: o que sobrar de ambíguo no
+  nocauteado volta para outro candidato em jogo.
+- **Energia ligada "a um dos X"** (`mover_ambigua`, D-046): ligação `on the Bench` com vários de mesmo nome (ex.: Metal Maker) vai para
+  o primeiro e fica marcada (`ambigua`, `linha`, `candidatos`). A lista de descarte, o custo do ataque (`_custo_ataque`, pela biblioteca
+  de cartas) e o descarte no recuo provam de qual era; a correção vai para a 2ª passada (`novas_correcoes[linha] = uid`).
 - **Risky Ruins** (desde 2026.11.06-3; D-045): os contadores logo depois de `Risky Ruins was activated.` são sempre do jogador que
   escreveu a linha (ele acabou de pôr o Básico no Banco), mesmo que o log diga outro dono (`dono_dos_contadores`).
 - Night Stretcher (e Super Rod, Lillie's Determination) pegam do descarte/mão: não tiram o Pokémon da mesa.

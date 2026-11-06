@@ -39,6 +39,25 @@ def _tipo_energia(nome):
     return "Special"
 
 
+_custos = {}
+
+
+def _custo_ataque(nome, golpe):
+    """Quantas Energias o golpe pede (a menor entre as versões da carta), pela biblioteca de cartas; None se não souber."""
+    if not _custos:
+        _custos[None] = 0  # marca de "já lido" (também quando não há biblioteca)
+        import json as _json
+        for arq in sorted(cartas.PASTA_SETS.glob("*.json")) if cartas.PASTA_SETS.exists() else []:
+            try:
+                for c in _json.loads(arq.read_text(encoding="utf-8")).get("cards", []):
+                    for a in c.get("attacks") or []:
+                        k = (cartas.normalizar(c.get("name", "")), a.get("name", ""))
+                        _custos[k] = min(_custos.get(k, 99), len(a.get("cost") or []))
+            except (OSError, ValueError):
+                continue
+    return _custos.get((cartas.normalizar(nome), golpe))
+
+
 def _ps_minimo(nome, golpes=()):
     """Menor PS entre as versões da carta que valem no Standard (Dunsparce: 60 e 70 -> 60).
     Usar o menor evita "achar" falta de dano num Pokémon que era a versão mais fraca.
@@ -377,6 +396,8 @@ def gerar(texto, regras, _correcoes=None):
         tem = lambda p: p["nome"] == nome and any(a["nome"] == carta for a in p["anexos"])
         if sublinha and recuou and recuou[0] == j:
             ref = achar_uid(recuou[1])
+            if ref and not tem(pegar(ref)):
+                mover_ambigua(j, pegar(ref), carta)  # a carta ligada "a um dos X" era deste, que recuou pagando com ela
             if ref and tem(pegar(ref)):
                 return pegar(ref), True
         if not sublinha and any(dono == j and p["nome"] == nome for dono, p in caidos):
@@ -386,6 +407,44 @@ def gerar(texto, regras, _correcoes=None):
             if tem(p):
                 return p, True
         return None, False
+
+    def mover_ambigua(j, destino, nome=None, energia=False):
+        """Uma carta ligada de forma ambígua num irmão é, pelas provas, do `destino`: muda agora e anota a linha da ligação
+        para a 2ª passada pôr a carta no lugar certo desde o começo. nome: essa carta; energia=True: qualquer Energia."""
+        m_ = estado["mesa"][j]
+        for x in ([m_["ativo"]] if m_["ativo"] else []) + m_["banco"]:
+            if x is destino:
+                continue
+            k = next((k for k, a in enumerate(x["anexos"]) if a.get("ambigua")
+                      and (a["nome"] == nome if nome else a["tipo"] == "energia")), None)
+            if k is not None:
+                a = x["anexos"].pop(k)
+                destino["anexos"].append(a)
+                if not correcoes and a.get("linha"):
+                    novas_correcoes[a["linha"]] = destino["uid"]
+                return True
+        return False
+
+    def tirar_listados(j, p, itens, completa=False):
+        """"N cards were discarded from j's Y." + lista "•": tira de Y as cartas presas que a lista nomeia (as pré-evoluções
+        embaixo dele também aparecem e são ignoradas). Y é o nocauteado (linha logo depois do nocaute) ou um Pokémon em jogo
+        (efeito de ataque, ex.: Metallic Hammer descarta 3 Energias). Carta que Y não tem no replay veio de uma ligação
+        ambígua ("to Metang on the Bench" com vários Metang, ex.: Metal Maker): sai do irmão que a recebeu, porque a lista
+        prova que ela estava em Y."""
+        for nome in itens:
+            if not any(a["nome"] == nome for a in p["anexos"]):
+                mover_ambigua(j, p, nome)
+            i = next((k for k, a in enumerate(p["anexos"]) if a["nome"] == nome), None)
+            if i is not None:
+                p["anexos"].pop(i)
+        if completa:  # lista do nocaute: é tudo o que estava preso nele; o resto ambíguo era de um irmão ainda em jogo
+            for a in [a for a in p["anexos"] if a.get("ambigua")]:
+                destino = next((achar_uid(u) for u in a.get("candidatos", []) if u != p["uid"] and achar_uid(u)), None)
+                if destino:
+                    p["anexos"].remove(a)
+                    pegar(destino)["anexos"].append(a)
+                    if not correcoes and a.get("linha"):
+                        novas_correcoes[a["linha"]] = pegar(destino)["uid"]
 
     def premio_logo_adiante(n_linha, j):
         """O log às vezes escreve cartas de prêmio ANTES de "X took N Prize cards." (visto em jogadas que valem 3 prêmios):
@@ -406,6 +465,7 @@ def gerar(texto, regras, _correcoes=None):
     ultima_principal = ""  # última linha que não começa com "-" (o ataque ou habilidade que gerou as sublinhas)
     recuou = None          # (jogador, uid) de quem acabou de recuar: a Energia descartada no recuo sai só dele
     caidos = []            # (jogador, Pokémon) nocauteados neste turno: as cartas presas a eles saem com eles
+    descarte_lista = None  # (jogador, Pokémon) de "N cards were discarded from X's Y.": a lista "•" seguinte diz quais
     lista_pendente = None
     poder = None          # Pokémon que acabou de usar habilidade (ex.: Dudunsparce "Run Away Draw")
     embaralhou = False    # "X shuffled N cards into their deck." logo depois desse poder
@@ -430,6 +490,13 @@ def gerar(texto, regras, _correcoes=None):
                                            {"tipo": "descarte", "jogador": poder[0], "carta": poder[1]}))
                 embaralhou, poder = False, None
                 continue
+            if descarte_lista:
+                tirar_listados(descarte_lista[0], descarte_lista[1], itens, descarte_lista[2])
+                descarte_lista = None
+                if quadros:
+                    quadros[-1]["estado"]["mesa"] = copy.deepcopy(estado["mesa"])
+                    quadros[-1].setdefault("detalhes", []).append(", ".join(itens))
+                continue
             if lista_pendente:
                 j, zona = lista_pendente
                 for c in itens:
@@ -450,6 +517,7 @@ def gerar(texto, regras, _correcoes=None):
 
         d = {"tipo": "info"}
         m = None
+        descarte_lista = None
         if not sublinha:
             poder = None
             recuou = None
@@ -507,10 +575,18 @@ def gerar(texto, regras, _correcoes=None):
         elif casa(rf"^{P} attached (.+?) to (.+?) (in the Active Spot|on the Bench)\.$"):
             j, c, alvo, onde = m.groups()
             ref = achar(j, alvo, "ativo" if "Active" in onde else "banco", False)
+            certo = achar_uid(correcoes[n_linha]) if n_linha in correcoes else None
+            if certo and pegar(certo)["nome"] == alvo:
+                ref = certo  # 2ª passada: as provas mostraram de qual dos Pokémon de mesmo nome era
             tipo = _tipo_anexo(c)
             if ref:
                 p = pegar(ref)
-                p["anexos"].append({"nome": c, "tipo": tipo, "energia": _tipo_energia(c) if tipo == "energia" else None})
+                anexo = {"nome": c, "tipo": tipo, "energia": _tipo_energia(c) if tipo == "energia" else None}
+                if "Bench" in onde and sum(1 for x in estado["mesa"][j]["banco"] if x["nome"] == alvo) > 1:
+                    anexo["ambigua"] = True  # vários com esse nome no Banco (ex.: Metal Maker): pode ser de um irmão
+                    anexo["linha"] = n_linha
+                    anexo["candidatos"] = [x["uid"] for x in estado["mesa"][j]["banco"] if x["nome"] == alvo]
+                p["anexos"].append(anexo)
                 d = {"tipo": "anexo", "jogador": j, "carta": c, "uid": p["uid"]}
             else:
                 d = {"tipo": "anexo", "jogador": j, "carta": c}
@@ -552,6 +628,11 @@ def gerar(texto, regras, _correcoes=None):
             ref_at = achar(j, atacante, "ativo", False) if dano else (mais_recente(j, atacante) or achar(j, atacante, None, False))
             if not dano and ref_at:
                 poder = (j, atacante, pegar(ref_at)["uid"])
+            if dano and ref_at:  # o golpe saiu: o atacante tinha as Energias do custo (as ambíguas de um irmão eram dele)
+                p = pegar(ref_at)
+                falta = (_custo_ataque(atacante, golpe) or 0) - sum(1 for a in p["anexos"] if a["tipo"] == "energia")
+                while falta > 0 and mover_ambigua(j, p, energia=True):
+                    falta -= 1
             d = {"tipo": "ataque" if dano else "habilidade", "jogador": j, "carta": atacante, "golpe": golpe,
                  "uid": pegar(ref_at)["uid"] if ref_at else None}
             if alvo and dano:
@@ -624,6 +705,18 @@ def gerar(texto, regras, _correcoes=None):
                         novas_correcoes[erro[0]] = uid
                 estado["mesa"][ref[0]]["nocauteados"].append(p["nome"])
             d = {"tipo": "nocaute", "jogador": j, "carta": c, "uid": uid}
+        elif casa(rf"^\d+ cards were discarded from {P}'s (.+?)\.$"):
+            j, alvo = m.groups()
+            caido = re.search(rf"{re.escape(j)}'s {re.escape(alvo)} (?:is now|was) Knocked Out", ultima_principal or "")
+            p = next((x for dono, x in reversed(caidos) if dono == j and x["nome"] == alvo), None) if caido else None
+            if not p:
+                ref = achar(j, alvo, None, False)
+                p = pegar(ref) if ref else None
+            if p:
+                descarte_lista = (j, p, bool(caido))
+            d = {"tipo": "descarte", "jogador": j, "carta": alvo}
+            if p and not caido:
+                d["uid"] = p["uid"]
         elif casa(rf"^(.+?) was discarded from {P}'s (.+?)\.$"):
             c, j, alvo = m.groups()
             p, em_jogo = dono_do_anexo(j, alvo, c, sublinha)
@@ -699,7 +792,7 @@ def gerar(texto, regras, _correcoes=None):
             d = {"tipo": "info", "jogador": j}
         quadros.append(_quadro(n_linha, l, estado, d))
 
-    if novas_correcoes:  # contadores ambíguos: refaz a partida com a escolha que o nocaute revelou
+    if novas_correcoes:  # contadores ou Energias ambíguos: refaz a partida com a escolha que as provas revelaram
         return gerar(texto, regras, novas_correcoes)
     maos.fechar_pendente()
     maos.revelar_no_passado(quadros)

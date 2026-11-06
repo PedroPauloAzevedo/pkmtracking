@@ -69,6 +69,14 @@
   v2026.11.06-3; erro visto pelo Pedro num replay com dois Budew). *Por quê:* depois de `Risky Ruins was activated.` o jogo escreve
   `X put 2 damage counters on <dono do Estádio>'s Y`; o Y é sempre o Básico que X acabou de pôr no Banco. O replay confiava no dono
   escrito quando ele era outro jogador. Medição em `EVIDENCE.md` (55 de 145 linhas com o dono trocado; estados impossíveis 1742 → 1660).
+- **D-046 · Replay: listas de descarte tiram as cartas presas, e Energia ligada "a um dos X" vai para o X que as provas apontam**
+  (06/11/2026, v2026.11.06-5; erro visto pelo Pedro num replay com quatro Metang). *Por quê:* `N cards were discarded from P's Y.` +
+  lista `•` (efeito de ataque, ex.: Metallic Hammer, ou nocaute) não era lido, e as Energias descartadas ficavam na mesa; habilidades
+  como Metal Maker ligam "to Metang on the Bench" sem dizer qual, e tudo caía no primeiro. As provas: a lista completa do nocaute (o
+  que sobra de ambíguo no nocauteado era de outro candidato), a lista do descarte, o custo do ataque (pela biblioteca de cartas) e o
+  descarte no recuo. A ligação ambígua guarda a linha e os candidatos; a 2ª passada (a mesma dos contadores, D-012) liga no Pokémon
+  certo desde o começo. Sem prova, continua no primeiro. Medição em `EVIDENCE.md` (ataques com Energia de menos 82 → 42 de 840, sem
+  caso novo; nocautes com as cartas presas iguais à lista 178 → 204 de 221).
 - **D-036 · Análises por época de coleção: no TCG Live a época começa na véspera do lançamento, às 10h do Pacífico; nos torneios,
   na segunda sexta-feira depois do lançamento** (05/11/2026, v2026.11.05-5; pedido do Pedro). *Por quê:* cada coleção nova pode
   mudar o meta. O jogo libera a coleção um dia antes das lojas, às 10h do horário do Pacífico (visto nas coleções recentes); a
