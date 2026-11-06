@@ -174,7 +174,7 @@ function tabelaPartidas(lista) {
     ${lista.map(l => sep(l) + `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
       <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>${cj ? `<td>${l.dono ? esc(l.dono) : '<b>Eu</b>'}</td>` : ''}
       <td>${l.resultado === 'V' ? '<span class="pill v">Vitória</span>' : l.resultado === 'D' ? '<span class="pill d">Derrota</span>' : '<span class="pill n">?</span>'}${l.problemas?.length ? ` <span class="pill n" title="${esc(l.problemas.join('; '))}">⚠ incompleto?</span>` : ''}</td>
-      <td>${esc(l.adversario)}</td><td>${deckHtml(l.meu_deck)}${l.lista_nome ? `<div class="muted" style="font-size:.74rem">lista: ${esc(l.lista_nome)}</div>` : ''}</td><td>${deckHtml(l.deck_adv)}</td>
+      <td>${esc(l.adversario)}</td><td>${deckHtml(l.meu_deck)}${l.lista_nome ? `<div class="muted" style="font-size:.74rem">lista: ${esc(l.lista_nome)}</div>` : ''}</td><td>${deckHtml(l.deck_adv)}${incertoHtml(l)}</td>
       <td class="n">${l.premios_eu}–${l.premios_adv}</td><td class="n">${l.turnos}</td>
       <td>${l.comecei == null ? '' : l.comecei ? '1º' : '2º'}</td><td class="muted">${esc(l.motivo)}</td></tr>`).join('')}
   </tbody></table></div>`;
@@ -259,7 +259,7 @@ async function renderDetalhe(id) {
       <h2>Classificar esta partida</h2>
       <div class="grid2">
         <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Seu deck</span>${seletorDeck('e-meu', p.meu_deck, p.meu_deck ? '' : v.meu_deck)}</div>
-        <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Deck dele</span>${seletorDeck('e-adv', p.deck_adv, p.deck_adv ? '' : v.deck_adv)}</div>
+        <div class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Deck dele</span>${seletorDeck('e-adv', p.deck_adv, p.deck_adv ? '' : v.deck_adv)}${p.deck_adv ? '' : incertoHtml(v)}</div>
         <label class="row" style="flex-wrap:nowrap"><span class="label" style="width:110px;flex:none">Lista usada</span>
           <select id="e-lista" class="grow"><option value="">Nenhuma</option>${listas.map(d => `<option value="${d.id}" ${d.id === p.deck_id ? 'selected' : ''}>${esc(d.nome)}${d.ativo ? '' : ' (arquivada)'}</option>`).join('')}</select></label>
         <label class="row"><span class="label" style="width:110px">Tags</span><input class="grow" id="e-tags" value="${esc(p.tags)}" placeholder="ex.: liga, teste-lista-2"></label>

@@ -1,8 +1,12 @@
 """
 EXPERIMENTO 2: identificar o deck pelas cartas reveladas.
 
-Compara o método atual (decks.identificar: ícone do deck + "assinatura" de cartas) com um
+Compara o método por ícones (decks._identificar_por_icones: ícone do deck + "assinatura" de cartas) com um
 classificador Naive Bayes (probabilidade de cada carta aparecer nas listas de cada deck).
+Corrigido em 06/11/2026 (achado 9 da auditoria): a coluna "ícones" chamava decks.identificar, que desde a 2026.11.02-1 é a regra
+de produção (NB2 montado com o banco INTEIRO, inclusive as listas de teste) — media outra coisa e vazava o teste. Agora chama o
+método por ícones de verdade, com as assinaturas só do treino. Limite que sobra: o cadastro de ícones vem de todos os torneios
+(efeito medido ≤ 0,3 pp no a8 da Skill). A regra de produção sem vazamento é medida no a4/a8 da Skill (.claude/skills/statistical-analyst).
 
 Dados: listas reais de torneios importados, com o deck já classificado pelo Limitless.
 Torneios mais antigos treinam; os mais novos testam (nada do teste é usado no treino).
@@ -64,10 +68,11 @@ def naive_bayes(reveladas, alfa=0.5):
 
 
 def atual(reveladas_nomes):
-    return decks.identificar({nome: 1 for nome in reveladas_nomes})
+    """Método por ícones (o nome "atual" ficou do experimento original de 02/11)."""
+    return decks._identificar_por_icones(list(reveladas_nomes))
 
 
-print(f"\n{'cartas vistas':>13} | {'atual':>7} | {'Naive Bayes':>11} | {'NB com confiança ≥ 90%':>24} | tempo médio (atual / NB)")
+print(f"\n{'cartas vistas':>13} | {'ícones':>7} | {'Naive Bayes':>11} | {'NB com confiança ≥ 90%':>24} | tempo médio (ícones / NB)")
 for k in (2, 3, 5, 8, 12):
     ok_a = ok_nb = conf_n = conf_ok = 0
     t_a = t_nb = 0.0
@@ -85,7 +90,7 @@ for k in (2, 3, 5, 8, 12):
     print(f"{k:>13} | {100 * ok_a / n:6.1f}% | {100 * ok_nb / n:10.1f}% | {100 * conf_ok / max(conf_n, 1):6.1f}% de acerto em {100 * conf_n / n:5.1f}% dos casos"
           f" | {1000 * t_a / n:.2f} / {1000 * t_nb / n:.2f} ms")
 
-# ---- combinação: Naive Bayes quando ele está confiante; senão, o método atual
+# ---- combinação: Naive Bayes quando ele está confiante; senão, o método por ícones
 print(f"\n{'cartas vistas':>13} | " + " | ".join(f"NB se conf ≥ {c:.1f}" for c in (0.0, 0.3, 0.5, 0.7)))
 for k in (2, 3, 5, 8):
     amostra = random.sample(teste, min(len(teste), 1500))
@@ -119,7 +124,7 @@ def naive_bayes2(reveladas, beta=2.0, minimo=3):
     return melhor, 1 / sum(math.exp(v - m) for v in notas.values())
 
 
-print(f"\n{'cartas vistas':>13} | {'atual':>7} | {'NB':>6} | {'NB2':>6}")
+print(f"\n{'cartas vistas':>13} | {'ícones':>7} | {'NB':>6} | {'NB2':>6}")
 for k in (2, 3, 5, 8, 12):
     amostra = random.sample(teste, min(len(teste), 1500))
     a = b = c = 0

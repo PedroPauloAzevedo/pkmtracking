@@ -1,5 +1,25 @@
 [
   {
+    "versao": "2026.11.06-2",
+    "data": "2026-11-06",
+    "titulo": "Deck do adversário mais certeiro e aviso quando ele é só um palpite",
+    "mudancas": [
+      "O deck do adversário é identificado sempre pelo modelo de probabilidade (que compara as cartas vistas com as listas dos torneios). Antes, quando o modelo estava inseguro, o programa trocava por um método mais antigo que errava mais: com 1 ou 2 cartas vistas, o acerto sobe cerca de 6 pontos.",
+      "Quando o adversário mostra poucas cartas, ou cartas usadas por vários decks, o deck dele aparece com a marca \"incerto\". Nesses casos o palpite acerta só cerca de 1 em cada 3 vezes. Se você sabe o deck, escolha-o na partida.",
+      "Meta e torneios: a faixa provável de cada taxa agora considera que várias partidas de um torneio são do mesmo jogador. As porcentagens não mudam; algumas faixas ficam 1 ponto mais largas."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.06-2\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Algumas partidas antigas podem mudar o deck do adversário (nos dados de teste, 3 de 80), e essas ficam marcadas como \"incerto\".",
+      "Se uma partida estiver \"incerta\" e você souber o deck, abra a partida e escolha o deck em \"Deck dele\"."
+    ]
+  },
+  {
     "versao": "2026.11.06-1",
     "data": "2026-11-06",
     "titulo": "Ícones dos decks aparecem sem precisar recarregar",

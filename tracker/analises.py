@@ -22,20 +22,77 @@ def nome_de_slug(s):
     return decks.nome_deck(s)
 
 
-def wilson(v, n, z=1.96):
+def wilson(v, n, z=1.96, efeito=1.0):
+    """Faixa de 95% de Wilson. `efeito` = efeito de desenho (D-041): quando as partidas não são independentes (várias do
+    mesmo jogador), n partidas valem como n / efeito; a taxa não muda, só a largura da faixa."""
     if not n:
         return None, None
     p = v / n
+    n = n / max(1.0, efeito)
     centro = (p + z * z / (2 * n)) / (1 + z * z / n)
     margem = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
     return round(100 * max(0, centro - margem), 1), round(100 * min(1, centro + margem), 1)
 
 
-def placar(v, d, e=0):
+def placar(v, d, e=0, efeito=1.0):
     n = v + d + e
-    baixo, alto = wilson(v, n)
-    return {"n": n, "v": v, "d": d, "e": e, "taxa": round(100 * v / n, 1) if n else None,
-            "ic_baixo": baixo, "ic_alto": alto}
+    baixo, alto = wilson(v, n, efeito=efeito)
+    saida = {"n": n, "v": v, "d": d, "e": e, "taxa": round(100 * v / n, 1) if n else None,
+             "ic_baixo": baixo, "ic_alto": alto}
+    if efeito > 1.0:
+        saida["efeito_desenho"] = round(efeito, 3)
+    return saida
+
+
+# ---- D-041: dependência entre partidas do mesmo jogador nas telas de torneio (Meta, Matchups, perfil do deck)
+# Num torneio, cada jogador faz várias partidas com o mesmo deck, e elas "andam juntas" (habilidade do jogador). A faixa feita
+# por partida fica um pouco estreita demais. Correção (efeito de desenho de Kish): 1 + (m − 1)·ICC, com m = partidas por jogador
+# naquela conta e ICC = correlação intraclasse dos resultados por jogador, calculada nas MESMAS partidas da tela (decks dos dois
+# lados conhecidos; empate = não-vitória). Escolhida pelo experimento a11 (teste de metades independentes por jogador): a faixa
+# antiga cobria 93,1% (taxa dos decks, Labs) em vez de 95%; com esta correção, 95,3%. Fator fixo (×1,25) exagerava (98%).
+
+def icc_binario(grupos):
+    """Correlação intraclasse (estimador de ANOVA) de resultados 0/1 agrupados por jogador; 0 se não der para calcular."""
+    gs = [g for g in grupos if len(g) >= 1]
+    k = len(gs)
+    n = sum(len(g) for g in gs)
+    if k < 2 or n <= k:
+        return 0.0
+    media = sum(sum(g) for g in gs) / n
+    ssb = sum(len(g) * (sum(g) / len(g) - media) ** 2 for g in gs)
+    ssw = sum(sum((y - sum(g) / len(g)) ** 2 for y in g) for g in gs)
+    msb, msw = ssb / (k - 1), ssw / (n - k)
+    n0 = (n - sum(len(g) ** 2 for g in gs) / n) / (k - 1)
+    den = msb + (n0 - 1) * msw
+    return (msb - msw) / den if den else 0.0
+
+
+def dependencia_torneios(torneios=None):
+    """{"icc": ≥ 0, "jog_deck": {deck: jogadores}, "jog_cel": {(deck, adv): jogadores}} nas partidas dos torneios escolhidos."""
+    f, params = _filtro_torneios(torneios)
+    rows = banco.consultar(
+        f"SELECT torneio, j1, j2, res1, arq1, arq2 FROM t_partidas WHERE arq1 != '' AND arq2 != '' AND res1 IN ('W','L','T') {f}",
+        params)
+    por_jog = defaultdict(list)
+    jog_deck, jog_cel = defaultdict(set), defaultdict(set)
+    for r in rows:
+        for nome, a, b, y in ((r["j1"], r["arq1"], r["arq2"], r["res1"] == "W"), (r["j2"], r["arq2"], r["arq1"], r["res1"] == "L")):
+            if not nome:
+                continue
+            j = (r["torneio"], nome)
+            por_jog[j].append(1 if y else 0)
+            jog_cel[(a, b)].add(j)
+            if a != b:
+                jog_deck[a].add(j)
+    icc = max(0.0, icc_binario([g for g in por_jog.values() if len(g) >= 2]))
+    return {"icc": icc, "jog_deck": {a: len(s) for a, s in jog_deck.items()}, "jog_cel": {k: len(s) for k, s in jog_cel.items()}}
+
+
+def efeito_desenho(n, jogadores, icc):
+    """1 + (m − 1)·ICC, m = partidas por jogador (nunca menor que 1)."""
+    if not n or not jogadores or icc <= 0:
+        return 1.0
+    return max(1.0, 1 + (n / jogadores - 1) * icc)
 
 
 # ================================================================== pessoal
@@ -150,11 +207,14 @@ def visao(p, eu):
     if r["vencedor"] and sou:
         res = "V" if r["vencedor"] == eu else "D"
     pj = r["por_jogador"]
+    palpite_adv = None if p["deck_adv"] else decks.palpite_deck_detalhe(r, adv)
     return {
         "id": p["id"], "data": p["capturada_em"], "origem": p["origem"], "eu": eu_, "adversario": adv,
         "resultado": res, "comecei": (r["primeiro"] == eu_) if r["primeiro"] else None,
         "meu_deck": _canon(p["meu_deck"] or _arquetipo_lista(p.get("deck_id")) or decks.palpite_deck(r, eu_)),
-        "deck_adv": _canon(p["deck_adv"] or decks.palpite_deck(r, adv)),
+        "deck_adv": _canon(p["deck_adv"] or palpite_adv["deck"]),
+        # D-042: deck do adversário adivinhado com confiança baixa (NB2 < LIMIAR_INCERTO); escolhido à mão nunca é incerto
+        "deck_adv_incerto": bool(palpite_adv and decks.incerto(palpite_adv)),
         "deck_id": p.get("deck_id"), "lista_nome": _nome_lista(p.get("deck_id")),
         "premios_eu": pj.get(eu_, {}).get("premios", 0), "premios_adv": pj.get(adv, {}).get("premios", 0),
         "turnos": r["turnos"], "motivo": r["motivo"],
@@ -305,6 +365,7 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
     total_campo = sum(1 for j in todos if j["arquetipo"]) or 1
     campo = Counter(j["arquetipo"] for j in todos if j["arquetipo"])
     mu = matchups_por_slug(torneios)
+    dep = dependencia_torneios(torneios)  # D-041
 
     divisao = []
     for arq, qtd in cont.most_common():
@@ -320,7 +381,8 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
             "no_corte": no_corte.get(arq, 0),
             "conversao": round(100 * no_corte.get(arq, 0) / campo[arq], 1) if campo[arq] else None,
             "fator_conversao": round((no_corte.get(arq, 0) / total_corte) / pct_campo, 2) if pct_campo else None,
-            **placar(geral["v"], geral["d"], geral["e"]),
+            **placar(geral["v"], geral["d"], geral["e"],
+                     efeito=efeito_desenho(sum(geral.values()), dep["jog_deck"].get(arq), dep["icc"])),
         })
 
     principais = [d["arquetipo"] for d in divisao[:k]]
@@ -329,14 +391,15 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
         linha = []
         for b in principais:
             c = mu.get((a, b), {"v": 0, "d": 0, "e": 0, "n": 0})
-            cel = placar(c["v"], c["d"], c["e"])
+            cel = placar(c["v"], c["d"], c["e"], efeito=efeito_desenho(c["n"], dep["jog_cel"].get((a, b)), dep["icc"]))
             cel["espelho"] = a == b
             cel["pouco"] = cel["n"] < min_partidas
             linha.append(cel)
         matriz.append({"arquetipo": a, "nome": nome_de_slug(a), "celulas": linha})
 
     return {"divisao": divisao, "matriz": matriz, "colunas": [{"arquetipo": a, "nome": nome_de_slug(a)} for a in principais],
-            "jogadores_considerados": len(conhecidos), "sem_deck": len(jogadores) - len(conhecidos), "corte": corte}
+            "jogadores_considerados": len(conhecidos), "sem_deck": len(jogadores) - len(conhecidos), "corte": corte,
+            "icc": round(dep["icc"], 4)}
 
 
 def tendencia(k=8, torneios=None):
@@ -376,6 +439,7 @@ def perfil(arq, torneios=None):
     if not deles:
         return None
     mu = matchups_por_slug(torneios)
+    dep = dependencia_torneios(torneios)  # D-041
     share = Counter(j["arquetipo"] for j in com_deck)
     tot = len(com_deck)
 
@@ -383,7 +447,7 @@ def perfil(arq, torneios=None):
     for (a, b), c in mu.items():
         if a != arq:
             continue
-        cel = placar(c["v"], c["d"], c["e"])
+        cel = placar(c["v"], c["d"], c["e"], efeito=efeito_desenho(c["n"], dep["jog_cel"].get((a, b)), dep["icc"]))
         peso = share.get(b, 0) / tot
         spread.append({"arquetipo": b, "nome": nome_de_slug(b), "pct_campo": round(100 * peso, 1), **cel})
         if b != arq and cel["n"] >= 5:

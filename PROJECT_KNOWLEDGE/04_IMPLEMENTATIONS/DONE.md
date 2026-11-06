@@ -6,8 +6,10 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
-| 2026.11.06-1 | 06/11/2026 | (sem commit) | Ícones dos decks aparecem sem recarregar o painel |
+| (Skill) | 06/11/2026 | (este PR, ramo `icones-painel`) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.06-2 | 06/11/2026 | (ver `git log`: "v2026.11.06-2") | Deck do adversário pelo NB2, marca "incerto" e faixas do meta com a dependência entre partidas |
+| 2026.11.06-1 | 06/11/2026 | (ver `git log`: "v2026.11.06-1") | Ícones dos decks aparecem sem recarregar o painel |
 | 2026.11.05-6 | 05/11/2026 | `2600e4c` | Partidas: filtro do deck do adversário; ícones dos decks de volta |
 | 2026.11.05-5 | 05/11/2026 | `2600e4c` | Épocas de coleção nas análises, "Ver todas" consertado e replay com o descarte certo |
 | 2026.11.05-4 | 05/11/2026 | `2600e4c` | Biblioteca de cartas: carta que o TCGdex não entrega não para a atualização |
@@ -25,10 +27,25 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
-## 2026.11.06-1 — Ícones sem recarregar (erro visto pelo Pedro)
-- `decks.versao_arquetipos` (aumenta em `salvar_arquetipos`), em `/api/status`; `atualizarStatus` (base.js) busca de novo os decks
-  e redesenha quando muda. Teste: `teste_tracker.py` seção 8. Conferido numa cópia com o cadastro zerado: 0 ícones ao abrir, 214
-  sem recarregar uns segundos depois. Os 4 testes OK.
+## 2026.11.06-2 — 06/11/2026 (decisões do Pedro D-040, D-041, D-042)
+- **D-040** `decks.identificar_detalhe` (novo; `identificar` passa a usá-lo): o NB2 decide sempre que há modelo (≥ 200 listas); ícones
+  só sem modelo. A regra antiga fica em `decks._identificar_regra_antiga` (e `CONFIANCA_NB`, usado só por ela e pelos experimentos).
+  Medição antes/depois (a8 da Skill, mesmos dados e semente): a coluna "programa" passou de 57,5 / 79,3 / 91,3% (turnos 1 / 2 / 6) para
+  63,4 / 81,0 / 91,0%, idêntica ao NB2 em todos os turnos.
+- **D-042** `decks.incerto` + `LIMIAR_INCERTO = 0,6` (experimento a10, critério fixado antes de olhar: menor limiar com acerto ≥ 90% nas
+  não marcadas → marca ~10%, que acertam ~37%). `analises.visao` devolve `deck_adv_incerto` (nunca para deck escolhido à mão);
+  painel: `incertoHtml` (`base.js`) na lista de partidas e na partida; CSV `minhas_partidas.csv` ganhou a coluna no fim.
+  Nos dados do Pedro (80 partidas): 3 mudam de deck do adversário e 4 ficam "incertas" (todas de amigos).
+- **D-041** `analises.wilson(..., efeito)`, `placar(..., efeito)`, `icc_binario`, `dependencia_torneios`, `efeito_desenho`: no Meta
+  (taxa dos decks, matriz) e no perfil do deck, faixa com efeito de desenho 1 + (m − 1)·ICC, ICC calculado nas partidas da seleção.
+  Escolha pelo experimento a11 (metades independentes por jogador): cobertura 93,1% → 95,3% (decks, Labs); fator fixo ×1,25 exagerava
+  (98%). Nos dados do Pedro: ICC 0,015; faixas dos decks 2,3% mais largas em média (máx. 6%), 61 de 119 mudam 1 ponto, nenhuma cruza
+  50%; matriz quase igual; taxas idênticas; `meta()` de 0,31 s para 0,49 s. Telas pessoais (Ladder) não mudam.
+- `testes/experimentos/e2_identificar_deck.py`: coluna "atual" volta a medir os ícones (achado 9: chamava a regra de produção com o
+  banco inteiro). Agora ícones 19–76% (antes, 95,7% com vazamento).
+- Testes: `teste_tracker.py` seção 9 (regra nova, limiar, Wilson com efeito, ICC, faixas nunca mais estreitas); os 4 testes OK.
+  Conferido na tela: marca "incerto" na partida. Evidências: `.claude/skills/statistical-analyst/experiments/resultados/` (a8 de
+  06/11 09:24 com o código novo, a10, a11).
 
 ## (Skill) Statistical Analyst — 06/11/2026, `49664da`
 - `.claude/skills/statistical-analyst/` (D-039): `SKILL.md`; `knowledge/` (matriz dos métodos com classe A–F e evidência, fórmulas,
@@ -37,6 +54,12 @@
   `tests/` (20 testes) e `evals/` (4 cenários: 16/16 com a Skill, 12/16 sem).
 - `03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md` e `STATISTICAL_AUDIT_2026-11-06.md` (10 achados). Nenhum código do programa mudou;
   as recomendações esperam o Pedro (`GAPS_AND_ROADMAP.md`).
+
+## 2026.11.06-1 — Ícones sem recarregar (erro visto pelo Pedro)
+- `decks.versao_arquetipos` (aumenta em `salvar_arquetipos`), em `/api/status`; `atualizarStatus` (base.js) busca de novo os decks
+  e redesenha quando muda. Teste: `teste_tracker.py` seção 8. Conferido numa cópia com o cadastro zerado: 0 ícones ao abrir, 214
+  sem recarregar uns segundos depois. Os 4 testes OK. Publicada a partir de um worktree separado, porque a pasta do projeto tinha
+  trabalho sem commit da rodada de hardening da Skill.
 
 ## 2026.11.05-6 — Filtros de deck em Partidas e ícones dos decks (pedidos do Pedro)
 - `web/js/partidas.js`: `S.filtroPartidas.adv`, campos "Deck do jogador" e "Deck do adversário" (opções em ordem de `nomeDeck`).

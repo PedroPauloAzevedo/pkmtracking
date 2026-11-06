@@ -90,7 +90,8 @@
 - **D-017 · Melhoria de algoritmo só com medição contra o atual, nos mesmos dados** (até 02/11; firme). Manter a versão antiga quando
   útil (`_uso_cartas_lento`, `_identificar_nb_direto`, `variantes_por_semelhanca`).
 - **D-018 · Matchups: taxa real é o padrão; confronto ajustado (k = 24) é opção** (02/11, exp. 3).
-- **D-019 · Identificação do deck: NB2 com reserva pelos ícones e pelo palpite do dano** (02/11, exp. 2).
+- **D-019 · Identificação do deck: NB2 com reserva pelos ícones e pelo palpite do dano** (02/11, exp. 2). *Substituída por D-040
+  em 06/11/2026: a reserva pelos ícones só vale sem modelo.*
 - **D-020 · Versões do deck pela ACE SPEC (modelo M5)** (02/11, exp. 9). Sub-versões dentro de cada ACE SPEC pioraram a previsão;
   nenhuma divisão prevê o resultado individual melhor que o deck inteiro: versões servem para descrever.
 - **D-021 · Efeito de cada carta por regressão logística com o confronto ajustado como ponto de partida e freio L2 = 300** (02/11/2026,
@@ -103,17 +104,15 @@
   `tools/ponte.py` em vez de copiá-las e traz só contas que o programa não tem. Vai junto para quem atualiza (o atualizador copia o
   zip inteiro; não faz mal: o programa não lê essa pasta). Achados que pedem mudança no programa ficam como recomendação
   (`STATISTICAL_AUDIT_2026-11-06.md`, `GAPS_AND_ROADMAP.md`) até o Pedro decidir.
-- **D-040 · Identificação do deck: NB2 sempre que houver modelo; ícones só sem modelo** (06/11/2026, decisão do Pedro; **publicado na 2026.11.06-2,
-  `101da5f`**). *Por quê:* a8 — com cartas vistas realistas e sem vazamento, o NB2 acerta mais nos turnos 1–2 (+5,9 e +1,7 pp).
-  *Custo aceito:* decks raros pioram (F1 macro 0,53 × 0,58 no turno 2). Muda D-019. Implementar com a medição do a8 refeita na versão
-  nova (D-017) e corrigir o e2 junto.
-- **D-041 · Faixas das telas de torneio (Meta, Matchups) com a dependência entre partidas do mesmo jogador** (06/11/2026, decisão do
-  Pedro; **publicado na 2026.11.06-2, `101da5f`**). *Por quê:* a7 — ICC de todos os jogadores +0,063;
-  *medido depois no a11:* nas partidas das telas o ICC é 0,015 e as faixas ficam só ~2% mais largas (cobertura 93,1% → 95,3%). Não muda nenhuma porcentagem, só a largura das faixas e as marcas de "diferença provável". Antes de implementar, medir
-  quantas marcas mudam e escolher entre fator fixo e cálculo por deck.
-- **D-042 · Deck do adversário marcado como "incerto" quando a confiança é baixa** (06/11/2026, decisão do Pedro; **publicado na 2026.11.06-2,
-  `101da5f`**). *Por quê:* a8 — a confiança do NB2 é exagerada (inclinação 0,56) e com 1–2 cartas vistas o acerto é ~60%. O
-  limiar do "incerto" sai de medição (curva de acerto por confiança do a8), não de chute.
+- **D-040 · Identificação do deck: NB2 sempre que houver modelo; ícones só sem modelo** (06/11/2026, decisão do Pedro; v2026.11.06-2;
+  substitui D-019). *Por quê:* a8 — com cartas vistas realistas e sem vazamento, +5,9 e +1,7 pp de acerto nos turnos 1 e 2. *Custo
+  aceito:* decks raros pioram (F1 macro 0,53 × 0,58 no turno 2). Regra antiga mantida em `_identificar_regra_antiga` (D-017).
+- **D-041 · Faixas das telas de torneio com a dependência entre partidas do mesmo jogador** (06/11/2026, decisão do Pedro;
+  v2026.11.06-2). Efeito de desenho 1 + (m − 1)·ICC com o ICC das partidas da seleção (a11: cobertura 93,1% → 95,3%; fator fixo
+  exagerava). Não muda nenhuma taxa. Telas pessoais (Ladder) sem correção: lá a dependência não foi medida com poder (a7).
+- **D-042 · Deck do adversário "incerto" com confiança do NB2 abaixo de 0,6** (06/11/2026, decisão do Pedro; v2026.11.06-2).
+  Limiar pelo a10 (critério fixado antes: menor limiar com acerto ≥ 90% nas não marcadas). Ícones e palpite pelo dano não têm
+  medida de confiança e não são marcados. Alternativa registrada: 0,9 (marcaria ~28%, que acertam ~60%).
 - **Proteção da instalação real na ponte da Skill** (06/11/2026, decisão do Pedro; feito): a ponte também lê
   `~/.sa_pastas_protegidas`, arquivo pessoal fora do repositório (`tools/ponte.py`; teste em `tests/test_ponte.py`).
 

@@ -3,9 +3,9 @@
 > Atualizado em 06/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
 > **Atualize este arquivo no fim de toda sessão.** Sempre pergunte ao Pedro antes de começar algo grande.
 
-0. **2026.11.06-1 publicada em 06/11 (`9c6519b`)**, a partir de um worktree separado. Nesta pasta o ramo `icones-painel` (base
-   `76a2005`) ainda tem o mesmo código sem commit, misturado com o trabalho do hardening da Skill: antes do próximo commit daqui,
-   trazer a `main` (`9c6519b`) e descartar o que já está nela (o código da 2026.11.06-1 é idêntico).
+0. **Revisar e juntar o PR do ramo `icones-painel`** (Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base
+   estratégica, ferramentas P1–P7 não aplicadas). Só a Skill e documentação; nenhum código do Coletor muda além do que já está na
+   `main` (2026.11.06-1 e -2).
 1. **Skill "Statistical Analyst" (publicada em 06/11, `49664da`):** o Pedro escolhe quais recomendações da auditoria viram trabalho — sugestão de ordem em
    `.claude/skills/statistical-analyst/knowledge/GAPS_AND_ROADMAP.md` (corrigir o e2; identificação só pelo NB2; aviso de "listas do
    topo"; converter o meta para jogo único).

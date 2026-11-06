@@ -1,12 +1,15 @@
 # Estatísticas e análises: fórmulas, limites e números
 
-> Atualizado em 05/11/2026. Cada número aqui foi escolhido por medição (`../03_DECISIONS/EVIDENCE.md`); mudar exige medir de novo (D-017).
+> Atualizado em 06/11/2026 (v2026.11.06-2: D-040, D-041, D-042). Cada número aqui foi escolhido por medição (`../03_DECISIONS/EVIDENCE.md`); mudar exige medir de novo (D-017).
 > Código: `tracker/analises.py`, `tracker/estrategia.py`, `tracker/decks.py`, `tracker/variantes.py`, `tracker/regressao.py`,
 > `tracker/probabilidades.py`.
 
 ## Taxas
 - **Taxa de vitória = V / (V + D + E)** (empates contam, como no Limitless). Vale também para o confronto ajustado.
 - **Faixa de confiança de 95%** pelo método de Wilson (z = 1,96): onde a taxa "verdadeira" provavelmente está.
+- **Telas de torneio (Meta, matriz, perfil do deck):** a faixa usa n / efeito de desenho, com efeito = 1 + (m − 1)·ICC, m = partidas
+  por jogador naquela conta e ICC dos resultados por jogador nas partidas da seleção (≥ 0). A taxa não muda. Telas pessoais: sem
+  correção (D-041; experimento a11 da Skill).
 - Começando × indo em segundo sempre separados nas aberturas e no ritmo (o 1º turno de quem começa é outro jogo).
 - Decisões são correlações: mostram padrões para investigar, não provam causa.
 
@@ -19,10 +22,13 @@
 - **Tendência:** participação por torneio; agrupa por semana quando há mais de 20 torneios.
 
 ## Identificação do deck pelas cartas reveladas (`decks.py`, D-019)
-1. **NB2** (Naive Bayes sobre as cartas das listas dos torneios): decide se houver pelo menos **200 listas** de torneio e
-   confiança **≥ 0,5**; suavização pela frequência geral da carta (β = 2); decks com menos de **3 listas** não entram.
-2. Senão, **método por ícones** (Pokémon do ícone do arquétipo + cartas típicas, pesando as exclusivas do deck).
+1. **NB2** (Naive Bayes sobre as cartas das listas dos torneios): decide **sempre** que houver pelo menos **200 listas** de torneio
+   (D-040, desde a 2026.11.06-2; antes só com confiança ≥ 0,5); suavização pela frequência geral da carta (β = 2); decks com menos de
+   **3 listas** não entram.
+2. Sem modelo, **método por ícones** (Pokémon do ícone do arquétipo + cartas típicas, pesando as exclusivas do deck).
 3. Senão, **palpite pelo dano** (leitor). Partida ligada a uma lista de Meus decks usa o arquétipo da lista.
+4. **"Incerto"** (D-042): deck do adversário vindo do NB2 com confiança **< 0,6** (a10: essas acertam ~37%; as outras ~91%). A
+   confiança do NB2 é exagerada (a8): não mostrar como porcentagem. Deck escolhido à mão nunca é incerto.
 
 ## Versões de um deck (`variantes.py`, D-020)
 - Separadas pela **ACE SPEC** (modelo M5 do exp. 9). ACE SPEC usada por poucas listas (**< 8% ou < 8 listas**) entra na versão mais

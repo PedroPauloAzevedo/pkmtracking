@@ -3,22 +3,25 @@
 > Atualizado em 06/11/2026, na sessão da Skill "Statistical Analyst" (inventário dos métodos estatísticos). **Atualize este arquivo no fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
+- **06/11/2026: publicada a 2026.11.06-2** (depois da 2026.11.06-1, `9c6519b`): deck do adversário sempre pelo NB2 (D-040), marca
+  "incerto" com confiança < 0,6 (D-042) e faixas das telas de torneio com a dependência entre partidas do mesmo jogador (D-041);
+  e2 corrigido. 4 testes OK; marca conferida na tela numa cópia com os dados do Pedro. Detalhes em `../04_IMPLEMENTATIONS/DONE.md`.
+  A rodada de hardening da Skill (06/11) **não** está neste commit: segue sem commit na pasta do projeto.
 - **Publicada na `main` do GitHub: 2026.11.05-6** (commit `2600e4c`, 05/11/2026, junto com a -4 e a -5):
   - 2026.11.05-4 — Biblioteca de cartas não para a atualização inteira por uma carta que o TCGdex não entrega (D-034);
   - 2026.11.05-5 — campo **Época** nas análises (D-036), "Ver todas" e lista de partidas mais rápida (D-037), descarte no replay (D-035);
   - 2026.11.05-6 — filtros "Deck do jogador" e "Deck do adversário" em Partidas; ícones dos decks de volta (D-038).
   Histórico técnico em `../04_IMPLEMENTATIONS/DONE.md`.
-- O Coletor do Pedro está na 2026.11.05-6 desde 06/11 00:33. O cadastro de decks dele foi refeito com os ícones 19 s depois, mas a
-  janela do painel só mostra os ícones depois de recarregar (F5).
-- **Publicada em 06/11: 2026.11.06-1** (commit `9c6519b`, a partir do worktree `publica-2026.11.06-1`): o painel busca de novo
-  nomes e ícones dos decks quando o cadastro muda no servidor (`versao_arquetipos` em `/api/status`). 4 testes OK.
+- **Publicada em 06/11: 2026.11.06-1** — o painel busca de novo nomes e ícones dos decks quando o cadastro muda no servidor
+  (`versao_arquetipos` em `/api/status`). Antes, quem abria a 2026.11.05-6 só via os ícones depois de apertar F5.
+- O Coletor do Pedro estava na 2026.11.05-6 desde 06/11 00:33 (cadastro de decks já refeito com os ícones).
 - O repositório `PedroPauloAzevedo/pkmtracking` é **público** e não tem Releases.
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.06-1 (`9c6519b`) + Skill "Statistical Analyst" (igual ao GitHub).
-- `icones-painel` (base `76a2005`, ramo atual desta pasta, **sem commit**): o mesmo código da 2026.11.06-1 (já publicado) e o
-  trabalho do hardening da Skill, sem commit. Antes de um commit daqui, trazer a `main` nova.
+- `main` = 2026.11.06-2 (`101da5f`) + Skill "Statistical Analyst" de `55a000f` (igual ao GitHub).
+- `icones-painel` (pasta do projeto): a rodada de hardening da Skill e a base estratégica, juntadas com a `main` nova; vai por PR
+  para revisão. O código da 2026.11.06-1 que estava aqui sem commit é idêntico ao da `main`.
 - `statistical-analyst`: publicado na `main` em 06/11 (`49664da`).
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.

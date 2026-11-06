@@ -297,4 +297,35 @@ assert cli.get("/api/status").get_json()["versao_arquetipos"] == v_arq + 1, "o p
 decks.salvar_arquetipos([{"slug": "teste-icone", "nome": "Teste novo", "icones": []}])
 assert decks.arquetipos()["teste-icone"]["icones"] == ["dragapult"] and decks.arquetipos()["teste-icone"]["nome"] == "Teste novo"
 print("ícones dos decks:", lidos)
+
+# 9) D-040 (NB2 decide sempre que há modelo), D-042 (deck "incerto") e D-041 (faixas com a dependência entre partidas)
+guardado = decks.identificar_nb
+try:
+    for conf, esperado_incerto in ((0.3, True), (0.59, True), (0.6, False), (0.95, False)):
+        decks.identificar_nb = lambda r, c=conf: ("deck-do-modelo", c)
+        decks._cache.pop("ident", None)
+        d = decks.identificar_detalhe({"Dusknoir": 1, "Rare Candy": 1})
+        assert d["deck"] == "deck-do-modelo" and d["metodo"] == "nb2", d   # antes: com confiança < 0,5 valiam os ícones
+        assert decks.incerto(d) is esperado_incerto, (conf, d)
+    decks.identificar_nb = lambda r: ("", 0.0)                             # sem modelo: ícones, nunca "incerto"
+    decks._cache.pop("ident", None)
+    d = decks.identificar_detalhe({"Dragapult ex": 1})
+    assert d["metodo"] in ("icones", "") and not decks.incerto(d), d
+finally:
+    decks.identificar_nb = guardado
+    decks._cache.pop("ident", None)
+assert all("deck_adv_incerto" in l for l in cli.get("/api/partidas").get_json()["partidas"])
+assert analises.wilson(50, 100) == analises.wilson(50, 100, efeito=1.0)
+assert analises.wilson(50, 100, efeito=4) == analises.wilson(12.5, 25), "efeito 4: 100 partidas valem como 25"
+largura = lambda f: f[1] - f[0]
+assert largura(analises.wilson(55, 100, efeito=1.5)) > largura(analises.wilson(55, 100))
+assert abs(analises.icc_binario([[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]) - 1) < 1e-9
+assert analises.efeito_desenho(100, 20, 0.1) == 1.4 and analises.efeito_desenho(100, 20, -0.2) == 1.0 and analises.efeito_desenho(0, 0, 0.1) == 1.0
+m = analises.meta()
+assert m["icc"] >= 0
+for d in m["divisao"]:
+    ingenua = analises.wilson(d["v"], d["n"])
+    assert d["taxa"] == round(100 * d["v"] / d["n"], 1), "a taxa não muda com a correção"
+    assert d["ic_baixo"] <= ingenua[0] and d["ic_alto"] >= ingenua[1], (d, ingenua)   # faixa nunca mais estreita
+print("D-040/D-041/D-042: ok; ICC do meta de teste", m["icc"])
 print("OK")

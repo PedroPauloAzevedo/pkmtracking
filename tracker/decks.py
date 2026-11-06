@@ -19,6 +19,9 @@ IDENTIFICAÇÃO DO DECK
       exclusivas daquele deck mais do que as que todo deck usa, como Ultra Ball)
   Ganha a maior nota. Se a partida estiver ligada a uma lista de "Meus decks", vale o
   arquétipo da lista.
+  Desde a 2026.11.06-2 (D-040) quem decide é o modelo de probabilidade (NB2, mais abaixo) sempre
+  que há listas de torneio suficientes; a nota por ícones acima só vale sem esse modelo. Quando o
+  NB2 decide com pouca confiança, o deck do adversário aparece como "incerto" (D-042).
 """
 import json
 import math
@@ -288,7 +291,11 @@ def _assinaturas():
 
 
 MINIMO_LISTAS_NB = 200   # com menos listas de torneio que isso, o modelo de probabilidade não tem base
-CONFIANCA_NB = 0.5       # abaixo disso, vale o método por ícones (e depois o palpite pelo dano, no leitor)
+CONFIANCA_NB = 0.5       # regra ANTIGA (até a 2026.11.06-1): abaixo disso valiam os ícones. Não decide mais (D-040); fica para
+                         # _identificar_regra_antiga e para os experimentos que comparam com ela (a4, a8)
+LIMIAR_INCERTO = 0.6     # D-042: confiança do NB2 abaixo disso = deck "incerto" na tela. Escolhido pelo experimento a10 (critério
+                         # fixado antes: menor limiar com acerto ≥ 90% nas não marcadas): marca ~10% das identificações, que
+                         # acertam só ~37%; as não marcadas acertam ~91%. A confiança do NB2 é exagerada (a8): não é probabilidade.
 
 
 def _modelo_nb():
@@ -371,19 +378,41 @@ def _identificar_nb_direto(reveladas, beta=BETA_NB, minimo=MIN_LISTAS_DECK):
     return melhor, 1 / sum(math.exp(v - topo) for v in notas.values())
 
 
-def identificar(vistas):
-    """Melhor arquétipo para um conjunto de cartas reveladas. Devolve slug ou ''.
-    Primeiro o modelo de probabilidade (se houver listas de torneio suficientes e ele estiver confiante);
-    senão, o método por ícones e assinatura de cartas."""
+def identificar_detalhe(vistas):
+    """Melhor arquétipo para um conjunto de cartas reveladas: {"deck": slug ou '', "confianca": 0-1 ou None, "metodo": "nb2",
+    "icones" ou ""}. D-040 (06/11/2026): o modelo de probabilidade (NB2) decide SEMPRE que houver modelo (≥ 200 listas de torneio);
+    os ícones só quando não há modelo. Medido no a8 (cartas vistas realistas, sem vazamento): +5,9 pp de acerto no turno 1 e
+    +1,7 pp no turno 2 sobre a regra antiga; custo aceito pelo Pedro: decks raros pioram um pouco (F1 macro)."""
     if not vistas:
-        return ""
+        return {"deck": "", "confianca": None, "metodo": ""}
     _modelo_nb()  # garante o modelo em dia antes de olhar a memória de identificações
     memoria = _cache.setdefault("ident", {})
     chave = frozenset(vistas)
     if chave not in memoria:
         s, confianca = identificar_nb({normalizar_nome_carta(c) for c in vistas if not cartas.eh_energia_basica(c)})
-        memoria[chave] = s if s and confianca >= CONFIANCA_NB else _identificar_por_icones(vistas)
+        if s:
+            memoria[chave] = {"deck": s, "confianca": confianca, "metodo": "nb2"}
+        else:
+            ic = _identificar_por_icones(vistas)
+            memoria[chave] = {"deck": ic, "confianca": None, "metodo": "icones" if ic else ""}
     return memoria[chave]
+
+
+def identificar(vistas):
+    """Melhor arquétipo para um conjunto de cartas reveladas. Devolve slug ou '' (ver identificar_detalhe)."""
+    return identificar_detalhe(vistas)["deck"]
+
+
+def incerto(detalhe):
+    """D-042: o deck saiu do NB2 com confiança abaixo de LIMIAR_INCERTO (a10). Ícones e palpite pelo dano não têm medida de
+    confiança e não são marcados."""
+    return bool(detalhe and detalhe.get("metodo") == "nb2" and (detalhe.get("confianca") or 0) < LIMIAR_INCERTO)
+
+
+def _identificar_regra_antiga(vistas):
+    """Regra até a 2026.11.06-1 (D-019): NB2 só com confiança ≥ 0,5, senão ícones. Fica para comparação (D-017)."""
+    s, confianca = identificar_nb({normalizar_nome_carta(c) for c in vistas if not cartas.eh_energia_basica(c)})
+    return s if s and confianca >= CONFIANCA_NB else _identificar_por_icones(vistas)
 
 
 def _identificar_por_icones(vistas):
@@ -415,10 +444,15 @@ def _identificar_por_icones(vistas):
 
 def palpite_deck(resumo, jogador):
     """Arquétipo do Limitless se der para identificar; senão, o palpite do leitor (nome de carta)."""
-    s = identificar((resumo.get("vistas") or {}).get(jogador) or {})
-    if s:
-        return s
-    return (resumo.get("deck_palpite") or {}).get(jogador, "")
+    return palpite_deck_detalhe(resumo, jogador)["deck"]
+
+
+def palpite_deck_detalhe(resumo, jogador):
+    """Como palpite_deck, com a confiança e o método (para a marca de "incerto", D-042)."""
+    d = identificar_detalhe((resumo.get("vistas") or {}).get(jogador) or {})
+    if d["deck"]:
+        return d
+    return {"deck": (resumo.get("deck_palpite") or {}).get(jogador, ""), "confianca": None, "metodo": "dano"}
 
 
 # ------------------------------------------------------------------ Meus decks
