@@ -1,0 +1,143 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Públic",
+        "description": "API para acesso externo.",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.sistemaplaybpo.com.br"
+        }
+    ],
+    "paths": {
+        "/public": {
+            "get": {
+                "summary": "Retorna ambiente de teste ou JSON da documentação",
+                "operationId": "90626e6edb12017d576f5eb4c589d4fa",
+                "parameters": [
+                    {
+                        "name": "json",
+                        "in": "query",
+                        "description": "Caso informado 'true' retorna JSON da documentação",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retorna ambiente de teste ou JSON da documentação"
+                    }
+                }
+            }
+        },
+        "/public/empresas": {
+            "get": {
+                "summary": "Retorna as empresas do BPO",
+                "operationId": "6ef257816d744022b90c11ba326bff39",
+                "responses": {
+                    "200": {
+                        "description": "Retorna as empresas do BPO"
+                    }
+                },
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ]
+            }
+        },
+        "/public/resumo-empresas": {
+            "get": {
+                "summary": "Retorna resumo das empresas",
+                "operationId": "e1355c15a35ef02a788d2b77911fd9ab",
+                "parameters": [
+                    {
+                        "name": "empresaId",
+                        "in": "query",
+                        "description": "ID da empresa",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retorna resumo das empresas"
+                    }
+                },
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ]
+            }
+        },
+        "/public/comunicacoes-pendentes": {
+            "get": {
+                "summary": "Retorna comunicacoes pendentes",
+                "operationId": "dcf313ed69bed8a4e0731ba3773230e5",
+                "parameters": [
+                    {
+                        "name": "empresaId",
+                        "in": "query",
+                        "description": "ID da empresa",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retorna comunicacoes pendentes"
+                    }
+                },
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ]
+            }
+        },
+        "/public/comunicacoes-esperando-resposta": {
+            "get": {
+                "summary": "Retorna comunicacoes esperando resposta",
+                "operationId": "ceede30518d2bc3e01e7e78bc404adcf",
+                "parameters": [
+                    {
+                        "name": "empresaId",
+                        "in": "query",
+                        "description": "ID da empresa",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retorna comunicacoes esperando resposta"
+                    }
+                },
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "BasicAuth": {
+                "type": "http",
+                "description": "Token de autenticação",
+                "scheme": "basic"
+            }
+        }
+    }
+}

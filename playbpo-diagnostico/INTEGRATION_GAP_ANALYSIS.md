@@ -7,13 +7,13 @@
 
 | # | Lacuna | Impacto | Alternativa | Quem resolve |
 |---|--------|---------|-------------|--------------|
-| G1 | **Especificação da API não lida** (barrada pela Cloudflare para robôs) | Não sabemos campos, autenticação, paginação, limites | Pedro abre a página no navegador e salva o arquivo da especificação | Pedro |
-| G2 | **Tipo de autenticação desconhecido** (só sabemos que `/public/empresas` responde 401 sem credencial) | Não dá para desenhar o cofre de credenciais em detalhe | Ler na especificação; perguntar à PlayBPO como gerar a chave e se ela é só leitura | Pedro / PlayBPO |
+| G1 | ~~Especificação da API não lida~~ **Resolvido em 06/11/2026** (`/public?json=true`). **Porém a especificação não descreve as respostas** (nenhum campo) | Não sabemos os campos que cada rota devolve | Uma chamada de teste autorizada pelo Pedro, registrando só os nomes dos campos; ou pedir um exemplo de resposta à PlayBPO | Pedro / PlayBPO |
+| G2 | Autenticação **confirmada: HTTP Basic** ("Token de autenticação"). Falta saber o que vai dentro (usuário e senha, ou token) e como gerar | Basic manda a credencial em toda chamada: exige HTTPS sempre e cuidado com logs | Perguntar à PlayBPO como gerar e se dá para criar uma credencial só de leitura, separada da senha pessoal | Pedro / PlayBPO |
 | G3 | **Termos de uso da API desconhecidos** | Risco contratual/LGPD ao guardar cópia dos dados | Pedir à PlayBPO os termos da API e confirmar que guardar cópia local é permitido | PlayBPO |
 | G4 | **API cobre só 2 dos 7 módulos** (Empresas e Comunicações; Indicadores em parte) | Tarefas, financeiro, contas e documentos ficam sem fonte automática | Importação de arquivos exportados; pedir endpoints novos | PlayBPO / Pedro |
 | G5 | **Sem histórico nativo aparente** (endpoints parecem devolver o estado atual) | Gráficos de evolução impossíveis só com a API | Guardar "fotos" a cada sincronização a partir do primeiro dia | Nosso sistema |
 | G6 | **Sem webhook conhecido** | Dados só tão atuais quanto a última leitura | Sincronização agendada (ex.: a cada 30–60 min em horário comercial) | Nosso sistema |
-| G7 | **Limite de requisições desconhecido** | Risco de bloqueio da chave | Começar devagar (1 requisição por vez, intervalo entre páginas), respeitar `429`/`Retry-After` | Nosso sistema |
+| G7 | **Limite de requisições desconhecido**, **sem paginação** e **comunicações exigem `empresaId`** (1 chamada por empresa em cada rota) | Sincronização completa = 2 + 2×N chamadas; risco de bloqueio da chave | 1 requisição por vez com intervalo, respeitar `429`/`Retry-After`, horário comercial | Nosso sistema |
 | G8 | **Cloudflare na frente de tudo** | Uma sincronização automatizada pode ser barrada pela Cloudflare mesmo com credencial válida | Confirmar com a PlayBPO que chamadas de servidor com chave são permitidas (e de qual IP) | PlayBPO |
 
 ## 2. Lacunas por módulo
@@ -50,8 +50,8 @@
 
 ## 3. Perguntas para a PlayBPO (enviar por escrito, guardar a resposta)
 
-1. Onde está a especificação OpenAPI da API pública e ela pode ser baixada? Há versão e changelog?
-2. Como é a autenticação (chave por escritório? por usuário? token com validade?) e a chave pode ser **somente leitura**?
+1. ~~Onde está a especificação?~~ (achada). Vocês podem mandar **exemplos de resposta** de cada rota, com os campos? Há changelog da versão 1.0?
+2. A autenticação é HTTP Basic: o que vai em usuário e senha? A credencial é por escritório ou por usuário? Ela expira? Pode ser **somente leitura** e separada da senha de login?
 3. Quais os limites de requisições e regras de paginação?
 4. Chamadas de servidor (sem navegador) são permitidas apesar da Cloudflare? Precisa liberar IP?
 5. Existem ou estão previstos endpoints para **tarefas, lançamentos, contas a pagar/receber, relatórios e documentos**?
@@ -64,6 +64,6 @@
 ## 4. Dúvidas registradas (não inventadas)
 
 - D1: O ano de fundação diverge entre fontes públicas (2020 × 2022) — irrelevante para a integração, apenas registrado.
-- D2: Não sabemos se `resumo-empresas` é por empresa ou consolidado.
-- D3: Não sabemos se a API tem versão (o host é `v2`, mas os caminhos não têm `/v1` ou `/v2`).
+- D2: `resumo-empresas` aceita `empresaId` opcional (resolvido em parte). Ainda não se sabe o que o resumo contém.
+- D3: A especificação é a versão "1.0" (OpenAPI 3.0.0). A documentação fica em `v2.sistemaplaybpo.com.br`, mas o servidor das chamadas é `api.sistemaplaybpo.com.br`. Confirmar com a PlayBPO qual endereço usar.
 - D4: Onde este projeto vai morar: hoje os documentos estão neste repositório (que é público e de outro assunto). Recomendo um repositório **privado** próprio antes de qualquer código.

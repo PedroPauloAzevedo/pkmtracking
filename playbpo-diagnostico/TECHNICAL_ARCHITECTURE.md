@@ -124,8 +124,8 @@ ops.usuario_empresas (usuario_id, empresa_id)   -- quem vê o quê
 | Item | Proposta |
 |------|----------|
 | Gatilho | Agendado (ex.: a cada 60 min, só horário comercial) + botão "atualizar agora" para admin |
-| Ordem | 1) empresas → 2) resumo-empresas → 3) comunicações (dependem de empresa) |
-| Tipo | Leitura completa (a API não parece ter filtro "alterados desde") — rever quando a especificação for lida |
+| Ordem | 1) `/public/empresas` → 2) `/public/resumo-empresas` (uma chamada, sem `empresaId`) → 3) para cada empresa: `comunicacoes-pendentes` e `comunicacoes-esperando-resposta` (`empresaId` obrigatório). Total: 2 + 2×N chamadas |
+| Tipo | Leitura completa (confirmado: a especificação não tem paginação nem filtro "alterados desde") |
 | Ritmo | Uma requisição por vez, pausa entre páginas, respeitar `429`/`Retry-After`, tentativas com espera crescente (máx. 3) |
 | Falha | Execução marcada `erro`/`parcial`; dados anteriores continuam valendo; tela mostra "atualizado em ..." |
 | Arquivos | Upload na tela de admin → validação de colunas → prévia → confirmar → mesma normalização da API |
@@ -135,7 +135,7 @@ ops.usuario_empresas (usuario_id, empresa_id)   -- quem vê o quê
 
 | Tema | Medida |
 |------|--------|
-| Credenciais | Só em `.env` (fora do Git) ou cofre do servidor; `.env.example` com nomes vazios; nunca em log, erro ou tela; troca periódica |
+| Credenciais | HTTP Basic (confirmado), em `.env` (`PLAYBPO_API_BASE=https://api.sistemaplaybpo.com.br`, `PLAYBPO_BASIC_USER`, `PLAYBPO_BASIC_PASS`) fora do Git, ou cofre do servidor; nunca logar o cabeçalho `Authorization`; `.env.example` com nomes vazios; nunca em log, erro ou tela; troca periódica |
 | Versionamento | `.gitignore` com `.env`, `data/`, `uploads/`; varredura de segredos antes de cada commit; repositório **privado** |
 | Separação por empresa | RLS no Postgres + filtro na API interna + testes que tentam ler empresa alheia |
 | Origem e data | `source`, `sync_run_id`, `fetched_at` em toda linha |
