@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.06-1",
+    "data": "2026-11-06",
+    "titulo": "Ícones dos decks aparecem sem precisar recarregar",
+    "mudancas": [
+      "Correção: depois de atualizar para a 2026.11.05-6, os ícones dos decks continuavam sumidos. O programa refazia a lista de decks uns segundos depois de abrir, mas a janela do painel já tinha carregado a lista antiga e só mostrava os ícones depois de apertar F5. Agora o painel percebe sozinho quando a lista de decks muda e redesenha a tela."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.06-1\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: os ícones aparecem sozinhos alguns segundos depois de o programa abrir."
+    ]
+  },
+  {
     "versao": "2026.11.05-6",
     "data": "2026-11-05",
     "titulo": "Partidas: filtro do deck do adversário e os ícones dos decks de volta",

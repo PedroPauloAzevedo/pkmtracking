@@ -8,12 +8,15 @@
   - 2026.11.05-5 — campo **Época** nas análises (D-036), "Ver todas" e lista de partidas mais rápida (D-037), descarte no replay (D-035);
   - 2026.11.05-6 — filtros "Deck do jogador" e "Deck do adversário" em Partidas; ícones dos decks de volta (D-038).
   Histórico técnico em `../04_IMPLEMENTATIONS/DONE.md`.
-- O Coletor do Pedro estava na 2026.11.05-3 às 19:55 de 05/11; o aviso de versão nova deve aparecer para ele e para os amigos.
+- **Publicada em 06/11: 2026.11.06-1** — o painel busca de novo nomes e ícones dos decks quando o cadastro muda no servidor
+  (`versao_arquetipos` em `/api/status`). Antes, quem abria a 2026.11.05-6 só via os ícones depois de apertar F5.
+- O Coletor do Pedro estava na 2026.11.05-6 desde 06/11 00:33 (cadastro de decks já refeito com os ícones).
 - O repositório `PedroPauloAzevedo/pkmtracking` é **público** e não tem Releases.
 - Os programas dos amigos e o do Pedro se atualizam pelo aviso "Nova versão disponível".
 
 ## Ramos
-- `main` = 2026.11.05-6 + documentação + Skill "Statistical Analyst" (`49664da` e o registro da publicação; igual ao GitHub).
+- `main` = 2026.11.06-1 + Skill "Statistical Analyst" (igual ao GitHub). A 2026.11.06-1 saiu do ramo `publica-2026.11.06-1`
+  (worktree separado); o ramo `icones-painel` da pasta do projeto ficou com o mesmo código, ainda sem commit.
 - `statistical-analyst`: publicado na `main` em 06/11 (`49664da`).
 - `versoes-2026.11.05-4-e-5`: ficou no mesmo commit da `main` (já publicado). `replay-premios`, `docs-project-knowledge`,
   `corrige-modo-automatico` e `replay-maos`: ramos antigos, já publicados.

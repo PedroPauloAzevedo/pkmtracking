@@ -45,6 +45,11 @@ REGIOES = {"alolan": "alola", "galarian": "galar", "hisuian": "hisui", "paldean"
 
 # ------------------------------------------------------------------ arquétipos
 
+# Muda a cada gravação do cadastro de decks. O painel recebe esse número em /api/status e, quando ele muda, busca de novo
+# os nomes e ícones (sem isso, a janela aberta antes de o cadastro ser refeito ficava sem ícones até apertar F5).
+versao_arquetipos = [0]
+
+
 def salvar_arquetipos(lista):
     """Grava nomes e ícones dos decks. Lista de ícones vazia não apaga a que já existia (uma página do Labs com layout novo
     chegou a zerar os ícones de quase todos os decks em 05/11/2026)."""
@@ -56,6 +61,7 @@ def salvar_arquetipos(lista):
                         "icones=CASE WHEN excluded.icones = '[]' THEN arquetipos.icones ELSE excluded.icones END",
                         (a["slug"], a["nome"], json.dumps(a["icones"]), agora))
     _cache.clear()
+    versao_arquetipos[0] += 1
 
 
 def icones_sem_cadastro():

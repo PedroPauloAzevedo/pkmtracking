@@ -82,7 +82,9 @@
 - **D-038 · Ícones dos decks: ler a coluna nova do Labs e nunca apagar um ícone gravado** (05/11/2026, v2026.11.05-6; ícones
   sumidos em Partidas). *Por quê:* a página de decks do Labs passou a pôr o ícone fora do link do deck; o programa lia vazio e
   regravava o cadastro, apagando 122 dos 134 ícones. Ler os dois formatos e não aceitar lista vazia por cima evita que a próxima
-  mudança de layout apague tudo de novo; refazer a lista ao abrir conserta quem já perdeu os ícones.
+  mudança de layout apague tudo de novo; refazer a lista ao abrir conserta quem já perdeu os ícones. Em 2026.11.06-1 o painel
+  passou a buscar a lista de novo quando ela muda no servidor (`versao_arquetipos` em `/api/status`): no Coletor do Pedro o cadastro
+  foi refeito 19 s depois de abrir, mas a janela já tinha carregado a lista sem ícones.
 
 ## Análises e algoritmos
 - **D-017 · Melhoria de algoritmo só com medição contra o atual, nos mesmos dados** (até 02/11; firme). Manter a versão antiga quando

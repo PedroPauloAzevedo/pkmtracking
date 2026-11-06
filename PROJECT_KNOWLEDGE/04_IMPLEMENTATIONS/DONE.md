@@ -7,6 +7,7 @@
 | Versão | Data | Commit | Título |
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.06-1 | 06/11/2026 | (ver `git log`: "v2026.11.06-1") | Ícones dos decks aparecem sem recarregar o painel |
 | 2026.11.05-6 | 05/11/2026 | `2600e4c` | Partidas: filtro do deck do adversário; ícones dos decks de volta |
 | 2026.11.05-5 | 05/11/2026 | `2600e4c` | Épocas de coleção nas análises, "Ver todas" consertado e replay com o descarte certo |
 | 2026.11.05-4 | 05/11/2026 | `2600e4c` | Biblioteca de cartas: carta que o TCGdex não entrega não para a atualização |
@@ -31,6 +32,12 @@
   `tests/` (20 testes) e `evals/` (4 cenários: 16/16 com a Skill, 12/16 sem).
 - `03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md` e `STATISTICAL_AUDIT_2026-11-06.md` (10 achados). Nenhum código do programa mudou;
   as recomendações esperam o Pedro (`GAPS_AND_ROADMAP.md`).
+
+## 2026.11.06-1 — Ícones sem recarregar (erro visto pelo Pedro)
+- `decks.versao_arquetipos` (aumenta em `salvar_arquetipos`), em `/api/status`; `atualizarStatus` (base.js) busca de novo os decks
+  e redesenha quando muda. Teste: `teste_tracker.py` seção 8. Conferido numa cópia com o cadastro zerado: 0 ícones ao abrir, 214
+  sem recarregar uns segundos depois. Os 4 testes OK. Publicada a partir de um worktree separado, porque a pasta do projeto tinha
+  trabalho sem commit da rodada de hardening da Skill.
 
 ## 2026.11.05-6 — Filtros de deck em Partidas e ícones dos decks (pedidos do Pedro)
 - `web/js/partidas.js`: `S.filtroPartidas.adv`, campos "Deck do jogador" e "Deck do adversário" (opções em ordem de `nomeDeck`).

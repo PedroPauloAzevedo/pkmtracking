@@ -291,7 +291,9 @@ novo = ('<table><tr><td><div><span>' + IMG.format("dragapult", "dragapult") + '<
 antigo = '<a href="/0999/decks/n-zoroark">' + IMG.format("zoroark", "zoroark") + "N's Zoroark</a>"
 lidos = {d["slug"]: d["icones"] for d in decks.ler_pagina_decks(BeautifulSoup(novo + antigo, "html.parser"), "0999")}
 assert lidos == {"dragapult-ex": ["dragapult"], "basic-box-m": ["ogerpon", "clefairy"], "n-zoroark": ["zoroark"]}, lidos
+v_arq = cli.get("/api/status").get_json()["versao_arquetipos"]
 decks.salvar_arquetipos([{"slug": "teste-icone", "nome": "Teste", "icones": ["dragapult"]}])
+assert cli.get("/api/status").get_json()["versao_arquetipos"] == v_arq + 1, "o painel precisa saber que o cadastro de decks mudou"
 decks.salvar_arquetipos([{"slug": "teste-icone", "nome": "Teste novo", "icones": []}])
 assert decks.arquetipos()["teste-icone"]["icones"] == ["dragapult"] and decks.arquetipos()["teste-icone"]["nome"] == "Teste novo"
 print("ícones dos decks:", lidos)
