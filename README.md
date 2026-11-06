@@ -171,7 +171,7 @@ Biblioteca de cartas, Linhas não lidas e Regras de leitura.
 | Aba | Conteúdo |
 |---|---|
 | Início | Se a captura está pronta, partidas, taxa de vitória com faixa de confiança, começando x segundo, últimas partidas, colar log à mão |
-| Partidas | Lista com filtros; detalhe com corrida de prêmios, nocautes, eventos; corrigir nome dos decks, tags e notas |
+| Partidas | Lista com filtros; detalhe com corrida de prêmios, nocautes, eventos; corrigir nome dos decks, tags e notas; "Log original" para copiar ou baixar o log como veio do jogo |
 | Decisões | Aberturas e ritmo, separados por quem começou (filtro Todas / Começando / Indo em segundo) |
 | Meus decks | Suas listas, conferência do Standard (selo Standard ✓) e Lista oficial (PDF) no formulário da Play! Pokémon |
 | Desempenho | Taxa contra cada deck (comparada com os campeonatos), com cada deck seu, ordem, 1º nocaute, mulligan, como termina, evolução no tempo |

@@ -22,7 +22,9 @@ vitória", uma linha tracejada no dia da chegada (`marcasEpoca`). Só aparecem �
 - Lista com filtros (período, **Deck do jogador**, **Deck do adversário** — desde 2026.11.05-6, em ordem do nome —, tag,
   **Jogador**, **Época**), resultado, decks, origem.
 - Detalhe da partida: resumo do leitor, problemas ("incompleto?"), linhas não lidas, notas, tags e correção manual do deck
-  (`meu_deck`, `deck_adv` substituem o palpite automático). Botão para o replay.
+  (`meu_deck`, `deck_adv` substituem o palpite automático). Botão para o replay e, desde 2026.11.06-4, **"Log original"**
+  (`mostrarLogOriginal` em `web/js/partidas.js`): janela com o `texto` gravado da partida (o que veio do TCG Live, já na resposta de
+  `/api/partidas/<id>`), "Copiar tudo" e "Baixar .txt". Copiar com o Coletor aberto não duplica: o mesmo texto tem o mesmo hash.
 - Colar log à mão (quadro recolhido no Início/Partidas).
 - Deck de cada jogador: palpite automático pelas cartas reveladas (NB2 + ícones; ver `STATISTICS.md`); se a partida estiver
   ligada a uma lista de Meus decks (`deck_id`, ligada sozinha por `vincular_automatico` quando as cartas reveladas batem),

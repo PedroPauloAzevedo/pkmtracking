@@ -12,6 +12,8 @@
 - Também na `main`: Skill "Statistical Analyst" com a rodada de hardening e a base estratégica (PR #1) e a preparação para dois
   desenvolvedores (PR #2; D-043, D-044).
 - O Coletor do Pedro estava na 2026.11.06-2 em 06/11; o aviso de versão nova traz a -3.
+- **Pronta no ramo `feature/ver-log-original` (worktree próprio): 2026.11.06-4** — botão "Log original" no detalhe da partida
+  (copiar / baixar o log como veio do TCG Live). 4 testes OK. Entra na `main` pelo PR desse ramo.
 - O repositório `PedroPauloAzevedo/pkmtracking` é **público** e não tem Releases. Os programas se atualizam pelo aviso
   "Nova versão disponível".
 
