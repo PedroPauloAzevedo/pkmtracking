@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.06-5",
+    "data": "2026-11-06",
+    "titulo": "Replay: Energias no Pokémon certo",
+    "mudancas": [
+      "Correção no replay: quando um ataque descarta Energias (ex.: Metallic Hammer) ou um Pokémon é nocauteado, o log diz quais cartas saíram (\"3 cards were discarded\" e a lista). O replay ignorava essas linhas e as Energias descartadas continuavam na mesa; agora elas saem.",
+      "Correção no replay: habilidades como Metal Maker ligam Energias \"a um Metang no Banco\" sem dizer qual, e o replay punha todas no primeiro. Agora ele usa o que o log revela depois (o custo do ataque que o Pokémon fez, o que foi descartado no recuo e a lista de cartas do nocaute) para pôr cada Energia no Pokémon certo desde o momento em que foi ligada. Quando o log não revela, continua no primeiro. Vale também para as partidas antigas."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.06-5\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: abra o replay de qualquer partida."
+    ]
+  },
+  {
     "versao": "2026.11.06-4",
     "data": "2026-11-06",
     "titulo": "Log original de cada partida, para copiar e colar em outra ferramenta",

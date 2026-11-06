@@ -522,4 +522,48 @@ Ana played Crushing Hammer.
 confere("Crushing Hammer: a Energia sai do Munkidori que tinha a carta", a["Bia"],
         [("Munkidori", []), ("Munkidori", []), ("Munkidori", [])])
 
+# 14) "N cards were discarded from X" + lista "•" (visto em logs reais): tira as cartas presas listadas (as pré-evoluções também
+#     aparecem na lista e não contam). Metal Maker liga "to Metang on the Bench" sem dizer qual de dois Metang; a lista completa do
+#     nocaute prova quantas o nocauteado tinha, e a sobra era do outro Metang, desde a ligação (2ª passada).
+MEU = """
+Ana played Budew to the Active Spot.
+Bia played Dragapult ex to the Active Spot.
+
+Ana's Turn
+Ana played Metang to the Bench.
+Ana played Metang to the Bench.
+Ana's Metang used Metal Maker.
+- Ana attached Basic Metal Energy to Metang on the Bench.
+- Ana attached Basic Metal Energy to Metang on the Bench.
+
+Bia's Turn
+Bia's Dragapult ex used Phantom Dive on Ana's Budew for 10 damage.
+- Bia put 6 damage counters on Bia's Metang.
+Ana's Metang was Knocked Out!
+- 2 cards were discarded from Ana's Metang.
+   • Basic Metal Energy, Beldum
+"""
+r, q, a = anexos(MEU, "cards were discarded from Ana's Metang")
+confere("lista do nocaute: o Metang que ficou fica com a Energia que não era do nocauteado", a["Ana"],
+        [("Budew", []), ("Metang", ["Basic Metal Energy"])])
+q2 = [x for x in r["quadros"] if x["linha"] == [y for y in r["quadros"] if "attached" in y["texto"]][-1]["linha"]][-1]
+confere("lista do nocaute: desde a ligação, uma Energia em cada Metang",
+        [len(p["anexos"]) for p in q2["estado"]["mesa"]["Ana"]["banco"]], [1, 1])
+
+# Metallic Hammer descarta 3 Energias: a lista diz quais, e elas saem do atacante.
+r, q, a = anexos("""
+Ana played Metagross to the Active Spot.
+Bia played Budew to the Active Spot.
+
+Ana's Turn
+Ana attached Basic Metal Energy to Metagross in the Active Spot.
+Ana attached Basic Metal Energy to Metagross in the Active Spot.
+Ana attached Basic Metal Energy to Metagross in the Active Spot.
+Ana attached Basic Metal Energy to Metagross in the Active Spot.
+Ana's Metagross used Metallic Hammer on Bia's Budew for 10 damage.
+- 3 cards were discarded from Ana's Metagross.
+   • Basic Metal Energy, Basic Metal Energy, Basic Metal Energy
+""", "cards were discarded from Ana's Metagross")
+confere("descarte do ataque com lista: saem as 3 Energias listadas", a["Ana"], [("Metagross", ["Basic Metal Energy"])])
+
 print("OK")

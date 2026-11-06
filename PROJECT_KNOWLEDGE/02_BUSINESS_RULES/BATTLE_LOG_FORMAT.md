@@ -80,6 +80,11 @@ jogada (todas as outras compras de quem exportou têm nome).
   Quando o dono escrito é o próprio jogador, o programa decide assim: (1) se esse Pokémon é nocauteado logo depois, o dono é quem
   o perdeu; (2) se veio de um ataque/habilidade do jogador e o adversário tem um Pokémon com esse nome, é do adversário;
   (3) senão vale o escrito.
+- `- 3 cards were discarded from Ana's Metagross.` + `   • Basic Metal Energy, Basic Metal Energy, Basic Metal Energy`: cartas que
+  saíram de um Pokémon, com o nome de cada uma (efeito de ataque, ex.: Metallic Hammer; ou depois do nocaute, quando a lista traz também
+  as pré-evoluções: `• Basic Metal Energy, Metang, Beldum`). A lista vem para os dois jogadores.
+- `- Ana attached Basic Metal Energy to Metang on the Bench.` em sublinha de habilidade (ex.: Metal Maker) não diz **qual** Metang
+  quando há vários no Banco; o replay decide pelas provas seguintes (D-046).
 - **Estádio Risky Ruins** (`Risky Ruins was activated.` + `- X put 2 damage counters on <dono do Estádio>'s Y.`): os contadores vão
   no Básico Y que **X** acabou de pôr no Banco, mas o jogo escreve como dono **quem jogou o Estádio**. Ex.: com o Risky Ruins da
   Ana, `Bia played Budew to the Bench.` → `- Bia put 2 damage counters on Ana's Budew.` — o Budew é da Bia. O dono é sempre X

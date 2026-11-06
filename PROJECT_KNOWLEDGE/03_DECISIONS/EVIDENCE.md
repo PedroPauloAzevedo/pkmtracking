@@ -64,6 +64,18 @@ mesmo resumo, que a regra antiga escondia em "Todos os jogadores").
 Nos dados de teste (`teste_tracker.py`: 14 partidas suas parecidas entre si, 1 da amiga e o outro lado de uma das suas) a regra
 antiga deixava **6 de 16** em "Todos"; a nova deixa **15** (as 14 + a da amiga; o outro lado do mesmo jogo conta uma vez). → D-033.
 
+## Energias ambíguas e listas de descarte no replay (06/11/2026, versão 2026.11.06-5)
+`main` (com o Risky Ruins) × nova, 154 partidas (banco do Pedro só leitura + instalação antiga):
+| Conferência | `main` | Nova |
+|---|---|---|
+| Ataques em que o atacante tinha menos Energia que o custo (custo pela biblioteca) | 82 de 840 | 42 de 840 (nenhum caso novo) |
+| Ataques com 3 ou mais Energias a mais que o custo (Energia empilhada no Pokémon errado) | 5 | 4 |
+| Nocautes em que as cartas presas no replay batem com a lista do log | 178 de 221 | 204 de 221 |
+| Descartes de ataque com lista: o Pokémon tinha as cartas listadas | 16 de 21 | 18 de 21 |
+| Descartes de uma carta ("X was discarded from"): sublinhas que tiram de quem está em jogo / soltas depois de nocaute que tiram (errado) | 200 de 202 / 0 | igual |
+As duas primeiras linhas usam provas que a correção também usa (custo do ataque, lista do nocaute): a melhora é em parte esperada; a
+2ª e a 5ª são independentes. 117 partidas mudam (a maioria só por as Energias descartadas saírem da mesa). → D-046.
+
 ## Risky Ruins no replay (06/11/2026, versão 2026.11.06-3)
 - Logs do Pedro e dos amigos: 145 linhas de contadores logo depois de `Risky Ruins was activated.`; em 55 o dono escrito é o outro
   jogador (quem jogou o Estádio), e em todas o Básico é de quem pôs o Pokémon no Banco na linha anterior.
