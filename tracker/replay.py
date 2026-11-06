@@ -361,6 +361,27 @@ def gerar(texto, regras, _correcoes=None):
             ambiguos.append((n_linha, pegar(ref)["uid"], dano, [pegar(r)["uid"] for r in irmaos]))
         return ref
 
+    def dono_do_anexo(j, nome, carta, sublinha):
+        """De qual Pokémon saiu a carta presa em "X was discarded from j's Y.". Com dois Pokémon de mesmo nome o log
+        não diz qual (ex.: dois Dreepy em jogo e só o que recuou tinha a Energia). Nesta ordem:
+          1. sublinha logo depois de um recuo: o que recuou (o custo de recuo sai só dele);
+          2. linha solta depois do nocaute de um Pokémon com esse nome: o nocauteado (o jogo lista o que estava preso
+             nele); o irmão de mesmo nome que continua em jogo não perde nada;
+          3. senão, em jogo, o que tem a carta presa (o Ativo primeiro: Crushing Hammer e ataques costumam mirar nele).
+        Devolve (Pokémon, está em jogo?) ou (None, False)."""
+        tem = lambda p: p["nome"] == nome and any(a["nome"] == carta for a in p["anexos"])
+        if sublinha and recuou and recuou[0] == j:
+            ref = achar_uid(recuou[1])
+            if ref and tem(pegar(ref)):
+                return pegar(ref), True
+        if not sublinha and any(dono == j and p["nome"] == nome for dono, p in caidos):
+            return next((p for dono, p in reversed(caidos) if dono == j and tem(p)), None), False
+        m = estado["mesa"][j]
+        for p in ([m["ativo"]] if m["ativo"] else []) + m["banco"]:
+            if tem(p):
+                return p, True
+        return None, False
+
     def premio_logo_adiante(n_linha, j):
         """O log às vezes escreve cartas de prêmio ANTES de "X took N Prize cards." (visto em jogadas que valem 3 prêmios):
         procura esse "took" do mesmo jogador nas próximas linhas, sem passar do fim do turno."""
@@ -378,6 +399,8 @@ def gerar(texto, regras, _correcoes=None):
     premio_aberto = {}     # jogador -> {faltam, quadro, turno}: o "took N Prize cards" cujas cartas ainda vão aparecer
     adiantados = {}        # jogador -> nº de cartas de prêmio que o log escreveu antes do "took" (já saíram dos prêmios)
     ultima_principal = ""  # última linha que não começa com "-" (o ataque ou habilidade que gerou as sublinhas)
+    recuou = None          # (jogador, uid) de quem acabou de recuar: a Energia descartada no recuo sai só dele
+    caidos = []            # (jogador, Pokémon) nocauteados neste turno: as cartas presas a eles saem com eles
     lista_pendente = None
     poder = None          # Pokémon que acabou de usar habilidade (ex.: Dudunsparce "Run Away Draw")
     embaralhou = False    # "X shuffled N cards into their deck." logo depois desse poder
@@ -424,6 +447,7 @@ def gerar(texto, regras, _correcoes=None):
         m = None
         if not sublinha:
             poder = None
+            recuou = None
             ultima_principal = l
             atingidos = set()  # Pokémon que já levaram dano "took N damage" nesta mesma ação
             usou = re.match(rf"^{P}'s (.+?) used (.+?)(?: on .+)?\.$", l)
@@ -446,6 +470,7 @@ def gerar(texto, regras, _correcoes=None):
             d = {"tipo": "turno", "jogador": m.group(1)}
             premio_aberto.clear()  # as cartas de prêmio aparecem sempre no mesmo turno em que foram pegas
             adiantados.clear()
+            caidos.clear()
         elif casa(rf"^{P} drew \d+ cards? and played them to the (Bench|Active Spot)\.$"):
             lista_pendente = (m.group(1), m.group(2))
             d = {"tipo": "info", "jogador": m.group(1)}
@@ -491,6 +516,7 @@ def gerar(texto, regras, _correcoes=None):
                 mesa["banco"].append(mesa["ativo"])
                 uid = mesa["ativo"]["uid"]
                 mesa["ativo"] = None
+                recuou = (j, uid)
                 d = {"tipo": "recuo", "jogador": j, "carta": c, "uid": uid}
         elif casa(rf"^{P}'s (.+?) was switched with {P}'s (.+?) to become the Active Pokémon\.$"):
             j, a, _, b = m.groups()
@@ -534,6 +560,7 @@ def gerar(texto, regras, _correcoes=None):
                 ref = achar(ko.group(1), ko.group(2), "ativo")
                 if ref:
                     morto = remover(ref)
+                    caidos.append((ref[0], morto))
                     estado["mesa"][ref[0]]["nocauteados"].append(morto["nome"])
                     d["nocaute_uid"] = morto["uid"]
         elif casa(rf"^{P} put (\d+|a) damage counters? on {P}'s (.+?)\.$"):  # "put a damage counter" = 1
@@ -581,6 +608,7 @@ def gerar(texto, regras, _correcoes=None):
             uid = None
             if ref:
                 p = remover(ref)
+                caidos.append((ref[0], p))
                 uid = p["uid"]
                 falta = _ps_minimo(c, golpes_vistos.get((j, c), ())) - p["dano"]
                 if p["dano"] and falta > 0 and not correcoes:
@@ -593,14 +621,15 @@ def gerar(texto, regras, _correcoes=None):
             d = {"tipo": "nocaute", "jogador": j, "carta": c, "uid": uid}
         elif casa(rf"^(.+?) was discarded from {P}'s (.+?)\.$"):
             c, j, alvo = m.groups()
-            ref = achar(j, alvo, None, False)
-            if ref:
-                p = pegar(ref)
+            p, em_jogo = dono_do_anexo(j, alvo, c, sublinha)
+            if p:
                 for i, a in enumerate(p["anexos"]):
                     if a["nome"] == c:
                         p["anexos"].pop(i)
                         break
             d = {"tipo": "descarte", "jogador": j, "carta": c}
+            if p and em_jogo:
+                d["uid"] = p["uid"]
         elif casa(rf"^{P} took (a|\d+) Prize cards?\.$"):
             j = m.group(1)
             q = 1 if m.group(2) == "a" else int(m.group(2))

@@ -1,7 +1,9 @@
 /* ---- AMIGOS: mandar os seus logs e receber os deles */
 async function renderAmigos() {
+  const vez = novaTela();
   if (!$('#pa-caminho')) main.innerHTML = '<header><h1>Amigos (trocar logs)</h1></header><p class="muted">Carregando…</p>';
   const r = await api('/api/amigos');
+  if (telaVelha(vez)) return;
   const ex = r.exportacao, ult = ex.ultima_exportacao, pa = r.pasta;
   main.innerHTML = `
     <header><h1>Amigos (trocar logs)</h1><p class="sub">Junte as partidas de vários jogadores para ter mais dados nos matchups e nas Decisões. Cada um continua com o próprio programa; vocês trocam um arquivo .zip pelo WhatsApp, e-mail ou Drive. Nas telas de Minhas partidas, o filtro <b>Jogador</b> escolhe de quem ver: você, um amigo ou todos juntos.</p></header>
@@ -56,7 +58,7 @@ async function renderAmigos() {
     if ($('#pa-auto').checked && !caminho) { toast('Escolha a pasta primeiro'); return; }
     await api('/api/config', { method: 'POST', body: JSON.stringify({ pasta_compartilhada: caminho, pasta_auto: $('#pa-auto').checked, pasta_minutos: Number($('#pa-minutos').value) }) });
     toast($('#pa-auto').checked ? 'Salvo. Vou sincronizar agora e depois de tempos em tempos.' : 'Salvo');
-    setTimeout(renderAmigos, 2500);
+    setTimeout(() => { if (aba() === 'amigos') renderAmigos(); }, 2500);
   };
   $('#pa-agora').onclick = async () => {
     $('#pa-agora').disabled = true; $('#pa-estado').innerHTML = '<p class="muted">Sincronizando…</p>';
@@ -66,7 +68,7 @@ async function renderAmigos() {
   const novas = () => $('#am-novas') && $('#am-novas').checked;
   const linkBaixar = () => { $('#am-baixar').href = '/exportar/meus-logs.zip' + (novas() ? '?so_novas=1' : ''); };
   if ($('#am-novas')) $('#am-novas').onchange = linkBaixar; linkBaixar();
-  $('#am-baixar').onclick = () => setTimeout(renderAmigos, 1500);
+  $('#am-baixar').onclick = () => setTimeout(() => { if (aba() === 'amigos') renderAmigos(); }, 1500);
   $('#am-exportar').onclick = async () => {
     try { const x = await api('/api/amigos/exportar', { method: 'POST', body: JSON.stringify({ so_novas: novas() }) });
       await renderAmigos();

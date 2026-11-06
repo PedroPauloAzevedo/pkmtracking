@@ -5,7 +5,9 @@ const MIN_LINHAS = { pokemon: 12, trainer: 20, energy: 7 };
 const SEC_LO = [['pokemon', 'Pokémon'], ['trainer', 'Trainer'], ['energy', 'Energy']];
 function papelSalvo() { try { return localStorage.getItem('papel') || 'a4'; } catch (e) { return 'a4'; } }
 async function renderListaOficial(id) {
+  const vez = novaTela();
   const r = await api('/api/decks/' + id + '/lista-oficial');
+  if (telaVelha(vez)) return;
   S.lo = { id, r, linhas: JSON.parse(JSON.stringify(r.linhas)), jogador: { ...r.jogador }, divisao: '', papel: papelSalvo(), salvo: r.salvo_em };
   desenharListaOficial();
 }

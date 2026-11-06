@@ -6,6 +6,9 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| 2026.11.05-6 | 05/11/2026 | (sem commit) | Partidas: filtro do deck do adversário; ícones dos decks de volta |
+| 2026.11.05-5 | 05/11/2026 | (sem commit) | Épocas de coleção nas análises, "Ver todas" consertado e replay com o descarte certo |
+| 2026.11.05-4 | 05/11/2026 | (sem commit) | Biblioteca de cartas: carta que o TCGdex não entrega não para a atualização |
 | 2026.11.05-3 | 05/11/2026 | `c53abc5` | Filtro Jogador com qualquer combinação (publicada junto com a -2) |
 | 2026.11.05-2 | 05/11/2026 | `c53abc5` | Replay mostra os prêmios que o log revela (não saiu sozinha: foi junto com a -3) |
 | (documentação) | 05/11/2026 | `c100596` | Reorganização da documentação em `PROJECT_KNOWLEDGE/` |
@@ -19,6 +22,39 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.05-6 — Filtros de deck em Partidas e ícones dos decks (pedidos do Pedro)
+- `web/js/partidas.js`: `S.filtroPartidas.adv`, campos "Deck do jogador" e "Deck do adversário" (opções em ordem de `nomeDeck`).
+- `tracker/decks.py`: `ler_pagina_decks` procura os ícones na linha da tabela (`find_parent("tr")`) quando não há imagem no link;
+  `salvar_arquetipos` não troca ícones por lista vazia; `icones_sem_cadastro`. `app.main` refaz a lista quando a maioria está vazia.
+- Testes: `teste_tracker.py` seção 8 (os dois formatos do Labs e o "não apagar"); `teste_telas.py` (filtro Deck do adversário). Os
+  4 testes OK; conferido numa cópia com os dados do Pedro (ícones nas 67 partidas). D-038.
+
+## 2026.11.05-5 — Épocas de coleção, "Ver todas" e descarte no replay (pedidos do Pedro)
+- **Épocas** (D-036): `tracker/colecoes.py` (tabela `COLECOES` + biblioteca para as futuras; `chegada_live` com hora, convertida
+  do Pacífico para o relógio local sem tzdata; `validade_torneio`; `epocas`, `proxima`, `epoca_de`); rota `/api/epocas`;
+  `analises.analise_pessoal`/`decisoes` aceitam `antes` e comparam `de` com dia e hora; `analises.torneios_da_fonte(de, ate, ids)` e
+  `app._lista_torneios` com `?de=&ate=`. Painel: `seletorEpoca`, `comEpoca`, `noPeriodo`, `epocaDe`, `marcasEpoca`,
+  `quandoEpoca` (base.js), separador na lista (`separadorEpoca`, partidas.js), linha tracejada em `graficoLinhas`.
+- **"Ver todas"** (D-037): `novaTela`/`telaVelha` em todas as funções `render...()`, `setTimeout` com `aba()`, "Carregando…" em
+  `render()`; contas dos decks guardadas por versão dos torneios (`banco.versao_torneios`, `decks._em_dia`) e feitas em segundo plano
+  ao abrir (`app.main`).
+- **Replay** (D-035): `dono_do_anexo`, `recuou`, `caidos` em `tracker/replay.py`; o destaque do descarte traz o `uid`.
+- Testes: `teste_replay.py` (recuo com dois Dreepy, nocaute com dois Munkidori, Crushing Hammer; falha na versão publicada),
+  `teste_tracker.py` seções 6 (épocas, coleção nova pela biblioteca, `/api/epocas`, `de`/`antes`, torneios por data) e 7 (contas dos
+  decks por versão), `teste_telas.py` (`ver_todas_e_epocas`: falha na versão publicada; a busca Ctrl+K agora espera `#busca-q`).
+  Os 4 testes OK. Conferido na tela com uma cópia dos dados do Pedro (porta 8799): separador às 15:00 de 05/11, filtro da época
+  Delta Reign (9 partidas), Meta com a época Pitch Black (Mundial e Baltimore) e o aviso de 20/11, "Ver todas" e o replay do
+  recuo com dois Dreepy.
+
+## 2026.11.05-4 — Biblioteca de cartas não para por uma carta (erro visto pelo Pedro)
+- `tracker/cartas.py`: o download de uma coleção foi para `_baixar_cartas` (6 por vez; se uma carta falhar, cancela as que faltam
+  e repassa o `RuntimeError`). Em `atualizar`, a falha numa coleção vai para a lista `falhas` e o laço segue; no fim,
+  `progresso["aviso"]` diz quais não foram atualizadas e `estado.json` guarda `falhas` sem avançar `ultima_verificacao` (D-034).
+  `web/js/biblioteca.js` mostra o aviso em amarelo (o erro continua em vermelho).
+- Teste: `teste_tracker.py` seção 5 (TCGdex falso com uma carta que nunca responde: a outra coleção é baixada, a com falha fica
+  igual, 3 tentativas, data não avança; sem falha, a data avança). Com o `cartas.py` antigo, o teste falha com a mesma mensagem que
+  o Pedro viu. Os 4 testes OK numa cópia.
 
 ## 2026.11.05-3 — Filtro Jogador com qualquer combinação (pedido do Pedro)
 - Painel (`web/js/partidas.js`): `S.jogadorSel` (lista; `''` = você) no lugar de `S.jogador`; `seletorJogador` virou caixa de

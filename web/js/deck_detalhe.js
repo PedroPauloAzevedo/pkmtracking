@@ -10,7 +10,9 @@ function conferenciaStandard(v, compacta) {
 }
 
 async function renderMeuDeck(id) {
+  const vez = novaTela();
   const d = await api('/api/decks/' + id);
+  if (telaVelha(vez)) return;
   const a = d.analise, t = a.total;
   const ordem = Object.fromEntries(a.ordem.map(g => [g.grupo, g]));
   const minhas = a.partidas.filter(l => l.deck_id === id);

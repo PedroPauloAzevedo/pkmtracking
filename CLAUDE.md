@@ -39,5 +39,6 @@ módulo alterado → seu documento em `01_MODULES/`; medição → `03_DECISIONS
   privados, tokens ou senhas em arquivos publicados — isso vai em `CLAUDE.local.md` (D-026, D-027). Senhas e tokens nunca no chat.
 - `docs/regras-standard.md` é lido pelo programa: não mudar de lugar nem o formato da tabela de marcas e do item de promos.
 - Painel (`web/`): o que roda ao carregar só usa o que veio antes no `index.html` (`ROTAS` fica no `inicio.js`); depois de um
-  `await`, procurar elementos dentro do próprio quadro (`el.querySelector`).
+  `await`, procurar elementos dentro do próprio quadro (`el.querySelector`); toda tela começa com `const vez = novaTela()` e,
+  depois de esperar os dados, só desenha se `!telaVelha(vez)` (uma tela lenta não pode cobrir a nova; D-037).
 - Não remover funcionalidades nem apagar arquivos ou dados sem listar e pedir autorização ao Pedro.

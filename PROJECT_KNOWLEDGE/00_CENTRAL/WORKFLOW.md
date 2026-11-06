@@ -40,6 +40,10 @@ ou medição descrita em `EVIDENCE.md`). Manter a versão antiga quando útil (e
 - Índice de cartas ganhou campo → aumentar `cartas.VERSAO_INDICE`.
 - Painel: o que roda ao carregar só pode usar o que veio antes na lista de scripts do `index.html` (por isso `ROTAS` fica no
   `inicio.js`, o último). Depois de um `await`, procurar elementos dentro do próprio quadro (`el.querySelector`), não com `$()`.
+- Painel: toda tela começa com `const vez = novaTela()` e, depois dos `await`, faz `if (telaVelha(vez)) return;` antes de desenhar;
+  atualização atrasada (`setTimeout(renderX)`) confere `aba()` antes. Sem isso, uma tela lenta cobria a nova ("Ver todas", D-037).
+- Scripts de medição: rodar com `python -I`. Sem ele, um arquivo da pasta do script com o nome de um módulo do Python (ex.: um
+  `bisect.py`) toma o lugar do módulo e o programa quebra ao importar.
 - Arquivos de texto em **LF** (as ferramentas do Windows às vezes gravam CRLF); os `.bat` e o `COMECE_AQUI.txt` em **CRLF**.
 - PowerShell 5.1 manda texto com acento quebrado em `Invoke-RestMethod`: testar rotas com Python.
 - Inno Setup: só a chave de abrir é dobrada (`{{`); o desinstalador é 32 bits (usar CIM para achar processos).

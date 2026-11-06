@@ -22,7 +22,9 @@ async function desenharAtalhos() {
 }
 
 async function renderAjustes() {
+  const vez = novaTela();
   const st = await api('/api/status');
+  if (telaVelha(vez)) return;
   const cfg = st.config, a = st.automatico;
   main.innerHTML = `
     ${trilha()}<header><h1>Ajustes e captura</h1></header>
@@ -100,7 +102,7 @@ async function renderAjustes() {
         <option value="navegador" ${cfg.abrir_em === 'navegador' ? 'selected' : ''}>Numa aba do navegador</option></select></div>` : ''}
       <div class="row"><button id="a-guia">Refazer o primeiro uso</button><button class="perigo" id="a-encerrar">Encerrar o programa</button></div>
     </section>`;
-  const salvar = async obj => { await api('/api/config', { method: 'POST', body: JSON.stringify(obj) }); setTimeout(() => { atualizarStatus(); renderAjustes(); }, 400); };
+  const salvar = async obj => { await api('/api/config', { method: 'POST', body: JSON.stringify(obj) }); setTimeout(() => { atualizarStatus(); if (aba() === 'ajustes') renderAjustes(); }, 400); };
   $('#u-salvar').onclick = () => salvar({ github_repo: $('#u-repo').value.trim(), github_token: $('#u-token').value.trim() }).then(() => toast('Salvo'));
   $('#u-verificar').onclick = async () => { const r = await api('/api/atualizacao/verificar', { method: 'POST' }); toast(r.erro || (r.disponivel ? `Versão ${r.remota} disponível` : 'Você já está na versão mais nova')); renderAjustes(); };
   if ($('#u-instalar')) $('#u-instalar').onclick = async () => {
@@ -151,7 +153,9 @@ async function renderAjustes() {
 }
 
 async function renderRegras() {
+  const vez = novaTela();
   const d = await api('/api/regras');
+  if (telaVelha(vez)) return;
   S.regras = S.regras || d.regras;
   main.innerHTML = `
     ${trilha()}<header><h1>Regras de leitura</h1><p class="sub">Cada linha do log é comparada com estas expressões regulares. Grupos nomeados viram colunas: <span class="mono">(?P&lt;player&gt;…)</span>, <span class="mono">(?P&lt;card&gt;…)</span>, <span class="mono">(?P&lt;target&gt;…)</span>, <span class="mono">(?P&lt;dano&gt;\\d+)</span>. Ao salvar, todas as partidas são relidas.</p></header>

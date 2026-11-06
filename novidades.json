@@ -1,5 +1,65 @@
 [
   {
+    "versao": "2026.11.05-6",
+    "data": "2026-11-05",
+    "titulo": "Partidas: filtro do deck do adversário e os ícones dos decks de volta",
+    "mudancas": [
+      "Minhas partidas > Partidas: novos filtros \"Deck do jogador\" e \"Deck do adversário\", lado a lado, com os decks em ordem alfabética.",
+      "Correção: quase todos os decks tinham ficado sem ícone. O Limitless Labs mudou a página de decks (o ícone passou para outra coluna da tabela) e o programa, ao ler a página nova, apagava os ícones que já tinha. Agora ele lê a página nova, nunca apaga um ícone que já existe e, ao abrir, refaz sozinho a lista de decks quando a maioria está sem ícone."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.05-6\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Os ícones voltam sozinhos alguns segundos depois de o programa abrir (ele precisa de internet para buscar a lista de decks).",
+      "Em Minhas partidas > Partidas, escolha o deck nos campos \"Deck do jogador\" e \"Deck do adversário\"."
+    ]
+  },
+  {
+    "versao": "2026.11.05-5",
+    "data": "2026-11-05",
+    "titulo": "Época de cada coleção nas análises, \"Ver todas\" consertado e replay com o descarte certo",
+    "mudancas": [
+      "Análises separadas por coleção: cada coleção nova pode mudar o meta, então Partidas, Desempenho, Decisões e as telas de Meta e torneios ganharam o campo Época. Escolha a época de uma coleção (por exemplo, \"Delta Reign · desde 05/11/2026 (atual)\") para ver só o que aconteceu depois que ela chegou, ou \"Todas as épocas\".",
+      "Nas suas partidas a época começa quando a coleção chega ao TCG Live: na véspera do lançamento nas lojas, às 10h do horário do Pacífico (15h em Brasília para a Delta Reign). As partidas da manhã do mesmo dia continuam na época anterior. Nos torneios ela começa quando a coleção passa a valer: na segunda sexta-feira depois do lançamento (a Delta Reign vale em 20/11/2026, e a tela de Meta avisa isso).",
+      "A lista de partidas mostra uma linha onde começa cada época, e os gráficos de evolução (Desempenho, tendência do Meta e presença por torneio) ganharam uma linha tracejada com o nome da coleção.",
+      "Correção: clicar em \"Ver todas\" no Início às vezes não fazia nada. A tela do Início, que demorava mais, terminava por último e cobria a tela de Partidas. Agora uma tela antiga nunca cobre a nova, e uma tela que demora mostra \"Carregando…\".",
+      "A lista de partidas ficou mais rápida: a identificação do deck de cada partida (que usa as listas dos torneios) era refeita a cada 2 minutos e chegava a levar vários segundos. Agora ela é feita uma vez ao abrir o programa e só é refeita quando chegam torneios novos.",
+      "Correção no replay: quando havia dois Pokémon com o mesmo nome (por exemplo, dois Dreepy), a Energia descartada para recuar continuava presa no Pokémon que recuou. Agora ela sai do Pokémon certo. O mesmo vale para as cartas descartadas depois de um nocaute (o outro Pokémon de mesmo nome não perde mais a Energia dele) e para cartas como Crushing Hammer. Vale também para as partidas antigas."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.05-5\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Em Minhas partidas (Partidas, Desempenho ou Decisões), escolha a coleção no campo Época. A escolha vale nas três abas e fica guardada.",
+      "Em Meta e torneios, o campo Época fica ao lado de Fonte."
+    ]
+  },
+  {
+    "versao": "2026.11.05-4",
+    "data": "2026-11-05",
+    "titulo": "Biblioteca de cartas: uma carta que o TCGdex não entrega não para mais a atualização",
+    "mudancas": [
+      "Programa > Biblioteca de cartas: quando o TCGdex (o site de onde vêm as cartas) não respondia para uma única carta, a atualização inteira parava com \"Não consegui atualizar a biblioteca\". Agora só aquela coleção fica como já estava, as outras continuam, e no fim aparece um aviso amarelo dizendo qual coleção não foi atualizada.",
+      "Se alguma coleção falhar, o programa tenta de novo sozinho em 1 hora (antes esperava o dia seguinte)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.05-4\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer: a correção vale para a verificação diária e para os botões da Biblioteca de cartas."
+    ]
+  },
+  {
     "versao": "2026.11.05-3",
     "data": "2026-11-05",
     "titulo": "Filtro Jogador: escolha qualquer combinação de jogadores",

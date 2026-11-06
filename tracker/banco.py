@@ -269,6 +269,20 @@ def reprocessar_partidas(regras):
 
 # ---------------------------------------------------------------- torneios
 
+# Versão dos dados de torneio: muda quando um torneio é gravado ou apagado e quando as listas são reconvertidas.
+# As contas que dependem das listas dos torneios (identificação do deck de cada partida, em decks.py) ficam guardadas
+# e só são refeitas quando ela muda. Antes eram refeitas a cada 2 minutos e deixavam as telas de partidas lentas.
+_versao_torneios = [0]
+
+
+def marcar_mudanca_torneios():
+    _versao_torneios[0] += 1
+
+
+def versao_torneios():
+    return _versao_torneios[0]
+
+
 def salvar_torneio(t, jogadores, partidas, listas=None):
     """Substitui todos os dados de um torneio pelos novos."""
     with _trava, conectar() as con:
@@ -300,6 +314,7 @@ def salvar_torneio(t, jogadores, partidas, listas=None):
             )
     if listas:
         atualizar_ace_spec(t["id"])
+    marcar_mudanca_torneios()
 
 
 def _converter(c):
@@ -343,6 +358,7 @@ def reconverter_listas():
             cid, base = _converter({"carta": r["nome"], "set": r["set_code"], "numero": r["numero"]})
             con.execute("UPDATE meus_decks_cartas SET carta_id=?, carta_base=? WHERE rowid=?", (cid, base, r["rowid"]))
     atualizar_ace_spec()  # a biblioteca mudou: a marcação de ACE SPEC pode ter mudado também
+    marcar_mudanca_torneios()
     return len(linhas)
 
 
@@ -367,6 +383,7 @@ def apagar_torneio(tid):
         for tabela in ("t_jogadores", "t_partidas", "t_listas"):
             con.execute(f"DELETE FROM {tabela} WHERE torneio=?", (tid,))
         con.execute("DELETE FROM torneios WHERE id=?", (tid,))
+    marcar_mudanca_torneios()
 
 
 def consultar(sql, params=()):

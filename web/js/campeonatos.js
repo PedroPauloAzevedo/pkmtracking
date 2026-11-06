@@ -2,10 +2,13 @@
    CAMPEONATOS
    ===================================================================== */
 async function renderMeta() {
+  const vez = novaTela();
   await carregarTorneios();
+  if (telaVelha(vez)) return;
   if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Meta</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}&top=${S.top}&corte=${S.corte}`);
   const tend = await api(`/api/tendencia?k=8&${qsTorneios()}`);
+  if (telaVelha(vez)) return;
   const maxPct = Math.max(...m.divisao.map(d => d.pct), 1);
   main.innerHTML = `
     ${trilha()}<header><h1>Meta</h1><p class="sub">Quanto cada deck aparece, quanto vence (sem contar mirrors) e quanto converte para o topo.</p></header>
@@ -27,7 +30,8 @@ async function renderMeta() {
       </tbody></table></div>
     </section>
     <section class="panel"><h2>Tendência do meta</h2><p class="sub">Participação dos 8 decks mais jogados em cada torneio importado, em ordem de data.</p>
-      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5) }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
+      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5), marcas: marcasEpoca(tend.torneios.map(t => t.data || ''), 'torneios') }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
+      ${tend.torneios.length > 1 && marcasEpoca(tend.torneios.map(t => t.data || ''), 'torneios').length ? '<p class="muted" style="font-size:.82rem">A linha tracejada marca onde uma coleção nova passou a valer nos torneios: dali em diante o meta pode ser outro. Para ver uma época só, escolha em <b>Época</b>, acima.</p>' : ''}
     </section>
     <section class="panel" id="qual-deck"><h2>Qual deck jogar?</h2><p class="muted">Calculando…</p></section>`;
   ligarSeletor(renderMeta);
@@ -80,10 +84,13 @@ async function desenharVariantes(arq) {
 }
 
 async function renderMatchups() {
+  const vez = novaTela();
   await carregarTorneios();
+  if (telaVelha(vez)) return;
   if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Matchups</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   S.k = S.k || 12; S.minMu = S.minMu ?? 10;
   const m = await api(`/api/meta?${qsTorneios()}&top=${S.top}&k=${S.k}&min=${S.minMu}`);
+  if (telaVelha(vez)) return;
   main.innerHTML = `
     ${trilha()}<header><h1>Matchups</h1><p class="sub">Leia pela linha: taxa de vitória do deck da linha contra o deck da coluna. Células apagadas têm menos de ${S.minMu} partidas.</p></header>
     ${seletorTorneios()}
@@ -109,11 +116,14 @@ async function renderMatchups() {
 }
 
 async function renderDeck() {
+  const vez = novaTela();
   await carregarTorneios();
+  if (telaVelha(vez)) return;
   if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Perfil de deck</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}`);
   if (!S.deck || !m.divisao.some(d => d.arquetipo === S.deck)) S.deck = m.divisao[0]?.arquetipo || '';
   const p = S.deck ? await api(`/api/deck/${encodeURIComponent(S.deck)}?${qsTorneios()}`) : null;
+  if (telaVelha(vez)) return;
   main.innerHTML = `
     ${trilha()}<header><h1>Perfil de deck</h1><p class="sub">Participação, matchups contra o campo, colocações e esqueleto da lista.</p></header>
     ${seletorTorneios()}
@@ -138,7 +148,7 @@ async function renderDeck() {
         ${p.melhores.map(j => `<tr><td class="n">${j.posicao}</td><td>${esc(j.nome)}</td><td class="muted">${esc((S.torneios.find(t => t.id === j.torneio) || {}).nome || j.torneio)}</td><td>${j.ace_spec == null ? '<span class="muted">sem lista</span>' : j.ace_spec ? esc(j.ace_spec) : '<span class="muted">nenhuma</span>'}</td><td class="n">${j.v}–${j.d}–${j.e}</td></tr>`).join('')}
         </tbody></table></div></section>
       <section class="panel"><h2>Presença por torneio</h2>
-        ${p.por_torneio.length > 1 ? graficoLinhas([{ nome: p.nome, valores: p.por_torneio.map(t => t.pct), cor: 'var(--p1)' }], p.por_torneio.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...p.por_torneio.map(t => t.pct)) / 5) * 5) }) : '<p class="muted">Importe mais torneios para ver a evolução.</p>'}
+        ${p.por_torneio.length > 1 ? graficoLinhas([{ nome: p.nome, valores: p.por_torneio.map(t => t.pct), cor: 'var(--p1)' }], p.por_torneio.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...p.por_torneio.map(t => t.pct)) / 5) * 5), marcas: marcasEpoca(p.por_torneio.map(t => t.data || ''), 'torneios') }) : '<p class="muted">Importe mais torneios para ver a evolução.</p>'}
         <table><tbody>${Object.entries(p.colocacoes).map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('')}</tbody></table>
       </section>
     </div>
@@ -183,10 +193,13 @@ function tabelaCartas(cartas) {
 }
 
 async function renderCartas() {
+  const vez = novaTela();
   await carregarTorneios();
+  if (telaVelha(vez)) return;
   if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Cartas</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}`);
   const c = await api(`/api/cartas?${qsTorneios()}&arq=${encodeURIComponent(S.deckCartas || '')}`);
+  if (telaVelha(vez)) return;
   const com = S.torneios.filter(t => t.qtd_listas);
   main.innerHTML = `
     ${trilha()}<header><h1>Cartas</h1><p class="sub">Quanto cada carta é usada e o desempenho de quem a usa ("Vitória com") contra quem não usa ("Vitória sem"). Diferença grande pode ser sinal, mas não prova causa.</p></header>
@@ -221,7 +234,9 @@ async function renderCartas() {
 }
 
 async function renderCartasMatchups() {
+  const vez = novaTela();
   await carregarTorneios();
+  if (telaVelha(vez)) return;
   if (!S.torneios.filter(daFonte).length) { main.innerHTML = `${trilha()}<header><h1>Cartas x matchups</h1></header>${seletorTorneios()}`; ligarSeletor(render); return; }
   const m = await api(`/api/meta?${qsTorneios()}`);
   S.cmuDeck = S.cmuDeck && m.divisao.some(d => d.arquetipo === S.cmuDeck) ? S.cmuDeck : (m.divisao[0]?.arquetipo || '');
@@ -230,6 +245,7 @@ async function renderCartasMatchups() {
   const candidatas = uso.cartas.filter(c => Object.keys(c.por_copias || {}).length > 1);
   if (!S.cmuCarta || !candidatas.some(c => c.chave === S.cmuCarta)) S.cmuCarta = candidatas[0]?.chave || '';
   const r = S.cmuCarta ? await api(`/api/cartas/matchups?${qsTorneios()}&arq=${encodeURIComponent(S.cmuDeck)}&carta=${encodeURIComponent(S.cmuCarta)}&min=${S.minMu ?? 5}`).catch(() => null) : null;
+  if (telaVelha(vez)) return;
   const carta = candidatas.find(c => c.chave === S.cmuCarta);
   main.innerHTML = `
     ${trilha()}<header><h1>Cartas x matchups</h1><p class="sub">Para um deck, compara a taxa de vitória contra cada adversário conforme quantas cópias de uma carta a lista tinha. Ajuda a decidir se uma carta de tech ou uma cópia a mais vale o espaço. Mirrors não contam.</p></header>
@@ -260,9 +276,11 @@ function seloFormato(t) {
   return '<span class="pill n" title="Ainda não deu para confirmar o formato no Limitless; entra nas contas">formato não confirmado</span>';
 }
 async function renderTorneios() {
+  const vez = novaTela();
   await carregarTorneios();
   const grandes = S.torneios.filter(t => t.fonte !== 'online'), online = S.torneios.filter(t => t.fonte === 'online');
   const st = await api('/api/status');
+  if (telaVelha(vez)) return;
   S.status = st;
   const imp = st.importacao, cfg = st.config;
   main.innerHTML = `
@@ -317,7 +335,7 @@ async function renderTorneios() {
           <td><button class="perigo" data-del="${t.id}">Apagar</button></td></tr>`).join('')}</tbody></table></div></details>`
         : '<p class="vazio">Nenhum ainda. Eles chegam pela atualização automática (ou em Verificar agora).</p>'}
     </section>`;
-  const salvarCfg = obj => api('/api/config', { method: 'POST', body: JSON.stringify(obj) }).then(() => setTimeout(renderTorneios, 300));
+  const salvarCfg = obj => api('/api/config', { method: 'POST', body: JSON.stringify(obj) }).then(() => setTimeout(() => { if (aba() === 'torneios') renderTorneios(); }, 300));
   $('#s-toggle').onclick = () => salvarCfg({ sincronizar_auto: !cfg.sincronizar_auto });
   $('#s-horas').onchange = e => salvarCfg({ sincronizar_horas: Number(e.target.value) });
   $('#s-dias').onchange = e => salvarCfg({ sincronizar_dias: Number(e.target.value) });

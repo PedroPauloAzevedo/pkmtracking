@@ -25,8 +25,8 @@ import threading
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
-from tracker import (analises, atalhos, atualizador, avisos, bandeja, banco, cartas, compartilhar, config, decks,
-                     diagnostico, janela, leitor, limitless, lista_oficial, novidades, regras_jogo, replay, revisao)
+from tracker import (analises, atalhos, atualizador, avisos, bandeja, banco, cartas, colecoes, compartilhar, config,
+                     decks, diagnostico, janela, leitor, limitless, lista_oficial, novidades, regras_jogo, replay, revisao)
 from tracker.auto_export import auto
 from tracker.coletor import coletor
 
@@ -158,7 +158,7 @@ def api_decisoes():
     a = request.args
     return jsonify(analises.decisoes(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"),
                                      a.get("lista"), a.get("adv"), int(a.get("min", 3)), _jogador_pedido(),
-                                     a.get("ordem", "")))
+                                     a.get("ordem", ""), a.get("antes")))
 
 
 # ------------------------------------------------------------------ regras do Standard (base de regras)
@@ -241,7 +241,7 @@ def salvar_config():
 def partidas():
     a = request.args
     return jsonify(analises.analise_pessoal(config.ler_config()["nick"], a.get("de"), a.get("ate"), a.get("deck"), a.get("tag"),
-                                            a.get("lista"), a.get("adv"), _jogador_pedido()))
+                                            a.get("lista"), a.get("adv"), _jogador_pedido(), a.get("antes")))
 
 
 # ------------------------------------------------------------------ amigos: trocar logs
@@ -750,11 +750,24 @@ def apagar_torneio(tid):
 
 
 def _lista_torneios():
-    """Torneios escolhidos no painel; sem escolha, todos os Standard da fonte (grandes eventos, online ou todos)."""
-    t = [x for x in request.args.get("torneios", "").split(",") if x]
+    """Torneios escolhidos no painel; sem escolha, todos os Standard da fonte (grandes eventos, online ou todos).
+    ?de=&ate= (época do meta escolhida no painel) deixa só os torneios dessas datas."""
+    a = request.args
+    de, ate = a.get("de") or None, a.get("ate") or None
+    t = [x for x in a.get("torneios", "").split(",") if x]
     if t:
-        return t
-    return analises.torneios_da_fonte(request.args.get("fonte", "grandes"))
+        return analises.torneios_da_fonte("todos", de, ate, ids=t) if (de or ate) else t
+    return analises.torneios_da_fonte(a.get("fonte", "grandes"), de, ate)
+
+
+@app.get("/api/epocas")
+def epocas():
+    """Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas) e pela validade em torneio."""
+    primeira = banco.consultar("SELECT MIN(capturada_em) AS d FROM partidas")[0]["d"]
+    primeiro_t = banco.consultar("SELECT MIN(data) AS d FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')")[0]["d"]
+    return jsonify({"live": colecoes.epocas("live"), "torneios": colecoes.epocas("torneios"),
+                    "proxima": {"live": colecoes.proxima("live"), "torneios": colecoes.proxima("torneios")},
+                    "primeira_partida": (primeira or "")[:10], "primeiro_torneio": (primeiro_t or "")[:10]})
 
 
 @app.get("/api/meta")
@@ -1051,8 +1064,13 @@ def main():
     regras_jogo.verificador.iniciar()
     if cfg.get("pasta_auto"):
         compartilhar.sincronizador_pasta.iniciar()
-    if not banco.consultar("SELECT 1 FROM arquetipos LIMIT 1"):  # primeira vez: busca a lista de decks
+    total, sem_icone = decks.icones_sem_cadastro()
+    if not total or sem_icone > total / 2:  # primeira vez, ou ícones apagados (layout novo do Labs em 11/2026): refaz a lista
         threading.Thread(target=lambda: _tentar(limitless.atualizar_arquetipos), daemon=True).start()
+    # Deixa pronta a identificação do deck de cada partida (usa as listas dos torneios e leva alguns segundos):
+    # assim a primeira tela de partidas abre sem esperar.
+    threading.Thread(target=lambda: _tentar(lambda: analises.analise_pessoal(cfg.get("nick", ""), jogador="*")),
+                     daemon=True, name="aquecer").start()
     print(f"\nColetor de Partidas TCG Live (versão {VERSAO}) rodando. Painel: {url}")
     if not args.sem_navegador:
         threading.Timer(1.2, lambda: janela.abrir(url)).start()

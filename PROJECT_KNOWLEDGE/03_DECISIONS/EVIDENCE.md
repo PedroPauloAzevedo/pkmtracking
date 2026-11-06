@@ -64,6 +64,31 @@ mesmo resumo, que a regra antiga escondia em "Todos os jogadores").
 Nos dados de teste (`teste_tracker.py`: 14 partidas suas parecidas entre si, 1 da amiga e o outro lado de uma das suas) a regra
 antiga deixava **6 de 16** em "Todos"; a nova deixa **15** (as 14 + a da amiga; o outro lado do mesmo jogo conta uma vez). → D-033.
 
+## Carta presa descartada no replay (05/11/2026, versão 2026.11.05-5)
+135 partidas reais (o banco do Pedro, com as dos amigos, e a instalação antiga), versão publicada (2026.11.05-3) × nova:
+| Conferência | Antes | Depois |
+|---|---|---|
+| Sublinhas (recuo, Crushing Hammer, Ignition Energy): a carta saiu de um Pokémon em jogo | 141 de 182 (41 não tiraram nada) | 182 de 182 |
+| Linhas soltas depois de nocaute: tiraram a carta de um Pokémon que continuava em jogo (errado) | 2 de 150 | 0 de 150 |
+| Ataques em que o atacante tinha menos Energia presa que o custo do golpe (custo pela biblioteca) | 78 de 754 | 73 de 754 (nenhum caso novo) |
+31 partidas mudaram (4.626 quadros), sempre a partir de uma linha "was discarded from". Os 73 ataques que sobram vêm de Energias
+que o log não mostra ligando (habilidades, cartas que aceleram) ou de custos reduzidos; não têm relação com o descarte. → D-035.
+
+## Lista de partidas e "Ver todas" (05/11/2026, versão 2026.11.05-5)
+- **Registro do Coletor do Pedro:** o primeiro pedido da lista depois de um tempo parado levava de 3 a 10 s (e 0 s logo depois);
+  duas telas eram desenhadas ao mesmo tempo (pedidos repetidos no mesmo segundo).
+- **Cópia com os dados do Pedro** (`/api/partidas` com ele e um amigo, 80 partidas únicas): versão publicada 2,24 s no 1º pedido,
+  0,14 s logo depois e 2,21 s com as contas 3 minutos mais velhas; versão nova 2,65 s no 1º (feito em segundo plano ao abrir),
+  0,10 s logo depois e 0,08 s com as contas 3 minutos mais velhas. Deck identificado igual nas 80 partidas, nas duas versões.
+- **"Ver todas" com o Início atrasado 1,5 s de propósito:** versão publicada: endereço `#partidas`, tela do Início; versão nova:
+  tela de Partidas. → D-037.
+
+## Ícones dos decks (05/11/2026, versão 2026.11.05-6)
+- Cadastro do Pedro: 122 de 134 decks sem ícone, todos regravados em 05/11 às 19:55 (reimportação de um torneio do Labs).
+- Página `/0078/decks` do Labs: leitura antiga 0 ícones; nova 81 de 81 decks com ícone.
+- Cópia com os dados do Pedro, ao abrir a versão nova: 32 de 134 decks sem ícone (os que não estão nos 2 torneios mais recentes) e
+  as 67 partidas da lista (ele e um amigo) com ícone nos dois decks. → D-038.
+
 ## Modo automático
 - **Jogo real (02/11/2026):** jogo em janela 1600×900 num monitor 1920×1080 → tamanho dos botões 0,62. Notas na tela de resultado:
   Battle Log 0,86–0,87 na cópia reduzida (precisão exigida 0,85), Continue 0,94, exportar 0,95. Falhas observadas só com outra

@@ -46,7 +46,9 @@ function ligarFormularioDeck(d, depois) {
 }
 
 async function renderMeusDecks() {
+  const vez = novaTela();
   const lista = await api('/api/decks');
+  if (telaVelha(vez)) return;
   main.innerHTML = `
     ${trilha()}<header><h1>Meus decks</h1><p class="sub">Cadastre as listas que você joga. Cada partida capturada é ligada sozinha à lista que contém todas as cartas que você revelou, e o histórico de cada lista fica separado. Para testar mudanças, crie uma nova versão.</p></header>
     <div class="row"><input id="busca-deck" placeholder="Buscar decks…" style="width:260px"><button id="vincular">Ligar partidas antigas</button></div>

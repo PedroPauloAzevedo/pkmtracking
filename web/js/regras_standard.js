@@ -71,7 +71,9 @@ function destacar(el, termo) {
   return total;
 }
 async function renderRegrasStandard() {
+  const vez = novaTela();
   const r = await api('/api/regras-standard');
+  if (telaVelha(vez)) return;
   const g = r.regras, est = r.estado || {};
   if (!r.texto) { main.innerHTML = `${trilha()}<header><h1>Regras do Standard</h1></header><div class="aviso erro">A base de regras não foi encontrada na pasta docs do programa. Atualize o programa em Ajustes.</div>`; return; }
   const { html, indice } = mdHtml(r.texto);

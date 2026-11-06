@@ -437,4 +437,72 @@ confere("prêmios (3 de uma vez, fora de ordem): a 3ª carta, depois do nocaute,
 confere("prêmios (3 de uma vez, fora de ordem): nunca mais conhecidos que restantes",
         [q["linha"] for q in r["quadros"] for m in q["estado"]["mesa"].values() if len(m["premios_conhecidos"]) > m["premios"]], [])
 
+
+# 13) CARTA PRESA DESCARTADA ("X was discarded from P's Y."). Com dois Pokémon de mesmo nome o log não diz de qual saiu.
+def anexos(log, ate):
+    """Replay e as cartas presas em cada Pokémon no quadro da linha que contém `ate`."""
+    r = replay.gerar(CABECALHO + log.strip("\n") + "\n" + FIM, config.ler_regras())
+    q = [x for x in r["quadros"] if ate in x["texto"]][-1]
+    return r, q, {j: [(p["nome"], [a["nome"] for a in p["anexos"]]) for p in ([m["ativo"]] if m["ativo"] else []) + m["banco"]]
+                  for j, m in q["estado"]["mesa"].items()}
+
+
+# Recuo (visto num log real): dois Dreepy, só o Ativo tinha Energia; o custo do recuo sai do que recuou.
+r, q, a = anexos("""
+Ana played Dreepy to the Active Spot.
+Bia played Budew to the Active Spot.
+
+Ana's Turn
+Ana played Dreepy to the Bench.
+Ana played Budew to the Bench.
+Ana attached Basic Darkness Energy to Dreepy in the Active Spot.
+Ana retreated Dreepy to the Bench.
+- Basic Darkness Energy was discarded from Ana's Dreepy.
+Ana's Budew is now in the Active Spot.
+""", "Budew is now in the Active Spot")
+confere("descarte no recuo: a Energia sai do Dreepy que recuou", a["Ana"], [("Budew", []), ("Dreepy", []), ("Dreepy", [])])
+uid_recuo = next(x for x in r["quadros"] if x["texto"] == "Ana retreated Dreepy to the Bench.")["destaque"]["uid"]
+confere("descarte no recuo: o destaque aponta o Dreepy que recuou",
+        next(x for x in r["quadros"] if "was discarded from Ana's Dreepy" in x["texto"])["destaque"].get("uid"), uid_recuo)
+
+# Nocaute: o jogo lista o que estava preso no nocauteado; o outro Munkidori, que continua em jogo, não perde nada.
+r, q, a = anexos("""
+Ana played Dragapult ex to the Active Spot.
+Bia played Munkidori to the Active Spot.
+Bia played Munkidori to the Bench.
+
+Bia's Turn
+Bia attached Basic Darkness Energy to Munkidori in the Active Spot.
+
+Ana's Turn
+Ana ended their turn.
+
+Bia's Turn
+Bia attached Basic Darkness Energy to Munkidori on the Bench.
+
+Ana's Turn
+Ana's Dragapult ex used Phantom Dive on Bia's Munkidori for 200 damage.
+Bia's Munkidori was Knocked Out!
+Basic Darkness Energy was discarded from Bia's Munkidori.
+""", "was discarded from Bia's Munkidori")
+confere("descarte depois do nocaute: o Munkidori que ficou em jogo continua com a Energia",
+        (a["Bia"], q["estado"]["mesa"]["Bia"]["nocauteados"]), ([("Munkidori", ["Basic Darkness Energy"])], ["Munkidori"]))
+
+# Crushing Hammer (sublinha sem recuo): sai do que tem a carta, mesmo que o outro de mesmo nome venha antes na mesa.
+r, q, a = anexos("""
+Ana played Budew to the Active Spot.
+Bia played Munkidori to the Active Spot.
+
+Bia's Turn
+Bia played Munkidori to the Bench.
+Bia played Munkidori to the Bench.
+Bia attached Basic Darkness Energy to Munkidori on the Bench.
+
+Ana's Turn
+Ana played Crushing Hammer.
+- Basic Darkness Energy was discarded from Bia's Munkidori.
+""", "was discarded from Bia's Munkidori")
+confere("Crushing Hammer: a Energia sai do Munkidori que tinha a carta", a["Bia"],
+        [("Munkidori", []), ("Munkidori", []), ("Munkidori", [])])
+
 print("OK")

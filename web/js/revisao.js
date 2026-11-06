@@ -2,7 +2,9 @@
    REVISÃO DE LINHAS NÃO LIDAS
    ===================================================================== */
 async function renderRevisao() {
+  const vez = novaTela();
   const [lista, regs] = await Promise.all([api('/api/revisao'), api('/api/regras')]);
+  if (telaVelha(vez)) return;
   const realce = m => esc(m).replace(/\{([JCN])\}/g, (_, k) => `<b title="${{ J: 'nome de jogador', C: 'nome de carta', N: 'número' }[k]}">{${k}}</b>`);
   main.innerHTML = `
     <header><h1>Linhas não lidas</h1><p class="sub">Frases do log que nenhuma regra reconhece, agrupadas por modelo: <b>{J}</b> é um jogador, <b>{C}</b> uma carta e <b>{N}</b> um número. Para cada uma, diga se ela pode ser ignorada (não muda nenhum resultado) ou crie uma regra para lê-la. Depois de salvar, todas as partidas são relidas.</p></header>

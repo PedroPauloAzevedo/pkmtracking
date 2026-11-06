@@ -84,8 +84,9 @@ function trilha() {
   return NOME_SECAO[sec] ? `<span class="trilha">${NOME_SECAO[sec]}</span>` : '';
 }
 async function renderPainel() {
+  const vez = novaTela();
   await carregarJogadores();
-  const [d, st] = await Promise.all([api(comJog('/api/partidas')), api('/api/status')]); const cfg = st.config || {};
+  const [d, st] = await Promise.all([api(comJog('/api/partidas')), api('/api/status'), carregarEpocas()]); const cfg = st.config || {};
   const pend = S.status?.linhas_pendentes || 0;
   const boasVindas = cfg.nick || d.eu ? '' : `<section class="panel" style="border-left:3px solid var(--accent)"><h2>Bem-vindo! Primeiro passo</h2>
     <p>Digite seu nick do TCG Live <b>exatamente como aparece no jogo</b> (maiúsculas e minúsculas contam). É assim que o programa sabe quais partidas são vitórias suas. Se preferir, deixe em branco: ele descobre sozinho na primeira partida capturada.</p>
@@ -99,6 +100,7 @@ async function renderPainel() {
         + (c.ultima ? ` Última captura às ${esc(c.ultima.quando)}.` : '') : 'As partidas exportadas no TCG Live não estão sendo guardadas.'}
       ${st.bandeja ? ' O Coletor continua rodando no ícone perto do relógio, mesmo com esta aba fechada.' : ''}</span></div>
     ${c.ativo ? '' : '<button class="primary" id="in-ligar">Ligar captura</button>'}</section>`;
+  if (telaVelha(vez)) return;
   main.innerHTML = `
     ${trilha()}<header><h1>Início</h1><p class="sub">${!soEu() ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
     ${variosJogadores() ? `<div class="row">${seletorJogador()}</div>` : ''}
@@ -158,10 +160,18 @@ async function sugerirAtalho(st) {
   $('#in-dispensar').onclick = () => { try { localStorage.setItem('atalho-dispensado', '1'); } catch (e) {} el.innerHTML = ''; };
 }
 
+// Separador de época: quando a lista atravessa a chegada de uma coleção ao TCG Live, uma linha marca onde começa cada época.
+function separadorEpoca(e, colunas) {
+  return `<tr class="sep-epoca"><td colspan="${colunas}">${e ? `Época <b>${esc(e.nome)}</b> · ${e.fim ? `${quandoEpoca(e.de)} a ${quandoEpoca(e.fim)}` : `desde ${quandoEpoca(e.de)}, quando a coleção chegou ao TCG Live`}` : 'Antes das coleções conhecidas'}</td></tr>`;
+}
 function tabelaPartidas(lista) {
   const cj = lista.some(l => l.dono) || S.jogadorSel.length > 1;
+  const separar = new Set(lista.map(l => epocaDe(l.data, 'live')?.id || '')).size > 1;
+  let epocaAnterior;
+  const sep = l => { if (!separar) return ''; const e = epocaDe(l.data, 'live'), id = e?.id || '';
+    if (id === epocaAnterior) return ''; epocaAnterior = id; return separadorEpoca(e, cj ? 10 : 9); };
   return `<div class="tabela alta"><table><thead><tr><th>Data</th>${cj ? '<th>Jogador</th>' : ''}<th>Resultado</th><th>Adversário</th><th>${cj ? 'Deck do jogador' : 'Seu deck'}</th><th>Deck do adversário</th><th class="n">Prêmios</th><th class="n">Turnos</th><th>Ordem</th><th>Motivo</th></tr></thead><tbody>
-    ${lista.map(l => `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
+    ${lista.map(l => sep(l) + `<tr class="clicavel ${l.resultado === 'V' ? 'res-v' : l.resultado === 'D' ? 'res-d' : ''}" data-id="${l.id}">
       <td class="num" style="white-space:nowrap">${fmtData(l.data, true)}</td>${cj ? `<td>${l.dono ? esc(l.dono) : '<b>Eu</b>'}</td>` : ''}
       <td>${l.resultado === 'V' ? '<span class="pill v">Vitória</span>' : l.resultado === 'D' ? '<span class="pill d">Derrota</span>' : '<span class="pill n">?</span>'}${l.problemas?.length ? ` <span class="pill n" title="${esc(l.problemas.join('; '))}">⚠ incompleto?</span>` : ''}</td>
       <td>${esc(l.adversario)}</td><td>${deckHtml(l.meu_deck)}${l.lista_nome ? `<div class="muted" style="font-size:.74rem">lista: ${esc(l.lista_nome)}</div>` : ''}</td><td>${deckHtml(l.deck_adv)}</td>
@@ -174,18 +184,26 @@ function ligarLinhasPartidas() {
 }
 
 async function renderPartidas() {
-  const f = S.filtroPartidas || (S.filtroPartidas = { deck: '', tag: '', de: '', ate: '' });
-  const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString();
+  const vez = novaTela();
+  const f = S.filtroPartidas || (S.filtroPartidas = { deck: '', adv: '', tag: '', de: '', ate: '' });
   await carregarJogadores();
+  await carregarEpocas();
+  const per = comEpoca(f.de, f.ate, 'live'), ep = epocaEscolhida('live');
+  const qs = new URLSearchParams(Object.entries({ deck: f.deck, adv: f.adv, tag: f.tag, ...per }).filter(([, v]) => v)).toString();
   const d = await api(comJog('/api/partidas?' + qs));
-  const decks = [...new Set(d.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
-  const lista = d.partidas.filter(l => (!f.deck || l.meu_deck === f.deck) && (!f.tag || (l.tags || '').toLowerCase().includes(f.tag.toLowerCase()))
-    && (!f.de || l.data.slice(0, 10) >= f.de) && (!f.ate || l.data.slice(0, 10) <= f.ate));
+  if (telaVelha(vez)) return;
+  // opções em ordem do nome que aparece (o valor guardado é o código do deck, ex.: dragapult-ex)
+  const opcoes = campo => [...new Set(d.partidas.map(l => l[campo]).filter(Boolean))].sort((a, b) => nomeDeck(a).localeCompare(nomeDeck(b), 'pt-BR'));
+  const decks = opcoes('meu_deck'), advs = opcoes('deck_adv');
+  const lista = d.partidas.filter(l => (!f.deck || l.meu_deck === f.deck) && (!f.adv || l.deck_adv === f.adv)
+    && (!f.tag || (l.tags || '').toLowerCase().includes(f.tag.toLowerCase())) && noPeriodo(l.data, per));
   main.innerHTML = `
-    ${trilha()}<header><h1>Partidas</h1><p class="sub">Clique numa partida para ver o detalhe, corrigir o nome dos decks e anotar.</p></header>
+    ${trilha()}<header><h1>Partidas</h1><p class="sub">Clique numa partida para ver o detalhe, corrigir o nome dos decks e anotar. Quando uma coleção nova chega ao TCG Live, uma linha na lista marca onde começa a época dela.</p></header>
     <div class="row">
       ${seletorJogador()}
-      <select id="f-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
+      ${seletorEpoca('live')}
+      <span class="par-epoca"><label class="label" for="f-deck">Deck do jogador</label><select id="f-deck"><option value="">Todos</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select></span>
+      <span class="par-epoca"><label class="label" for="f-adv">Deck do adversário</label><select id="f-adv"><option value="">Todos</option>${advs.map(x => `<option value="${esc(x)}" ${f.adv === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select></span>
       <input id="f-tag" placeholder="Tag (ex.: liga)" value="${esc(f.tag)}">
       <label class="label" for="f-de">De</label><input type="date" id="f-de" value="${f.de}">
       <label class="label" for="f-ate">Até</label><input type="date" id="f-ate" value="${f.ate}">
@@ -193,10 +211,11 @@ async function renderPartidas() {
       <a class="btn" href="${comJog('/exportar/minhas_partidas.csv')}">Baixar para Excel</a>
       <a class="btn" href="/exportar/eventos.csv">Baixar eventos</a>
     </div>
-    <p class="muted num">${lista.length} partidas</p>
+    <p class="muted num">${lista.length} partidas${ep ? ` na época ${esc(ep.nome)}` : ''}</p>
     ${lista.length ? tabelaPartidas(lista) : '<p class="vazio">Nenhuma partida com esses filtros.</p>'}`;
-  ['deck', 'tag', 'de', 'ate'].forEach(k => $('#f-' + k).onchange = e => { f[k] = e.target.value; renderPartidas(); });
+  ['deck', 'adv', 'tag', 'de', 'ate'].forEach(k => $('#f-' + k).onchange = e => { f[k] = e.target.value; renderPartidas(); });
   ligarSeletorJogador(renderPartidas);
+  ligarSeletorEpoca('live', renderPartidas);
   ligarLinhasPartidas();
 }
 
@@ -217,7 +236,9 @@ function graficoPremios(r, a, b) {
 }
 
 async function renderDetalhe(id) {
+  const vez = novaTela();
   const [p, listas] = await Promise.all([api('/api/partidas/' + id), api('/api/decks').catch(() => [])]);
+  if (telaVelha(vez)) return;
   const v = p.visao, r = p.resumo;
   const a = v.eu, b = v.adversario;
   const pa = r.por_jogador[a] || {}, pb = r.por_jogador[b] || {};
@@ -283,23 +304,28 @@ function barrasMatchup(lista, extra) {
 }
 const PERIODOS = [[1, '1D'], [7, '7D'], [30, '30D'], [90, '90D'], [0, 'Tudo']];
 async function renderDesempenho() {
+  const vez = novaTela();
   const f = S.filtroDes || (S.filtroDes = { de: '', ate: '', deck: '', adv: '', periodo: 0 });
   if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
-  const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, adv: f.adv }).filter(([, v]) => v)).toString();
   await carregarJogadores();
+  await carregarEpocas();
+  const per = comEpoca(f.de, f.ate, 'live'), ep = epocaEscolhida('live');
+  const qs = new URLSearchParams(Object.entries({ ...per, deck: f.deck, adv: f.adv }).filter(([, v]) => v)).toString();
   const d = await api(comJog('/api/partidas?' + qs));
   const todos = await api(comJog('/api/partidas'));
+  if (telaVelha(vez)) return;
   const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
   const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
   const ordem = Object.fromEntries(d.ordem.map(g => [g.grupo, g]));
   const kpi = (ico, cls, rotulo, v, det) => `<div class="kpi2"><span class="ico-kpi ${cls}">${ico}</span><div><span class="label">${rotulo}</span><div class="v">${v}</div><span class="d">${det}</span></div></div>`;
   const classe = g => g && g.taxa != null ? (g.taxa >= 50 ? 'bom' : 'ruim') : 'neutro';
   main.innerHTML = `
-    ${trilha()}<header><h1>Desempenho</h1><p class="sub">${!soEu() ? `Mostrando: <b>${esc(nomeJogadorSel())}</b>. ` : ''}Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
+    ${trilha()}<header><h1>Desempenho</h1><p class="sub">${!soEu() ? `Mostrando: <b>${esc(nomeJogadorSel())}</b>. ` : ''}${ep ? `Época <b>${esc(ep.nome)}</b>. ` : ''}Suas taxas de vitória, matchups e evolução. Passe o mouse numa barra para ver a faixa provável da taxa (com poucas partidas ela ainda muda bastante).</p></header>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, r]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${r}</button>`).join('')}</div>
       <label class="label" for="d-de">De</label><input type="date" id="d-de" value="${f.de}">
       <label class="label" for="d-ate">Até</label><input type="date" id="d-ate" value="${f.ate}">
+      ${seletorEpoca('live')}
       <span class="grow"></span>
       ${seletorJogador()}
       <select id="d-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
@@ -321,10 +347,13 @@ async function renderDesempenho() {
       <section class="panel"><h2>Como as partidas terminam</h2>${tabelaGrupos(d.motivos, 'Motivo')}</section>
     </div>
     <section class="panel"><h2>Evolução da taxa de vitória</h2>
-      ${d.tendencia.length > 1 ? graficoLinhas([{ nome: 'Taxa acumulada', valores: d.tendencia.map(t => t.taxa_acumulada), cor: 'var(--p1)' }], d.tendencia.map(t => t.dia.slice(5).split('-').reverse().join('/'))) : '<p class="muted">Precisa de partidas em pelo menos dois dias.</p>'}
+      ${d.tendencia.length > 1 ? graficoLinhas([{ nome: 'Taxa acumulada', valores: d.tendencia.map(t => t.taxa_acumulada), cor: 'var(--p1)' }], d.tendencia.map(t => t.dia.slice(5).split('-').reverse().join('/')),
+        { marcas: marcasEpoca(d.tendencia.map(t => t.dia), 'live') }) : '<p class="muted">Precisa de partidas em pelo menos dois dias.</p>'}
+      ${marcasEpoca(d.tendencia.map(t => t.dia), 'live').length ? '<p class="muted" style="font-size:.82rem">A linha tracejada marca o dia em que uma coleção nova chegou ao TCG Live: dali em diante o meta pode ser outro.</p>' : ''}
     </section>`;
   $('#d-deck').onchange = e => { f.deck = e.target.value; renderDesempenho(); };
   ligarSeletorJogador(renderDesempenho);
+  ligarSeletorEpoca('live', renderDesempenho);
   $('#d-adv').onchange = e => { f.adv = e.target.value; renderDesempenho(); };
   $('#d-de').onchange = e => { f.de = e.target.value; f.periodo = 0; renderDesempenho(); };
   $('#d-ate').onchange = e => { f.ate = e.target.value; f.periodo = 0; renderDesempenho(); };

@@ -64,8 +64,10 @@ function maoHtml(j, mao, anterior) {
 }
 
 async function renderReplay(id) {
+  const vez = novaTela();
   main.innerHTML = '<p class="vazio">Montando o replay…</p>';
   const r = await api(`/api/partidas/${id}/replay`);
+  if (telaVelha(vez)) return;
   if (!r.quadros.length) { main.innerHTML = '<div class="aviso erro">Não consegui montar o replay desta partida.</div>'; return; }
   const eu = r.jogadores.includes(r.eu) ? r.eu : r.jogadores[0];
   const adv = r.jogadores.find(j => j !== eu) || '';

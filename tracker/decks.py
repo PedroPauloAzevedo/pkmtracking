@@ -46,17 +46,28 @@ REGIOES = {"alolan": "alola", "galarian": "galar", "hisuian": "hisui", "paldean"
 # ------------------------------------------------------------------ arquétipos
 
 def salvar_arquetipos(lista):
+    """Grava nomes e ícones dos decks. Lista de ícones vazia não apaga a que já existia (uma página do Labs com layout novo
+    chegou a zerar os ícones de quase todos os decks em 05/11/2026)."""
     agora = datetime.now().isoformat(timespec="seconds")
     with banco.conectar() as con:
         for a in lista:
             con.execute("INSERT INTO arquetipos (slug, nome, icones, atualizado_em) VALUES (?,?,?,?) "
-                        "ON CONFLICT(slug) DO UPDATE SET nome=excluded.nome, icones=excluded.icones, atualizado_em=excluded.atualizado_em",
+                        "ON CONFLICT(slug) DO UPDATE SET nome=excluded.nome, atualizado_em=excluded.atualizado_em, "
+                        "icones=CASE WHEN excluded.icones = '[]' THEN arquetipos.icones ELSE excluded.icones END",
                         (a["slug"], a["nome"], json.dumps(a["icones"]), agora))
     _cache.clear()
 
 
+def icones_sem_cadastro():
+    """Quantos decks do cadastro estão sem ícone (para refazer o cadastro quando a maioria está vazia)."""
+    r = banco.consultar("SELECT COUNT(*) AS n, SUM(icones = '[]') AS vazios FROM arquetipos")[0]
+    return r["n"] or 0, r["vazios"] or 0
+
+
 def ler_pagina_decks(sopa, tid):
-    """Lê /<torneio>/decks do Labs: [{slug, nome, icones}]."""
+    """Lê /<torneio>/decks do Labs: [{slug, nome, icones}].
+    Os ícones ficavam dentro do link do deck; desde 11/2026 ficam numa coluna à parte da mesma linha da tabela
+    (<img class="pokemon" src=".../pokemon/gen9/dragapult.png">): procura nos dois lugares."""
     padrao = re.compile(rf"/{tid}/decks/([^/?#]+)/?$")
     achados = {}
     for a in sopa.find_all("a", href=True):
@@ -68,7 +79,8 @@ def ler_pagina_decks(sopa, tid):
         texto = a.get_text(" ", strip=True)
         if texto and not d["nome"] and not texto.isdigit():
             d["nome"] = texto
-        for img in a.find_all("img"):
+        linha = a.find_parent("tr")
+        for img in a.find_all("img") or (linha.find_all("img") if linha else []):
             arq = re.search(r"/([a-z0-9-]+)\.png", img.get("src", ""))
             if arq and arq.group(1) not in d["icones"]:
                 d["icones"].append(arq.group(1))
@@ -80,10 +92,20 @@ def ler_pagina_decks(sopa, tid):
 _cache = {}
 
 
+def _em_dia(chave, segundos=3600):
+    """A conta guardada em _cache[chave] ainda vale? Vale enquanto os torneios não mudarem (banco.versao_torneios)
+    e por no máximo `segundos`. Guardada sem versão (ex.: pelos experimentos), vale só pelo tempo."""
+    x = _cache.get(chave)
+    if not x or time.time() - x[0] >= segundos:
+        return False
+    return len(x) < 3 or x[2] == banco.versao_torneios()
+
+
 def arquetipos():
     """slug -> {nome, icones, jogadores} (do cadastro + dos torneios importados)."""
-    if "arq" in _cache and time.time() - _cache["arq"][0] < 30:
+    if _em_dia("arq"):
         return _cache["arq"][1]
+    versao = banco.versao_torneios()
     saida = {}
     for r in banco.consultar("SELECT * FROM arquetipos"):
         saida[r["slug"]] = {"slug": r["slug"], "nome": r["nome"], "icones": json.loads(r["icones"] or "[]"), "jogadores": 0}
@@ -91,7 +113,7 @@ def arquetipos():
         a = saida.setdefault(r["arquetipo"], {"slug": r["arquetipo"], "nome": nome_de_slug(r["arquetipo"]),
                                               "icones": [pokemon_id(nome_de_slug(r["arquetipo"]))], "jogadores": 0})
         a["jogadores"] = r["q"]
-    _cache["arq"] = (time.time(), saida)
+    _cache["arq"] = (time.time(), saida, versao)
     return saida
 
 
@@ -238,8 +260,9 @@ def caminho_icone(p):
 
 def _assinaturas():
     """arquétipo -> {carta: % das listas}, e carta -> em quantos arquétipos é comum (>=30%)."""
-    if "ass" in _cache and time.time() - _cache["ass"][0] < 120:
+    if _em_dia("ass"):
         return _cache["ass"][1]
+    versao = banco.versao_torneios()
     rows = banco.consultar(
         "SELECT j.arquetipo AS arq, l.torneio || '/' || l.labs_id AS lista, COALESCE(NULLIF(l.carta_base,''), l.carta) AS carta "
         "FROM t_listas l JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id WHERE j.arquetipo != ''")
@@ -254,7 +277,7 @@ def _assinaturas():
         perfil[arq] = {carta: q / len(ls) for carta, q in c.items()}
     comum_em = Counter(carta for p in perfil.values() for carta, f in p.items() if f >= 0.3)
     dados = (perfil, comum_em, len(perfil))
-    _cache["ass"] = (time.time(), dados)
+    _cache["ass"] = (time.time(), dados, versao)
     return dados
 
 
@@ -264,8 +287,9 @@ CONFIANCA_NB = 0.5       # abaixo disso, vale o método por ícones (e depois o 
 
 def _modelo_nb():
     """Para cada deck: quantas listas e em quantas delas cada carta aparece (listas dos torneios importados)."""
-    if "nb" in _cache and time.time() - _cache["nb"][0] < 120:
+    if _em_dia("nb"):
         return _cache["nb"][1]
+    versao = banco.versao_torneios()
     rows = banco.consultar(
         "SELECT j.arquetipo AS arq, l.torneio || '/' || l.labs_id AS lista, COALESCE(NULLIF(l.carta_base,''), l.carta) AS carta "
         "FROM t_listas l JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id WHERE j.arquetipo != ''")
@@ -294,7 +318,7 @@ def _modelo_nb():
             g = BETA_NB * (geral[carta] + 1) / (total + 2)
             indice[carta][a] = math.log(1 + vezes / g)
     dados = {"n": n, "cont": cont, "geral": geral, "total": total, "base": base, "log_n": log_n, "indice": indice}
-    _cache["nb"] = (time.time(), dados)
+    _cache["nb"] = (time.time(), dados, versao)
     _cache.pop("ident", None)  # modelo novo: esquece as identificações já feitas
     return dados
 

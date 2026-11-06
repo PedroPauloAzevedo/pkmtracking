@@ -1,10 +1,14 @@
 /* ---- DECISÕES: o que anda junto com vencer nas suas partidas (só a partir dos logs) */
 async function renderDecisoes() {
+  const vez = novaTela();
   const f = S.filtroDec || (S.filtroDec = { de: '', ate: '', deck: '', lista: '', adv: '', periodo: 0, min: 3, ordem: '' });
   if (f.periodo) { const d0 = new Date(Date.now() - (f.periodo - 1) * 864e5); f.de = d0.toISOString().slice(0, 10); f.ate = ''; }
-  const qs = new URLSearchParams(Object.entries({ de: f.de, ate: f.ate, deck: f.deck, lista: f.lista, adv: f.adv, min: f.min, ordem: f.ordem || '' }).filter(([, v]) => v !== '' && v != null)).toString();
   await carregarJogadores();
+  await carregarEpocas();
+  const per = comEpoca(f.de, f.ate, 'live'), ep = epocaEscolhida('live');
+  const qs = new URLSearchParams(Object.entries({ ...per, deck: f.deck, lista: f.lista, adv: f.adv, min: f.min, ordem: f.ordem || '' }).filter(([, v]) => v !== '' && v != null)).toString();
   const [r, todos, listas] = await Promise.all([api(comJog('/api/decisoes?' + qs)), api(comJog('/api/partidas')), api('/api/decks')]);
+  if (telaVelha(vez)) return;
   const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
   const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
   const dif = x => x == null ? '<span class="muted">–</span>' : `<b style="color:${x > 0 ? 'var(--good)' : x < 0 ? 'var(--bad)' : 'var(--muted)'}">${x > 0 ? '+' : ''}${fmt(x, 0)} p.p.</b>`;
@@ -32,13 +36,14 @@ async function renderDecisoes() {
   const vi = r.viradas, rv = r.ritmo, pc = r.perdeu_controle;
   const maxPc = Math.max(1, ...pc.map(x => x.derrotas));
   main.innerHTML = `
-    ${trilha()}<header><h1>Decisões</h1><p class="sub">${!soEu() ? `Mostrando: <b>${esc(nomeJogadorSel())}</b> (cada partida do ponto de vista de quem jogou). ` : ''}O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
+    ${trilha()}<header><h1>Decisões</h1><p class="sub">${!soEu() ? `Mostrando: <b>${esc(nomeJogadorSel())}</b> (cada partida do ponto de vista de quem jogou). ` : ''}${ep ? `Época <b>${esc(ep.nome)}</b>. ` : ''}O que, nas suas partidas, anda junto com vencer ou perder: jogadas de abertura, corrida de prêmios, o turno em que o jogo escapou e o seu ritmo. Tudo vem dos logs.</p></header>
     <div class="aviso">São <b>correlações</b>, não causas: uma carta pode aparecer mais nas vitórias porque você só consegue jogá-la quando a partida já está boa. Use como pista para revisar replays. Com poucas partidas, a faixa provável (passe o mouse na taxa) é larga.</div>
     <div class="row">
       <div class="chips-periodo">${PERIODOS.map(([v, rt]) => `<button data-periodo="${v}" aria-pressed="${f.periodo === v && !(v === 0 && (f.de || f.ate))}">${rt}</button>`).join('')}</div>
       <div class="chips-periodo" role="group" aria-label="Quem começou">${[['', 'Todas'], ['primeiro', 'Começando'], ['segundo', 'Indo em segundo']].map(([v, rt]) => `<button data-ordem="${v}" aria-pressed="${(f.ordem || '') === v}">${rt}</button>`).join('')}</div>
       <label class="label" for="x-de">De</label><input type="date" id="x-de" value="${f.de}">
       <label class="label" for="x-ate">Até</label><input type="date" id="x-ate" value="${f.ate}">
+      ${seletorEpoca('live')}
       <span class="grow"></span>
       ${seletorJogador()}
       <select id="x-deck"><option value="">Todos os seus decks</option>${decks.map(x => `<option value="${esc(x)}" ${f.deck === x ? 'selected' : ''}>${esc(nomeDeck(x))}</option>`).join('')}</select>
@@ -69,6 +74,7 @@ async function renderDecisoes() {
       ${tabelaCartas(r.cartas_jogadas, `Nenhuma carta com pelo menos ${f.min} partidas (e alguma partida sem ela).`)}</section>`}`;
   const re = () => renderDecisoes();
   ligarSeletorJogador(re);
+  ligarSeletorEpoca('live', re);
   $('#x-deck').onchange = e => { f.deck = e.target.value; re(); };
   $('#x-lista').onchange = e => { f.lista = e.target.value; re(); };
   $('#x-adv').onchange = e => { f.adv = e.target.value; re(); };

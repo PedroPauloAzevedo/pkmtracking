@@ -53,7 +53,7 @@ function tabelaGrupos(lista, titulo, extra, formato) {
       ${extra ? `<td>${g.meta_taxa != null ? `${pct(g.meta_taxa)} <span class="ic">${g.meta_n} partidas</span>` : '<span class="muted">–</span>'}</td>` : ''}</tr>`).join('')}
   </tbody></table></div>`;
 }
-function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', altura = 240 } = {}) {
+function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', altura = 240, marcas = [] } = {}) {
   const W = 640, H = altura, m = { l: 40, r: 14, t: 12, b: 34 };
   const n = Math.max(rotulosX.length - 1, 1);
   const x = i => m.l + (rotulosX.length === 1 ? (W - m.l - m.r) / 2 : (i / n) * (W - m.l - m.r));
@@ -63,6 +63,9 @@ function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', alt
   for (let k = 0; k <= 4; k++) { const v = min + k * passoY; g += `<line class="grade" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v, 0)}${sufixo}</text>`; }
   const pulo = Math.ceil(rotulosX.length / 8);
   rotulosX.forEach((r, i) => { if (i % pulo === 0 || i === rotulosX.length - 1) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle">${esc(r)}</text>`; });
+  // separador de época: linha tracejada onde começa a época de uma coleção nova (marcas = [{i, rotulo}], ver marcasEpoca)
+  marcas.forEach(mk => { const xm = (x(mk.i - 1) + x(mk.i)) / 2, perto_do_fim = xm > W * 0.7;  // nome à esquerda da linha no fim
+    g += `<line class="marca-epoca" x1="${xm}" x2="${xm}" y1="${m.t}" y2="${H - m.b}"/><text class="marca-epoca" x="${perto_do_fim ? xm - 4 : xm + 4}" y="${m.t + 10}" text-anchor="${perto_do_fim ? 'end' : 'start'}">${esc(mk.rotulo)}</text>`; });
   const linhas = series.map((s, k) => {
     const pts = s.valores.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
     if (!pts.length) return '';
@@ -79,13 +82,16 @@ function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', alt
 try { S.fonte = localStorage.getItem('fonte') || 'grandes'; } catch (e) { S.fonte = 'grandes'; }
 const FONTES = [['grandes', 'Grandes eventos'], ['online', 'Torneios online'], ['todos', 'Todos']];
 const ehStandard = t => !t.formato || t.formato === 'standard';
-const daFonte = t => ehStandard(t) && (S.fonte === 'todos' || (S.fonte === 'online') === (t.fonte === 'online'));
+const naEpocaMeta = t => { const e = epocaEscolhida('torneios'); const d = (t.data || '').slice(0, 10); return !e || (d >= e.de && (!e.fim || d < e.fim)); };
+const daFonte = t => ehStandard(t) && (S.fonte === 'todos' || (S.fonte === 'online') === (t.fonte === 'online')) && naEpocaMeta(t);
 function seletorTorneios() {
   if (!S.torneios || !S.torneios.length) return `<div class="aviso">Nenhum torneio importado ainda. Vá em <a href="#torneios">Importar torneios</a>.</div>`;
-  const lista = S.torneios.filter(daFonte);
+  const lista = S.torneios.filter(daFonte), prox = S.epocas?.proxima?.torneios;
   const fontes = `<div class="row"><span class="label">Fonte</span><div class="chips">${FONTES.map(([k, n]) =>
-    `<button class="chip ch-fonte" data-fonte="${k}" aria-pressed="${S.fonte === k}">${n}</button>`).join('')}</div></div>`;
-  if (!lista.length) return fontes + `<div class="aviso">Nenhum torneio desta fonte ainda.${S.fonte !== 'grandes' ? ' Os torneios online chegam pela atualização automática em <a href="#torneios">Torneios</a>.' : ''}</div>`;
+    `<button class="chip ch-fonte" data-fonte="${k}" aria-pressed="${S.fonte === k}">${n}</button>`).join('')}</div>
+    <span class="grow"></span>${seletorEpoca('torneios')}</div>
+    ${prox ? `<p class="muted" style="font-size:.85rem;margin:0">A coleção <b>${esc(prox.nome)}</b> passa a valer nos torneios em ${dataCurta(prox.de)}: até lá, os torneios ainda são da época anterior.</p>` : ''}`;
+  if (!lista.length) return fontes + `<div class="aviso">Nenhum torneio desta fonte${epocaEscolhida('torneios') ? ' nesta época' : ' ainda'}.${S.fonte !== 'grandes' ? ' Os torneios online chegam pela atualização automática em <a href="#torneios">Torneios</a>.' : ''}</div>`;
   if (S.fonte !== 'grandes') {  // dezenas de torneios por semana: mostra um resumo em vez de um botão para cada
     const datas = lista.map(t => t.data).filter(Boolean).sort();
     const jog = lista.reduce((a, t) => a + (t.jogadores || 0), 0);
@@ -95,6 +101,7 @@ function seletorTorneios() {
     <div class="chips">${lista.map(t => `<button class="chip ch-torneio" data-id="${t.id}" aria-pressed="${!S.selTorneios.length || S.selTorneios.includes(t.id)}">${esc(t.nome)}</button>`).join('')}</div></div>`;
 }
 function ligarSeletor(recarregar) {
+  ligarSeletorEpoca('torneios', () => { S.selTorneios = []; recarregar(); });
   document.querySelectorAll('.ch-fonte').forEach(b => b.onclick = () => {
     S.fonte = b.dataset.fonte; S.selTorneios = [];
     try { localStorage.setItem('fonte', S.fonte); } catch (e) {}
@@ -108,8 +115,74 @@ function ligarSeletor(recarregar) {
     recarregar();
   });
 }
-const qsTorneios = () => `fonte=${S.fonte}` + (S.fonte === 'grandes' && S.selTorneios.length ? `&torneios=${S.selTorneios.join(',')}` : '');
-async function carregarTorneios() { S.torneios = await api('/api/torneios'); }
+const qsTorneios = () => {
+  const { de, ate } = comEpoca('', '', 'torneios');
+  return `fonte=${S.fonte}` + (S.fonte === 'grandes' && S.selTorneios.length ? `&torneios=${S.selTorneios.join(',')}` : '')
+    + (de ? `&de=${de}` : '') + (ate ? `&ate=${ate}` : '');
+};
+async function carregarTorneios() { await carregarEpocas(); S.torneios = await api('/api/torneios'); }
+
+/* ---------------- épocas do meta: uma por coleção (tracker/colecoes.py) ---------------- */
+// Cada coleção nova pode mudar o meta. "live" = suas partidas (a coleção chega ao TCG Live na véspera do lançamento,
+// às 10h do Pacífico: aqui a hora conta); "torneios" = validade em torneio (segunda sexta-feira depois do lançamento).
+// Cada época: de (incluído), fim (começo da seguinte, não incluído; null na atual) e ate (último dia, para mostrar).
+// S.epoca (Minhas partidas) e S.epocaMeta (Meta e torneios) guardam a época escolhida ('' = todas) no navegador.
+try { S.epoca = localStorage.getItem('epoca') || ''; S.epocaMeta = localStorage.getItem('epoca-meta') || ''; } catch (e) { S.epoca = ''; S.epocaMeta = ''; }
+async function carregarEpocas() {
+  if (S.epocas && Date.now() - S.epocas.lido < 10 * 60e3) return;
+  try { S.epocas = { ...(await api('/api/epocas')), lido: Date.now() }; }
+  catch (e) { S.epocas = S.epocas || { live: [], torneios: [], proxima: {}, lido: 0 }; }
+}
+const chaveEpoca = tipo => tipo === 'live' ? 'epoca' : 'epocaMeta';
+function epocasVisiveis(tipo) {  // só as épocas em que há dados: desde a primeira partida (ou o primeiro torneio)
+  const eps = S.epocas?.[tipo] || [], ini = tipo === 'live' ? S.epocas?.primeira_partida : S.epocas?.primeiro_torneio;
+  return eps.filter(e => !ini || !e.ate || e.ate >= ini);
+}
+function epocaEscolhida(tipo) {
+  const id = S[chaveEpoca(tipo)];
+  return id ? epocasVisiveis(tipo).find(e => e.id === id) || null : null;
+}
+const dataCurta = iso => iso ? iso.slice(0, 10).split('-').reverse().join('/') : '';
+const rotuloEpoca = e => `${e.nome} · ${e.ate ? `${dataCurta(e.de)} a ${dataCurta(e.ate)}` : `desde ${dataCurta(e.de)} (atual)`}`;
+function seletorEpoca(tipo) {
+  const eps = epocasVisiveis(tipo); if (!eps.length) return '';
+  const sel = epocaEscolhida(tipo)?.id || '';
+  const dica = tipo === 'live' ? 'Cada coleção nova pode mudar o meta. A época de uma coleção vai da chegada dela ao TCG Live (na véspera do lançamento, às 10h do horário do Pacífico: 14h ou 15h em Brasília) até a chegada da seguinte.'
+    : 'Cada coleção nova pode mudar o meta. Nos torneios, uma coleção vale a partir da segunda sexta-feira depois do lançamento.';
+  return `<span class="par-epoca"><label class="label" for="sel-epoca" title="${dica}">Época</label><select id="sel-epoca" title="${dica}"><option value="">Todas as épocas</option>${eps.map(e => `<option value="${esc(e.id)}" ${e.id === sel ? 'selected' : ''}>${esc(rotuloEpoca(e))}</option>`).join('')}</select></span>`;
+}
+function ligarSeletorEpoca(tipo, aoMudar) {
+  const el = $('#sel-epoca'); if (!el) return;
+  el.onchange = () => {
+    S[chaveEpoca(tipo)] = el.value;
+    try { localStorage.setItem(tipo === 'live' ? 'epoca' : 'epoca-meta', el.value); } catch (e) {}
+    aoMudar();
+  };
+}
+// Junta o período da tela (De/Até, 7D...) com a época escolhida: vale o pedaço em comum.
+// Devolve { de, ate, antes }: de = começo (dia, ou dia e hora); ate = último dia (incluído); antes = fim da época
+// no TCG Live (dia e hora, não incluído). As datas são comparadas como texto (AAAA-MM-DDTHH:MM:SS).
+function comEpoca(de, ate, tipo) {
+  const e = epocaEscolhida(tipo), r = { de: de || '', ate: ate || '', antes: '' };
+  if (!e) return r;
+  if (!r.de || e.de > r.de) r.de = e.de;
+  if (e.fim && tipo === 'live') r.antes = e.fim;
+  else if (e.ate && (!r.ate || e.ate < r.ate)) r.ate = e.ate;
+  return r;
+}
+// A partida (data e hora) está dentro desse período?
+const noPeriodo = (data, p) => (!p.de || data >= p.de) && (!p.ate || data.slice(0, 10) <= p.ate) && (!p.antes || data < p.antes);
+// Época em que cai um momento (para os separadores da lista de partidas). No TCG Live a hora conta.
+const epocaDe = (iso, tipo) => (S.epocas?.[tipo] || []).find(e => e.de <= (iso || '')) || null;
+// Onde começa cada época numa sequência de dias em ordem crescente (para o separador nos gráficos): [{i, rotulo}].
+function marcasEpoca(datas, tipo) {
+  if (datas.length < 2) return [];
+  return (S.epocas?.[tipo] || []).map(e => ({ ...e, dia: e.de.slice(0, 10) }))
+    .filter(e => e.dia > (datas[0] || '') && e.dia <= (datas[datas.length - 1] || ''))
+    .map(e => ({ i: datas.findIndex(d => (d || '') >= e.dia), rotulo: e.nome })).filter(mk => mk.i > 0);
+}
+// "05/11/2026 às 15:00" (a hora só quando o começo tem hora, como no TCG Live)
+const quandoEpoca = iso => dataCurta(iso) + (iso && iso.length > 10 && iso.slice(11, 16) !== '00:00' ? ` às ${iso.slice(11, 16)}` : '');
 
 /* ---------------- status (canto da navegação) ---------------- */
 async function atualizarStatus() {
@@ -164,8 +237,16 @@ function rota() {
   return { nome: (h in ROTAS && !['partida', 'replay', 'meudeck', 'lista'].includes(h)) ? h : 'painel' };
 }
 const aba = () => rota().nome;
+// Cada tela desenhada ganha um número. Uma tela que demorou a receber os dados e terminou depois que você já pediu
+// outra não pode cobrir a nova: as funções render...() guardam o número no começo (const vez = novaTela()) e, depois
+// de esperar os dados, só desenham se ainda for a vez delas (if (telaVelha(vez)) return). Sem isso, o Início (mais
+// lento) podia terminar depois e cobrir a tela de Partidas, e o "Ver todas" parecia não fazer nada.
+let telaN = 0;
+const novaTela = () => ++telaN;
+const telaVelha = vez => vez !== telaN;
+let renderN = 0;
 async function render() {
-  const r = aba();
+  const r = aba(), n = ++renderN;
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('ativo',
     a.dataset.secao ? a.dataset.secao === SECAO[r] : a.getAttribute('href') === '#' + r));
   $('#nav-programa').open = ['ajustes', 'amigos', 'biblioteca', 'regras', 'revisao', 'regras-standard'].includes(r);
@@ -173,8 +254,11 @@ async function render() {
   if (S.lo && r !== 'lista') S.lo = null;
   if (S.rp?.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
   document.querySelectorAll('.janela-fundo').forEach(j => j.remove());
+  // Tela que demora: depois de 0,3 s a tela anterior fica apagada com "Carregando…", para mostrar que o clique valeu.
+  const aviso = setTimeout(() => { if (n === renderN) document.body.classList.add('carregando'); }, 300);
   try { await ROTAS[r](); }
-  catch (e) { main.innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; }
+  catch (e) { if (n === renderN) main.innerHTML = `<div class="aviso erro">${esc(e.message)}</div>`; }
+  finally { clearTimeout(aviso); if (n === renderN) document.body.classList.remove('carregando'); }
 }
 window.addEventListener('hashchange', render);
 const imgNome = (nome, alta) => `/cartas/imagem?nome=${encodeURIComponent(nome || '')}${alta ? '&q=high' : ''}`;

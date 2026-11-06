@@ -54,6 +54,7 @@
 | | `variantes.py` | Versões de um deck (por ACE SPEC; modelo antigo por semelhança mantido) |
 | | `probabilidades.py` | Consistência da lista (hipergeométrica exata) |
 | | `decks.py` | Arquétipos, ícones, Meus decks, identificação do deck, versão certa de cartas com o mesmo nome |
+| | `colecoes.py` | Coleções do Standard e as épocas do meta (chegada ao TCG Live, validade em torneio); rota `/api/epocas` |
 | Fontes externas | `limitless.py` | Importa campeonatos (Labs + RK9) e torneios online (API) |
 | | `cartas.py` | Biblioteca de cartas (TCGdex), arte básica, marcas de regulamento, ACE SPEC |
 | | `regras_jogo.py` | Base de regras do Standard e as regras que o programa usa |

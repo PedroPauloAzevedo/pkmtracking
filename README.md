@@ -182,6 +182,13 @@ Biblioteca de cartas, Linhas não lidas e Regras de leitura.
 | Regras do Standard | Resumo em português das regras oficiais, com índice e busca |
 | Regras de leitura | Editar as expressões regulares que leem o log e testar linhas |
 
+**Época (coleção nova):** cada coleção nova pode mudar o meta. Em Partidas, Desempenho, Decisões e nas telas de
+Meta e torneios, o campo **Época** mostra só o que aconteceu durante a época de uma coleção (ou "Todas as épocas").
+Nas suas partidas a época começa quando a coleção chega ao TCG Live (na véspera do lançamento nas lojas, às 10h do
+horário do Pacífico, ou seja, 14h ou 15h em Brasília); nos torneios, quando ela passa a valer (segunda sexta-feira
+depois do lançamento). A lista de partidas mostra uma linha onde começa cada época, e os gráficos de evolução, uma linha
+tracejada.
+
 **Taxa de vitória** = vitórias ÷ (vitórias + derrotas + empates), como no Limitless.
 **Faixa de confiança (95%)**: com poucas partidas a taxa engana; a faixa mostra onde ela provavelmente está.
 **Fator de conversão**: participação do deck no Top X dividida pela participação no campo. Acima de 1, converte melhor que a média.

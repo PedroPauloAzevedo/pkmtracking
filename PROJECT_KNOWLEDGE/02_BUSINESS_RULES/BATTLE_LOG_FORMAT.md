@@ -93,7 +93,13 @@ jogada (todas as outras compras de quem exportou têm nome).
 - `Bia's Budew was Knocked Out!` (às vezes "is now Knocked Out"). Dois Pokémon de mesmo nome podem cair em linhas seguidas.
 - **Nocaute com pouco ou nenhum dano pode estar certo:** Cursed Blast nocauteia o próprio Dusclops/Dusknoir (0 de dano);
   Terminal Period (Mega Absol ex) nocauteia o Ativo que tem exatamente 6 contadores.
-- Depois do nocaute: `- 3 cards were discarded from Bia's Mega Lopunny ex.` / `Basic Psychic Energy was discarded from Bia's Munkidori.`
+- Depois do nocaute, em **linhas soltas** (sem "-"): `Basic Psychic Energy was discarded from Bia's Munkidori.`, uma por carta presa
+  (às vezes `- 3 cards were discarded from Bia's Mega Lopunny ex.`), inclusive depois do "took N Prize cards" (pré-evoluções
+  embaixo de um Mega, ex.: `Snorunt was discarded from Bia's Mega Froslass ex.`).
+- A mesma frase vem em **sublinha** no recuo (`Ana retreated Dreepy to the Bench.` + `- Basic Darkness Energy was discarded from
+  Ana's Dreepy.`), em cartas como Crushing Hammer e na Ignition Energy. Nos logs reais (05/11/2026): 136 depois de nocaute (soltas),
+  4 depois do "took 3 Prize cards" (soltas), 129 de recuo, 44 de cartas como Crushing Hammer e 5 da Ignition Energy (sublinhas).
+  Com dois Pokémon de mesmo nome o log não diz de qual saiu: o replay decide pelo contexto (`../01_MODULES/REPLAY.md`, D-035).
 
 ## 8. Mão ↔ baralho e descarte
 | Linha | Significado |

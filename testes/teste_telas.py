@@ -4,7 +4,8 @@ TESTE DAS TELAS: abre o painel num navegador de verdade (Edge ou Chrome, escondi
 Em cada tela confere:
   - que ela desenhou (tem um título);
   - que não houve erro de JavaScript nem pedido ao servidor com erro (5xx).
-Depois confere o filtro Jogador com vários jogadores marcados (caixa de opções) e a seção Efeito de cada carta.
+Depois confere o filtro Jogador com vários jogadores marcados (caixa de opções), a seção Efeito de cada carta,
+o "Ver todas" com o Início demorando (a tela velha não pode cobrir a nova) e o separador de época (coleção nova).
 Só na largura de computador: o programa não é usado no celular.
 
 Uso (numa CÓPIA do programa, nunca na pasta de quem usa):
@@ -154,6 +155,56 @@ def jogadores_combinados(pagina):
     return problemas
 
 
+def ver_todas_e_epocas(pagina):
+    """"Ver todas" com o Início demorando (a tela velha não pode cobrir a nova) e o separador de época. Devolve os problemas."""
+    problemas = []
+    pagina.evaluate("location.hash = '#x'; location.hash = '#painel'")
+    pagina.wait_for_selector("a.btn[href='#partidas']", timeout=20000)
+    # o Início é desenhado de novo e demora 1,5 s; enquanto isso a pessoa clica em "Ver todas"
+    pagina.evaluate("""() => {
+        const original = window.fetch; window._fetchOriginal = original;
+        window.fetch = (url, o) => String(url).endsWith('/api/partidas')
+            ? new Promise(ok => setTimeout(() => ok(original(url, o)), 1500)) : original(url, o);
+        render(); document.querySelector("a.btn[href='#partidas']").click();
+    }""")
+    pagina.wait_for_timeout(2500)
+    titulo = pagina.evaluate("document.querySelector('#main h1')?.textContent")
+    if titulo != "Partidas":
+        problemas.append(f"depois de 'Ver todas' a tela é '{titulo}' (o Início, mais lento, cobriu a tela de Partidas)")
+    pagina.evaluate("window.fetch = window._fetchOriginal")
+    # seletor de época na tela Partidas: escolher a época atual mostra só as partidas dela
+    pagina.evaluate("try { localStorage.removeItem('epoca'); } catch (e) {} S.epoca = ''; location.hash = '#x'; location.hash = '#partidas'")
+    try:
+        pagina.wait_for_selector("#sel-epoca", timeout=20000)
+        atual = pagina.evaluate("[...document.querySelectorAll('#sel-epoca option')].find(o => /atual/.test(o.textContent))?.value")
+        pagina.select_option("#sel-epoca", atual)
+        pagina.wait_for_function("() => /na época/.test(document.querySelector('#main p.muted.num')?.innerText || '')", timeout=15000)
+    except Exception as e:
+        problemas.append(f"seletor de época na tela Partidas: {str(e).splitlines()[0]}")
+    pagina.evaluate("try { localStorage.removeItem('epoca'); } catch (e) {} S.epoca = ''; location.hash = '#x'; location.hash = '#partidas'")
+    # filtros Deck do jogador e Deck do adversário: escolher um deck do adversário deixa só as partidas contra ele
+    try:
+        pagina.wait_for_selector("#f-adv", timeout=20000)
+        adv = pagina.evaluate("document.querySelectorAll('#f-adv option')[1]?.value")
+        pagina.select_option("#f-adv", adv)
+        pagina.wait_for_function("v => document.querySelector('#f-adv')?.value === v", arg=adv, timeout=15000)
+        nomes = pagina.evaluate("[...document.querySelectorAll('tr.clicavel td:nth-child(5)')].map(td => td.innerText.trim())")
+        alvo = pagina.evaluate("v => nomeDeck(v)", adv)
+        if not nomes or any(n != alvo for n in nomes):
+            problemas.append(f"filtro Deck do adversário: esperava só '{alvo}', veio {sorted(set(nomes))[:4]}")
+        pagina.select_option("#f-adv", "")
+    except Exception as e:
+        problemas.append(f"filtro Deck do adversário: {str(e).splitlines()[0]}")
+    # separador na lista (partidas de duas épocas) e linha tracejada no gráfico
+    sep = pagina.evaluate("""() => { const e = S.epocas.live; if (e.length < 2) return 'sem épocas';
+        const l = d => ({ id: 1, data: d, resultado: 'V', adversario: 'X', meu_deck: '', deck_adv: '', premios_eu: 6, premios_adv: 0, turnos: 9, comecei: true, motivo: '' });
+        const h = tabelaPartidas([l(e[0].de), l(e[1].de)]);  // o começo de cada época (dia e hora) já é dela
+        return (h.match(/sep-epoca/g) || []).length + '|' + /marca-epoca/.test(graficoLinhas([{ nome: 'x', valores: [1, 2] }], ['a', 'b'], { marcas: [{ i: 1, rotulo: e[0].nome }] })); }""")
+    if sep != "2|true":
+        problemas.append(f"separador de época na lista/gráfico: {sep}")
+    return problemas
+
+
 def main():
     from playwright.sync_api import sync_playwright
     preparar()
@@ -220,9 +271,16 @@ def main():
                   + ("" if not (erros or problemas) else "\n         " + "\n         ".join((problemas + erros)[:6])))
             if erros or problemas:
                 falhas.append("filtro jogador")
+            # "Ver todas" com uma tela lenta e o separador de época (coleção nova)
+            erros.clear()
+            problemas = ver_todas_e_epocas(pagina)
+            print(("ok    " if not (erros or problemas) else "FALHOU") + " Ver todas com o Início lento + época"
+                  + ("" if not (erros or problemas) else "\n         " + "\n         ".join((problemas + erros)[:6])))
+            if erros or problemas:
+                falhas.append("ver todas / época")
             # busca rápida (Ctrl+K)
             pagina.keyboard.press("Control+K")
-            if not pagina.wait_for_selector("input", timeout=5000):
+            if not pagina.wait_for_selector("#busca-q", timeout=5000):  # o campo da busca (não outro campo da tela)
                 falhas.append("busca Ctrl+K")
             nav.close()
     finally:

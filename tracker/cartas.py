@@ -21,6 +21,9 @@ ATUALIZAÇÃO
 Nenhuma fonte gratuita de cartas oferece aviso (webhook) de coleção nova. Então o
 programa confere uma vez por dia se o TCGdex tem coleção nova ou cartas novas numa
 coleção recente, e baixa só o que mudou.
+Se o TCGdex falhar numa carta (fica lento ou recusa por excesso de pedidos), só aquela
+coleção fica como estava: as outras seguem, e o fim avisa qual não foi atualizada. Com
+falha, a data da última verificação não avança, para o programa tentar de novo em 1 hora.
 """
 import json
 import re
@@ -64,7 +67,7 @@ CODIGOS_RESERVA = {
 
 TIPOS_ENERGIA = ["Grass", "Fire", "Water", "Lightning", "Psychic", "Fighting", "Darkness", "Metal", "Fairy", "Dragon", "Colorless"]
 
-progresso = {"ativo": False, "etapa": "", "pct": 0, "erro": "", "resumo": "", "ultima_verificacao": None}
+progresso = {"ativo": False, "etapa": "", "pct": 0, "erro": "", "aviso": "", "resumo": "", "ultima_verificacao": None}
 _indice = None
 _trava = threading.Lock()
 _falhas = {}
@@ -444,12 +447,24 @@ def _get(sessao, caminho):
     raise RuntimeError(f"O TCGdex não respondeu para {caminho}.")
 
 
+def _baixar_cartas(sessao, ids):
+    """Baixa as cartas de uma coleção, 6 por vez. Se uma falhar, cancela as que faltam e avisa (RuntimeError)."""
+    ex = ThreadPoolExecutor(max_workers=6)
+    try:
+        return [c for c in ex.map(lambda i: _get(sessao, f"/cards/{i}"), ids) if c]
+    except RuntimeError:
+        ex.shutdown(wait=True, cancel_futures=True)
+        raise
+    finally:
+        ex.shutdown(wait=True)
+
+
 def atualizar(forcar=False):
     """Baixa coleções novas ou que ganharam cartas. Roda em segundo plano."""
     if progresso["ativo"]:
         return
-    progresso.update({"ativo": True, "etapa": "Consultando coleções no TCGdex", "pct": 0, "erro": "", "resumo": ""})
-    novos = []
+    progresso.update({"ativo": True, "etapa": "Consultando coleções no TCGdex", "pct": 0, "erro": "", "aviso": "", "resumo": ""})
+    novos, falhas = [], []
     try:
         s = requests.Session()
         s.headers["User-Agent"] = "TCGLiveTracker/1.0"
@@ -474,12 +489,14 @@ def atualizar(forcar=False):
             falta_imagem = atual and recente and any(not c.get("image") for c in atual["cards"])
             if atual and not forcar and len(atual["cards"]) >= total and not falta_imagem:
                 continue
-            detalhe = _get(s, f"/sets/{b['id']}")
-            if not detalhe:
+            try:
+                detalhe = _get(s, f"/sets/{b['id']}")
+                if not detalhe:
+                    continue
+                cartas = _baixar_cartas(s, [c["id"] for c in detalhe.get("cards", [])])
+            except RuntimeError:
+                falhas.append(b.get("name") or b["id"])  # mantém o arquivo antigo e segue para a próxima
                 continue
-            ids = [c["id"] for c in detalhe.get("cards", [])]
-            with ThreadPoolExecutor(max_workers=6) as ex:
-                cartas = [c for c in ex.map(lambda i: _get(s, f"/cards/{i}"), ids) if c]
             info_set = {k: v for k, v in detalhe.items() if k != "cards"}
             if atual and len(cartas) < len(atual["cards"]):
                 continue  # resposta incompleta do TCGdex: mantém o que já tinha
@@ -493,9 +510,17 @@ def atualizar(forcar=False):
         progresso["resumo"] = (f"{len(ind['cartas'])} cartas em {len(list(PASTA_SETS.glob('*.json')))} coleções. "
                                + (f"Novidades: {', '.join(novos)}." if novos else "Nenhuma coleção nova."))
         progresso["pct"] = 100
-        progresso["etapa"] = "Concluído"
-        _gravar_json(ARQ_ESTADO, {"ultima_verificacao": datetime.now().isoformat(timespec="seconds"), "novos": novos,
-                                  "versao_busca": VERSAO_BUSCA})
+        progresso["etapa"] = "Concluído" if not falhas else "Concluído, com coleções que não foram atualizadas"
+        if falhas:
+            progresso["aviso"] = (f"O TCGdex não respondeu para {len(falhas)} coleção(ões): {', '.join(falhas)}. "
+                                  "A versão já salva delas foi mantida. O programa tenta de novo sozinho em 1 hora, "
+                                  "ou clique de novo mais tarde.")
+        anterior = _ler_json(ARQ_ESTADO, {})
+        _gravar_json(ARQ_ESTADO, {
+            # com falha, a data não avança: o verificador diário tenta de novo na próxima hora
+            "ultima_verificacao": anterior.get("ultima_verificacao") if falhas else datetime.now().isoformat(timespec="seconds"),
+            "novos": novos, "falhas": falhas,
+            "versao_busca": VERSAO_BUSCA})
         if novos:
             from . import banco
             banco.reconverter_listas()

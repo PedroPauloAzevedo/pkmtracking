@@ -20,6 +20,12 @@
 
 ## Análises (Meta e torneios)
 - **Fonte:** Grandes eventos / Online / Todos (`S.fonte` no painel, `torneios_da_fonte` no código). Só torneios Standard.
+- **Época** (desde 2026.11.05-5; D-036): ao lado de Fonte, em todas as telas de análise (`seletorEpoca('torneios')`, `S.epocaMeta`,
+  guardado como `epoca-meta`). Nos torneios a época de uma coleção começa quando ela passa a valer: segunda sexta-feira depois do
+  lançamento nos EUA (`colecoes.validade_torneio`). O painel manda `?de=&ate=` e `app._lista_torneios` deixa só os torneios dessas
+  datas (também com uma escolha de torneios). Quando a próxima coleção já tem data e ainda não vale, a tela avisa
+  (ex.: "Delta Reign passa a valer nos torneios em 20/11/2026"). Os gráficos de tendência e de presença por torneio ganham uma linha
+  tracejada onde começa cada época.
 - **Meta:** participação, taxa de vitória, conversão para o corte, matriz de matchups, tendência (por semana quando há mais de 20 torneios).
 - **Qual deck jogar?:** força de cada deck (Bradley-Terry), taxa esperada contra o campo, pior confronto, equilíbrio do meta.
 - **Matchups:** taxa real (padrão) ou ajustada (opção).
@@ -31,8 +37,15 @@
   com lista importada).
 - Exportações CSV: `/exportar/meta.csv`, `/exportar/torneios.csv`, `/exportar/eventos.csv`.
 
+## Ícones dos decks (`decks.ler_pagina_decks`, `decks.salvar_arquetipos`)
+- Vêm da página `/<torneio>/decks` do Labs. Até 11/2026 o ícone ficava dentro do link do deck; desde então fica numa coluna à parte
+  da mesma linha (`<img class="pokemon" src=".../pokemon/gen9/<pokémon>.png">`): o programa procura nos dois lugares.
+- Lista de ícones vazia **nunca apaga** a gravada (em 05/11/2026 a página nova zerou os ícones de 122 de 134 decks).
+- Ao abrir, se a maioria dos decks estiver sem ícone, o programa refaz a lista (`limitless.atualizar_arquetipos`, os 2 torneios
+  mais recentes do Labs). Decks que não aparecem nesses torneios continuam sem ícone até aparecerem num torneio importado.
+
 ## Limites conhecidos
-- Labs e o índice do Limitless são HTML: mudança de layout quebra a importação dos grandes eventos.
+- Labs e o índice do Limitless são HTML: mudança de layout quebra a importação dos grandes eventos (e já zerou os ícones uma vez).
 - Nenhuma divisão do deck em versões prevê o resultado individual melhor que o deck inteiro: versões servem para descrever (exp. 9).
 - "Efeito de cada carta" é associação, não prova (quem usa a carta pode ser um jogador melhor).
 

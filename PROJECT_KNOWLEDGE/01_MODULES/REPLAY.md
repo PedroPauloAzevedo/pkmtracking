@@ -2,7 +2,7 @@
 
 > Atualizado em 05/11/2026. Código: `tracker/replay.py` (montagem), `tracker/decks.py` (`resolver_versoes`, `_limites_ps`),
 > `web/js/replay.js` (desenho). Rota: `/api/partidas/<id>/replay`. Tela: `#replay-<id>`.
-> Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013 e D-032. Medições: `../03_DECISIONS/EVIDENCE.md`.
+> Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013, D-032 e D-035. Medições: `../03_DECISIONS/EVIDENCE.md`.
 
 ## O que faz
 Para cada linha do log guarda uma "foto" (quadro): Pokémon Ativo e Banco de cada jogador (com dano, energias e ferramentas),
@@ -23,6 +23,10 @@ O replay é montado na hora em que a tela abre: corrigir o replay vale também p
   escolha; se um nocaute depois fica com falta exatamente desse valor (pelos PS mínimos da carta, considerando os golpes que
   ela usou), o replay é montado de novo com a escolha corrigida (`_correcoes`, segunda passada).
 - Night Stretcher (e Super Rod, Lillie's Determination) pegam do descarte/mão: não tiram o Pokémon da mesa.
+- **Carta presa descartada** (`dono_do_anexo`, desde 2026.11.05-5; D-035): `X was discarded from P's Y.` não diz de qual Pokémon
+  saiu quando há dois com o mesmo nome. Sublinha logo depois de um recuo → o que recuou (`recuou`); linha solta depois do nocaute
+  de um Pokémon com esse nome → o nocauteado (`caidos`, do turno; o irmão em jogo não perde nada); senão, o que tem a carta presa
+  (o Ativo primeiro). O destaque `descarte` traz o `uid` do Pokémon em jogo que perdeu a carta.
 - Regra do jogo respeitada: não se evolui um Pokémon que entrou em jogo (ou evoluiu) no mesmo turno.
 
 ## Mão dos jogadores (`_Maos`, desde 2026.11.03-1)
@@ -67,13 +71,15 @@ compatíveis; (3) a mais usada nas listas dos torneios; (4) a mais recente.
 
 ## Testes e medições
 - `testes/teste_replay.py`: logs curtos com cada armadilha (Cursed Blast, Phantom Dive, Munkidori, cura, Night Stretcher,
-  dois de mesmo nome, contador ambíguo, versão pelo nocaute), 7 cenários de mão e 12 conferências de prêmios (conhecidos desde o
+  dois de mesmo nome, contador ambíguo, versão pelo nocaute), 7 cenários de mão, 12 conferências de prêmios (conhecidos desde o
   começo, saída no "took", destaque e mão, prêmio do adversário virado, prêmio sem nome, jogada de 3 prêmios fora de ordem, nunca
-  mais conhecidos que restantes).
+  mais conhecidos que restantes) e 4 de carta presa descartada (recuo com dois Dreepy, nocaute com dois Munkidori, Crushing Hammer).
 - Medições nas partidas reais (estados impossíveis, nocautes curtos, tamanho da mão, prêmios): `EVIDENCE.md`.
 
 ## Limites conhecidos
 - Energia ligada a Pokémon de mesmo nome no Banco pode cair no Pokémon errado (o log não diferencia).
+- Crushing Hammer (e parecidos) contra dois Pokémon de mesmo nome que têm a mesma Energia: o log não diz qual; sai do Ativo, ou
+  do primeiro do Banco.
 - A mão do adversário só mostra o que o log revela; a ordem das cartas na mão não é a do jogo.
 - Prêmios do adversário e prêmios que ninguém pegou nunca aparecem (o log não os mostra). Se um dia aparecer no log uma carta que
   olha ou troca prêmios (nenhuma até 05/11/2026), a regra "desde o começo" precisa ser revista para ela.

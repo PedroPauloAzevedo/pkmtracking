@@ -34,6 +34,11 @@ nav .estado { margin-top: auto; display: flex; flex-direction: column; gap: 6px;
 .luz { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
 .luz.on { background: var(--good); } .luz.off { background: var(--bad); } .luz.warn { background: var(--accent); }
 main { padding: 24px 28px 64px; min-width: 0; display: flex; flex-direction: column; gap: 18px; max-width: 1240px; }
+/* tela que demora a abrir: a anterior fica apagada e aparece "Carregando…" (base.js, render) */
+body.carregando main { opacity: .45; pointer-events: none; transition: opacity .15s; }
+body.carregando::after { content: 'Carregando…'; position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 60;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: .85rem; padding: 6px 16px; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
 h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
 h1 { font-size: 1.6rem; font-weight: 800; } h2 { font-size: 1.15rem; font-weight: 600; } h3 { font-size: 0.98rem; font-weight: 600; }
 .sub { color: var(--muted); margin: 2px 0 0; max-width: 70ch; }
@@ -181,6 +186,12 @@ nav .busca-btn kbd { margin-left: auto; font: 500 .7rem var(--f-mono); border: 1
 .chart svg { width: 100%; height: auto; display: block; }
 .chart text { fill: var(--muted); font: 11px var(--f-body); }
 .chart .grade { stroke: var(--line); stroke-width: 1; }
+/* separador de época (coleção nova): linha tracejada nos gráficos e linha de título na lista de partidas */
+.chart line.marca-epoca { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart text.marca-epoca { fill: var(--ink); font-weight: 600; }
+tr.sep-epoca td { background: var(--sunken); color: var(--muted); font-size: .8rem; padding: 6px 10px; border-top: 2px solid var(--accent); }
+tr.sep-epoca td b { color: var(--ink); }
+.par-epoca { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 .legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8rem; color: var(--muted); }
 .legenda i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
 .resultado { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }

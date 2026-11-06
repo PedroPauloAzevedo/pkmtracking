@@ -175,7 +175,10 @@ def _agrupar(linhas, chave):
     return [{"grupo": k, **placar(v, d)} for k, (v, d) in sorted(grupos.items(), key=lambda kv: -sum(kv[1]))]
 
 
-def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, adv=None, jogador=""):
+def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, adv=None, jogador="", antes=None):
+    """Suas partidas e as contas da tela Desempenho. de (dia ou dia e hora, incluído) e ate (dia, incluído) vêm dos
+    filtros de data; antes (dia e hora, não incluído) é o fim da época escolhida (ver colecoes.py: a coleção chega ao
+    TCG Live numa certa hora, e o dia da chegada fica dividido entre duas épocas)."""
     partidas = banco.listar_partidas()
     eu = descobrir_eu(partidas, nick)
     escolhidas = [p for p in partidas if do_jogador(p, jogador)]
@@ -184,7 +187,7 @@ def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, ad
     todas = [visao(p, perspectiva(p, eu)) for p in escolhidas]
     linhas = [l for l in todas
               if l["resultado"]
-              and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
+              and (not de or l["data"] >= de) and (not ate or l["data"][:10] <= ate) and (not antes or l["data"] < antes)
               and (not deck or slug(l["meu_deck"]) == slug(deck))
               and (not tag or tag.lower() in (l["tags"] or "").lower())
               and (not lista or str(l["deck_id"]) == str(lista))
@@ -238,15 +241,22 @@ def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, ad
 FONTES = {"grandes": "Grandes eventos", "online": "Torneios online", "todos": "Todos"}
 
 
-def torneios_da_fonte(fonte="todos"):
+def torneios_da_fonte(fonte="todos", de=None, ate=None, ids=None):
     """Ids dos torneios que entram nas contas: só Standard (confirmado ou ainda não confirmado).
-    fonte: 'grandes' (Limitless Labs), 'online' (play.limitlesstcg.com) ou 'todos'."""
-    sql = "SELECT id FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')"
+    fonte: 'grandes' (Limitless Labs), 'online' (play.limitlesstcg.com) ou 'todos'.
+    de/ate (AAAA-MM-DD): só os torneios dessas datas (época do meta). ids: só entre estes torneios."""
+    sql, params = "SELECT id FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')", []
     if fonte == "grandes":
         sql += " AND COALESCE(fonte, 'labs') = 'labs'"
     elif fonte == "online":
         sql += " AND fonte = 'online'"
-    return [r["id"] for r in banco.consultar(sql)]
+    if de:
+        sql, params = sql + " AND data >= ?", params + [de]
+    if ate:
+        sql, params = sql + " AND substr(data, 1, 10) <= ?", params + [ate]
+    if ids is not None:
+        sql, params = sql + f" AND id IN ({','.join('?' * len(ids)) or 'NULL'})", params + list(ids)
+    return [r["id"] for r in banco.consultar(sql, tuple(params))]
 
 
 def _filtro_torneios(torneios):
@@ -596,7 +606,7 @@ def cartas_matchups(arq, chave_carta, torneios=None, k=8, min_partidas=5):
 
 # ================================================================== analista de decisões
 
-def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3, jogador="", ordem=""):
+def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_partidas=3, jogador="", ordem="", antes=None):
     """
     O que nas SUAS partidas anda junto com vencer ou perder. Tudo vem dos logs:
       - aberturas: cartas que você jogou nos seus 2 primeiros turnos e a taxa de vitória,
@@ -609,11 +619,11 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
     ordem: '' = todas, 'primeiro' = só quando você começou, 'segundo' = só quando foi em segundo.
     São correlações: mostram padrões para investigar, não provam causa.
     """
-    base = analise_pessoal(nick, de, ate, deck, None, lista, adv, jogador)
+    base = analise_pessoal(nick, de, ate, deck, None, lista, adv, jogador, antes)
     eu = base["eu"]
     quer = {"primeiro": True, "segundo": False}.get(ordem)
     linhas = [l for l in base["partidas"] if l["resultado"]
-              and (not de or l["data"][:10] >= de) and (not ate or l["data"][:10] <= ate)
+              and (not de or l["data"] >= de) and (not ate or l["data"][:10] <= ate) and (not antes or l["data"] < antes)
               and (not deck or slug(l["meu_deck"]) == slug(deck))
               and (not lista or str(l["deck_id"]) == str(lista))
               and (not adv or slug(l["deck_adv"]) == slug(adv))

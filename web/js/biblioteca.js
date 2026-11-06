@@ -2,7 +2,9 @@
    BIBLIOTECA DE CARTAS
    ===================================================================== */
 async function renderBiblioteca() {
+  const vez = novaTela();
   const b = await api('/api/cartas/status');
+  if (telaVelha(vez)) return;
   const pr = b.progresso;
   main.innerHTML = `
     ${trilha()}<header><h1>Biblioteca de cartas</h1><p class="sub">Dados e imagens das cartas vêm do TCGdex, uma base aberta. Guardamos só a arte básica de cada carta; artes alternativas são convertidas para ela no replay, nas listas e nas análises.</p></header>
@@ -15,10 +17,10 @@ async function renderBiblioteca() {
     <section class="panel"><h2>Atualização</h2>
       <p class="sub">Nenhuma fonte gratuita de cartas avisa quando sai coleção nova (não há webhook). O programa confere sozinho uma vez por dia e baixa só o que mudou. Última verificação: <b>${b.ultima_verificacao ? esc(b.ultima_verificacao.replace('T', ' ').slice(0, 16)) : 'nunca'}</b>${b.novos?.length ? ` · novidades: ${b.novos.map(esc).join(', ')}` : ''}.</p>
       <div class="row"><button class="primary" id="b-atualizar">Verificar agora</button><button id="b-forcar">Baixar tudo de novo</button><button id="b-imagens">Baixar todas as imagens (uso sem internet)</button></div>
-      <div ${pr.ativo || pr.erro || pr.resumo ? '' : 'hidden'} id="b-prog">
+      <div ${pr.ativo || pr.erro || pr.aviso || pr.resumo ? '' : 'hidden'} id="b-prog">
         <div class="row"><span class="grow">${esc(pr.etapa || '')}</span><span class="num">${pr.pct || 0}%</span></div>
         <div class="progresso"><span style="width:${pr.pct || 0}%"></span></div>
-        <p class="muted">${esc(pr.resumo || '')}</p>${pr.erro ? `<p class="aviso erro">${esc(pr.erro)}</p>` : ''}
+        <p class="muted">${esc(pr.resumo || '')}</p>${pr.aviso ? `<p class="aviso">${esc(pr.aviso)}</p>` : ''}${pr.erro ? `<p class="aviso erro">${esc(pr.erro)}</p>` : ''}
       </div>
     </section>
     ${b.sem_imagem && Object.keys(b.sem_imagem).length ? `<section class="panel"><h2>Imagens que não carregaram</h2>
@@ -44,7 +46,7 @@ async function renderBiblioteca() {
       <div class="row"><input id="b-nome" placeholder="Nome (ex.: Dragapult ex)" class="grow"><input id="b-codigo" placeholder="Coleção (ex.: TWM)" style="width:150px"><input id="b-numero" placeholder="Número" style="width:100px"><button id="b-buscar">Converter</button></div>
       <div id="b-saida"></div>
     </section>`;
-  const acao = async (url, corpo) => { try { await api(url, { method: 'POST', body: JSON.stringify(corpo || {}) }); toast('Começou. Acompanhe o progresso aqui.'); setTimeout(renderBiblioteca, 800); } catch (e) { toast(e.message); } };
+  const acao = async (url, corpo) => { try { await api(url, { method: 'POST', body: JSON.stringify(corpo || {}) }); toast('Começou. Acompanhe o progresso aqui.'); setTimeout(() => { if (aba() === 'biblioteca') renderBiblioteca(); }, 800); } catch (e) { toast(e.message); } };
   $('#b-atualizar').onclick = () => acao('/api/cartas/atualizar');
   $('#b-forcar').onclick = () => acao('/api/cartas/atualizar', { forcar: true });
   $('#b-imagens').onclick = () => acao('/api/cartas/imagens');

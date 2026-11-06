@@ -177,4 +177,122 @@ print("testar:", cli.post("/api/regras/testar", json={"linha": "Ana_TCG's Pidgey
 print("regra inválida:", cli.post("/api/regras", json={"regras": [{"id": "x", "tipo": "outro", "ativa": True, "re": "("}]}).status_code)
 print("salvar regras:", cli.post("/api/regras", json={"restaurar": True}).get_json())
 print("csv:", cli.get("/exportar/meta.csv").data.decode("utf-8-sig").splitlines()[:3])
+
+# 5) biblioteca de cartas com um TCGdex falso: uma carta que nunca responde não pode parar a atualização inteira.
+#    A coleção com falha fica como estava, as outras são atualizadas, e a data da última verificação não avança.
+import requests, time as _time
+from tracker import cartas
+SETS_FALSOS = {"/series/sv": {"sets": [{"id": "tA", "name": "Set A", "cardCount": {"total": 2}},
+                                       {"id": "tB", "name": "Set B", "cardCount": {"total": 2}}]},
+               "/sets/tA": {"id": "tA", "name": "Set A", "releaseDate": "2024-01-01", "cards": [{"id": "tA-001"}, {"id": "tA-002"}]},
+               "/sets/tB": {"id": "tB", "name": "Set B", "releaseDate": "2024-01-01", "cards": [{"id": "tB-001"}, {"id": "tB-002"}]}}
+class _Resp:
+    def __init__(self, dados): self.status_code, self._d = (200, dados) if dados is not None else (404, None)
+    def json(self): return self._d
+class _SessaoFalsa:
+    pedidos = []
+    def __init__(self): self.headers = {}
+    def get(self, url, timeout=None):
+        caminho = url.replace(cartas.API, "")
+        _SessaoFalsa.pedidos.append(caminho)
+        if caminho == "/cards/tB-002": raise requests.ConnectionError("sem resposta")
+        if caminho.startswith("/cards/"):
+            i = caminho.split("/")[-1]
+            return _Resp({"id": i, "name": "Carta " + i, "localId": i.split("-")[1], "category": "Trainer", "image": "x"})
+        return _Resp(SETS_FALSOS.get(caminho))
+sessao_real, dormir_real = cartas.requests.Session, _time.sleep
+cartas.requests.Session, _time.sleep = _SessaoFalsa, (lambda s: None)
+try:
+    cartas.PASTA_SETS.mkdir(parents=True, exist_ok=True)
+    antigo_b = {"set": {"id": "tB", "name": "Set B"}, "cards": [{"id": "tB-001", "name": "Velha", "image": "x"}]}
+    cartas._gravar_json(cartas.PASTA_SETS / "tB.json", antigo_b)
+    cartas._gravar_json(cartas.ARQ_ESTADO, {"ultima_verificacao": "2026-01-01T10:00:00", "versao_busca": cartas.VERSAO_BUSCA})
+    cartas.atualizar(forcar=True)
+    pr = cartas.progresso
+    assert not pr["erro"], pr["erro"]
+    assert "Set B" in pr["aviso"] and "Set A" not in pr["aviso"], pr["aviso"]
+    assert len(cartas._ler_json(cartas.PASTA_SETS / "tA.json", {}).get("cards", [])) == 2, "Set A deveria ter sido baixado"
+    assert cartas._ler_json(cartas.PASTA_SETS / "tB.json", None) == antigo_b, "Set B com falha deveria ficar como estava"
+    est = cartas._ler_json(cartas.ARQ_ESTADO, {})
+    assert est["ultima_verificacao"] == "2026-01-01T10:00:00" and est["falhas"] == ["Set B"], est
+    assert _SessaoFalsa.pedidos.count("/cards/tB-002") == 3, "deveria tentar 3 vezes a carta que falha"
+    print("biblioteca com falha:", pr["etapa"], "|", pr["aviso"])
+    # sem falha, a data avança e o aviso some
+    SETS_FALSOS["/sets/tB"]["cards"] = [{"id": "tB-001"}]
+    cartas.atualizar(forcar=True)
+    est = cartas._ler_json(cartas.ARQ_ESTADO, {})
+    assert not cartas.progresso["aviso"] and not cartas.progresso["erro"] and est["falhas"] == [] and est["ultima_verificacao"] > "2026-01-01T10:00:00"
+    print("biblioteca sem falha:", cartas.progresso["etapa"])
+finally:
+    cartas.requests.Session, _time.sleep = sessao_real, dormir_real
+
+# 6) épocas do meta (uma por coleção): no TCG Live a coleção chega na véspera do lançamento nas lojas dos EUA, às 10h
+#    do Pacífico (a hora conta); nos torneios ela vale na segunda sexta-feira depois do lançamento (docs/regras-standard.md).
+from datetime import datetime as _dt, timezone as _tz
+from tracker import colecoes
+local = lambda *a: _dt.fromtimestamp(_dt(*a, tzinfo=_tz.utc).timestamp()).isoformat(timespec="seconds")  # UTC -> relógio local
+assert colecoes.chegada_live("2026-11-06") == local(2026, 11, 5, 18)  # 10h do Pacífico fora do horário de verão (-8)
+assert colecoes.chegada_live("2026-09-16") == local(2026, 9, 15, 17)  # 10h do Pacífico no horário de verão dos EUA (-7)
+assert colecoes.validade_torneio("2026-11-06") == "2026-11-20"  # Delta Reign: a mesma data da base de regras
+assert colecoes.validade_torneio("2026-09-16") == "2026-09-25"  # lançada numa quarta: 1ª sexta 18/09, 2ª 25/09
+agora = "2026-11-05T23:00:00"
+ep = colecoes.epocas("live", agora=agora)
+assert (ep[0]["nome"], ep[0]["de"], ep[0]["fim"], ep[0]["ate"]) == ("Delta Reign", local(2026, 11, 5, 18), None, None), ep[0]
+assert (ep[1]["nome"], ep[1]["de"], ep[1]["fim"]) == ("30th Celebration", local(2026, 9, 15, 17), local(2026, 11, 5, 18)), ep[1]
+assert any(e["nome"] == "Black Bolt e White Flare" for e in ep), "coleções do mesmo dia viram uma época só"
+# a manhã do dia da chegada ainda é da época anterior
+assert colecoes.epocas("live", agora=local(2026, 11, 5, 17))[0]["nome"] == "30th Celebration"
+assert colecoes.epoca_de(local(2026, 11, 5, 17), "live", agora=agora)["nome"] == "30th Celebration"
+assert colecoes.epoca_de(local(2026, 11, 5, 19), "live", agora=agora)["nome"] == "Delta Reign"
+et = colecoes.epocas("torneios", agora=agora)
+assert (et[0]["nome"], et[0]["de"], et[0]["fim"], et[0]["ate"]) == ("30th Celebration", "2026-09-25", None, None), et[0]
+assert (et[1]["nome"], et[1]["fim"], et[1]["ate"]) == ("Pitch Black", "2026-09-25", "2026-09-24"), et[1]
+assert colecoes.proxima("torneios", agora=agora) == {"nome": "Delta Reign", "de": "2026-11-20"}
+assert colecoes.proxima("live", agora=agora) is None
+# coleção nova que aparece na biblioteca de cartas (depois da última da tabela) entra sozinha; promo e coleção pequena, não
+novas = {"tC": ("Futura", "2027-01-29", 120), "tD": ("MEP Black Star Promos", "2027-02-05", 100), "tE": ("Mini", "2027-02-12", 20)}
+for sid, (nome, data, total) in novas.items():
+    cartas._gravar_json(cartas.PASTA_SETS / f"{sid}.json", {"set": {"id": sid, "name": nome, "releaseDate": data, "cardCount": {"total": total}}, "cards": []})
+ep = colecoes.epocas("live", agora="2027-03-01T12:00:00")
+assert (ep[0]["nome"], ep[0]["de"]) == ("Futura", local(2027, 1, 28, 18)) and ep[1]["nome"] == "Delta Reign", [e["nome"] for e in ep[:3]]
+for sid in novas:
+    (cartas.PASTA_SETS / f"{sid}.json").unlink()
+r = cli.get("/api/epocas").get_json()
+assert r["live"] and r["torneios"] and r["primeira_partida"] and r["primeiro_torneio"] and set(r["proxima"]) == {"live", "torneios"}, r
+# filtro de época nas suas partidas: de (com hora) e antes (fim da época, com hora, não incluído)
+n_total = lambda q: cli.get("/api/partidas" + q).get_json()["total"]["n"]
+assert n_total("?antes=2000-01-01T00:00:00") == 0 and n_total("?de=2000-01-01T10:00:00") == n_total("") > 0
+assert n_total("?de=2999-01-01T00:00:00") == 0 and cli.get("/api/decisoes?antes=2000-01-01T00:00:00").get_json()["partidas"] == 0
+# filtro de época nas telas de Meta: ?de=&ate= deixa só os torneios dessas datas
+tid, dt = (lambda r: (r["id"], r["data"][:10]))(banco.consultar("SELECT id, data FROM torneios")[0])  # o torneio sintético (0999)
+dia = lambda d, n: (__import__("datetime").date.fromisoformat(d) + __import__("datetime").timedelta(days=n)).isoformat()
+jog = lambda q: cli.get("/api/meta?fonte=todos" + q).get_json()["jogadores_considerados"]
+assert jog("") > 0 and jog(f"&de={dt}") == jog("") and jog(f"&de={dia(dt, 1)}") == 0 and jog(f"&ate={dia(dt, -1)}") == 0
+assert jog(f"&torneios={tid}&de={dt}&ate={dt}") == jog("") and jog(f"&torneios={tid}&de={dia(dt, 1)}") == 0
+print("épocas:", [(e["nome"], e["de"]) for e in colecoes.epocas("live", agora=agora)[:3]], f"| torneio {tid} em", dt)
+
+# 7) identificação do deck: a conta das listas dos torneios fica guardada até os torneios mudarem (antes: 2 minutos)
+from tracker import decks
+decks._modelo_nb()
+assert decks._em_dia("nb")
+v = banco.versao_torneios()
+banco.apagar_torneio("nao-existe")
+assert banco.versao_torneios() == v + 1 and not decks._em_dia("nb"), "torneio apagado deveria refazer a conta"
+decks._modelo_nb()
+assert decks._em_dia("nb")
+
+# 8) ícones dos decks na página /<torneio>/decks do Labs: no formato antigo dentro do link; no novo (11/2026), numa coluna
+#    à parte da mesma linha. E uma lista de ícones vazia não apaga a que já estava gravada.
+IMG = '<img src="https://r2.limitlesstcg.net/pokemon/gen9/{}.png" class="pokemon" alt="{}">'
+novo = ('<table><tr><td><div><span>' + IMG.format("dragapult", "dragapult") + '</span></div></td><td>142</td>'
+        '<td><a href="/0999/decks/dragapult-ex">Dragapult</a></td></tr>'
+        '<tr><td><div><span>' + IMG.format("ogerpon", "ogerpon") + IMG.format("clefairy", "clefairy") + '</span></div></td><td>90</td>'
+        '<td><a href="/0999/decks/basic-box-m">Basic Box</a></td></tr></table>')
+antigo = '<a href="/0999/decks/n-zoroark">' + IMG.format("zoroark", "zoroark") + "N's Zoroark</a>"
+lidos = {d["slug"]: d["icones"] for d in decks.ler_pagina_decks(BeautifulSoup(novo + antigo, "html.parser"), "0999")}
+assert lidos == {"dragapult-ex": ["dragapult"], "basic-box-m": ["ogerpon", "clefairy"], "n-zoroark": ["zoroark"]}, lidos
+decks.salvar_arquetipos([{"slug": "teste-icone", "nome": "Teste", "icones": ["dragapult"]}])
+decks.salvar_arquetipos([{"slug": "teste-icone", "nome": "Teste novo", "icones": []}])
+assert decks.arquetipos()["teste-icone"]["icones"] == ["dragapult"] and decks.arquetipos()["teste-icone"]["nome"] == "Teste novo"
+print("ícones dos decks:", lidos)
 print("OK")

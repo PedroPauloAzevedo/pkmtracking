@@ -55,6 +55,34 @@
   marcados, a impressão digital evita contar duas vezes o jogo que chegou pelo seu log e pelo do amigo; mas ela é só um resumo
   (vencedor, perdedor, turnos, motivo, prêmios) e dois jogos diferentes do mesmo dono podem ter o mesmo — esses não se juntam
   mais. O formato antigo `?jogador=` continua aceito. Medição em `EVIDENCE.md`.
+- **D-034 · Biblioteca de cartas: falha do TCGdex numa carta pula só aquela coleção, e a verificação é repetida em 1 hora**
+  (05/11/2026, v2026.11.05-4; erro visto pelo Pedro). *Por quê:* no "Baixar tudo de novo" uma carta (`sv08-236`) não respondeu
+  em 3 tentativas e a atualização inteira parou na coleção 14 de 29; a carta respondia normalmente minutos depois. Manter o arquivo
+  antigo da coleção é seguro (já era o que se fazia com resposta incompleta). As tentativas e a espera entre elas não mudaram.
+- **D-035 · Replay: a carta presa descartada sai do Pokémon que recuou, do nocauteado ou do que tem a carta** (05/11/2026,
+  v2026.11.05-5; erro visto pelo Pedro num replay com dois Dreepy). *Por quê:* o replay tirava a carta do primeiro Pokémon com
+  aquele nome; com dois de mesmo nome, a Energia do recuo ficava presa no que recuou, e a Energia listada depois de um nocaute saía
+  do irmão que continuava em jogo. O contexto resolve: no recuo a frase vem em sublinha; depois do nocaute, em linha solta.
+  Medição em `EVIDENCE.md` (descartes que não tiravam nada: 41 → 0; tirados do irmão em jogo: 2 → 0; ataques com Energia de
+  menos: 78 → 73, nenhum caso novo).
+- **D-036 · Análises por época de coleção: no TCG Live a época começa na véspera do lançamento, às 10h do Pacífico; nos torneios,
+  na segunda sexta-feira depois do lançamento** (05/11/2026, v2026.11.05-5; pedido do Pedro). *Por quê:* cada coleção nova pode
+  mudar o meta. O jogo libera a coleção um dia antes das lojas, às 10h do horário do Pacífico (visto nas coleções recentes); a
+  Play! Pokémon só aceita a coleção em torneio na segunda sexta-feira depois do lançamento (`docs/regras-standard.md`). A hora conta
+  nas suas partidas porque as da manhã do dia da chegada ainda são do meta anterior (no dia da Delta Reign, todas as 7 partidas do
+  Pedro foram antes das 15h). As datas vêm de uma tabela no código (inclui coleção que ainda não está no TCGdex) e, para coleções
+  futuras, da biblioteca de cartas. O padrão continua "Todas as épocas", para nada sumir da tela sem a pessoa escolher.
+- **D-037 · Painel: uma tela lenta não cobre a nova; contas dos decks guardadas até os torneios mudarem** (05/11/2026,
+  v2026.11.05-5; "Ver todas" que não fazia nada). *Por quê:* duas telas podiam estar sendo desenhadas ao mesmo tempo, e a que
+  terminava por último (o Início, mais lento) cobria a outra; como o endereço já era o de Partidas, clicar de novo não fazia nada.
+  A lentidão vinha da identificação do deck, refeita a cada 2 minutos sobre todas as listas dos torneios. Agora cada tela confere se
+  ainda é a vez dela antes de desenhar, a tela lenta mostra "Carregando…", e as contas só são refeitas quando um torneio é gravado,
+  apagado ou reconvertido (no máximo a cada 1 hora), com a primeira feita em segundo plano ao abrir. Os decks identificados não
+  mudaram (medição em `EVIDENCE.md`).
+- **D-038 · Ícones dos decks: ler a coluna nova do Labs e nunca apagar um ícone gravado** (05/11/2026, v2026.11.05-6; ícones
+  sumidos em Partidas). *Por quê:* a página de decks do Labs passou a pôr o ícone fora do link do deck; o programa lia vazio e
+  regravava o cadastro, apagando 122 dos 134 ícones. Ler os dois formatos e não aceitar lista vazia por cima evita que a próxima
+  mudança de layout apague tudo de novo; refazer a lista ao abrir conserta quem já perdeu os ícones.
 
 ## Análises e algoritmos
 - **D-017 · Melhoria de algoritmo só com medição contra o atual, nos mesmos dados** (até 02/11; firme). Manter a versão antiga quando
