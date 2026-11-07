@@ -33,7 +33,9 @@ nav .grupo { font-size: 0.68rem; letter-spacing: 0.09em; text-transform: upperca
 nav .estado { margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; font-size: 0.8rem; color: var(--muted); }
 .luz { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
 .luz.on { background: var(--good); } .luz.off { background: var(--bad); } .luz.warn { background: var(--accent); }
-main { padding: 24px 28px 64px; min-width: 0; display: flex; flex-direction: column; gap: 18px; max-width: 1240px; }
+/* a área principal acompanha a janela (antes parava em 1240px e sobrava faixa vazia em telas largas); textos longos têm largura
+   própria (.sub, .rg-doc) para continuarem fáceis de ler */
+main { padding: 24px 28px 64px; min-width: 0; display: flex; flex-direction: column; gap: 18px; max-width: 2000px; }
 /* tela que demora a abrir: a anterior fica apagada e aparece "Carregando…" (base.js, render) */
 body.carregando main { opacity: .45; pointer-events: none; transition: opacity .15s; }
 body.carregando::after { content: 'Carregando…'; position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 60;
@@ -65,7 +67,7 @@ textarea { font-family: var(--f-mono); font-size: 0.8rem; width: 100%; resize: v
 .kpi .v { font: 800 1.7rem var(--f-display); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .kpi .d { font-size: 0.8rem; color: var(--muted); }
 .tabela { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
-.tabela.alta { max-height: 520px; overflow-y: auto; }
+.tabela.alta { max-height: max(520px, calc(100vh - 300px)); overflow-y: auto; }  /* usa a altura da janela */
 table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
 th { position: sticky; top: 0; background: var(--sunken); text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; z-index: 1; }
 td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
@@ -238,7 +240,7 @@ img.ico { width: 34px; height: 28px; object-fit: contain; vertical-align: middle
 img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; border-radius: 3px; vertical-align: middle; margin-right: 8px; background: var(--sunken); }
 .cel-carta { display: inline-flex; align-items: center; }
 /* replay */
-.replay { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.replay { display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 22vw, 420px); gap: 16px; align-items: start; }
 .mesa { background: var(--mesa); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; color: #E6EBF3; }
 .lado-mesa { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: center; }
 .lado-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; min-width: 0; }
@@ -285,7 +287,7 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 .rp-lateral { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 12px; }
 .rp-destaque { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: start; }
 .rp-destaque img { width: 110px; border-radius: 7px; aspect-ratio: 245/337; background: var(--sunken); }
-.rp-log { max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; font-size: 0.8rem; }
+.rp-log { max-height: max(380px, calc(100vh - 420px)); overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; font-size: 0.8rem; }
 .rp-log div { padding: 4px 10px; cursor: pointer; border-bottom: 1px solid var(--line); }
 .rp-log div.turno { background: var(--sunken); font-weight: 600; }
 .rp-log div.atual { background: color-mix(in srgb, var(--accent) 30%, var(--surface)); }
