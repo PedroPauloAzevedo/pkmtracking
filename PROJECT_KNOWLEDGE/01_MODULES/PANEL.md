@@ -20,6 +20,9 @@
 - Visual: tema claro/escuro por `prefers-color-scheme`; tokens CSS em `:root` (acento amarelo `#E8B321`/`#F2C443`, azul `#2B63D9`);
   fontes Bricolage Grotesque e IBM Plex Sans/Mono. Textos curtos, em português simples, explicando o porquê ("provável entre",
   "diferença provável", "formato não confirmado"); avisos por toast e notificação do Windows.
+- **Largura e altura** (desde 2026.11.06-6): `main` vai até 2000px (antes 1240px, que deixava faixa vazia em telas largas); as
+  listas `.tabela.alta` têm altura máxima `max(520px, 100vh − 300px)`, o log do replay `max(380px, 100vh − 420px)` e a coluna
+  lateral do replay `clamp(300px, 22vw, 420px)`. Textos longos continuam com largura própria (`.sub` 70ch, `.rg-doc` 82ch).
 - **Só computador** (D-002): sem regras de celular. As regras de **janela estreita** ficam (até 900px o menu vira faixa superior;
   até 1100px o replay fica numa coluna), porque servem à janela do Coletor em meia tela ao lado do jogo.
 - Segurança: todas as rotas passam pela proteção de origem (`app.so_pedidos_do_painel`).

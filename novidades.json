@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.06-6",
+    "data": "2026-11-06",
+    "titulo": "Telas ocupam a janela inteira",
+    "mudancas": [
+      "Todas as telas agora usam a largura da janela: antes o painel parava em 1240 pixels e sobrava uma faixa vazia à direita em telas largas. Os filtros cabem em menos linhas e as tabelas mostram mais colunas sem apertar.",
+      "As listas (Partidas, Meta, Torneios...) e o log do replay ficam mais altos quando a janela é alta, mostrando mais linhas sem rolar. Em janelas pequenas tudo continua como antes."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.06-6\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se a tela parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.06-5",
     "data": "2026-11-06",
     "titulo": "Replay: Energias no Pokémon certo",

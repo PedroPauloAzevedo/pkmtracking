@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.06-6 | 06/11/2026 | (ver `git log`: "v2026.11.06-6") | Telas ocupam a janela inteira |
 | 2026.11.06-5 | 06/11/2026 | (ver `git log`: "v2026.11.06-5") | Replay: Energias no Pokémon certo (listas de descarte e ligações ambíguas) |
 | 2026.11.06-4 | 06/11/2026 | (ver `git log`: "v2026.11.06-4") | Log original de cada partida (copiar / baixar .txt) |
 | 2026.11.06-3 | 06/11/2026 | (ver `git log`: "v2026.11.06-3") | Replay: dano do Risky Ruins no Pokémon certo |
@@ -29,6 +30,11 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.06-6 — 06/11/2026 (pedido do Pedro: espaço vazio na lateral)
+- `web/estilo.css`: `main` com `max-width: 2000px`; `.tabela.alta`, `.rp-log` e a coluna do replay acompanham a janela.
+- Conferido numa cópia com os dados do Pedro, em 17 telas: a 1696×962 a área principal vai até a borda (antes parava em 1460px) e
+  as listas têm 662px (antes 520px); a 1280×720 nenhuma tela ganha rolagem lateral e as listas ficam em 520px. Os 4 testes OK.
 
 ## 2026.11.06-5 — 06/11/2026 (erro de replay visto pelo Pedro)
 - `tracker/replay.py`: `N cards were discarded` + lista (`tirar_listados`), Energias ambíguas (`mover_ambigua`, `_custo_ataque`,
