@@ -185,6 +185,11 @@ nav .busca-btn kbd { margin-left: auto; font: 500 .7rem var(--f-mono); border: 1
 .matriz td small { display: block; font-size: 0.68rem; color: var(--muted); }
 .matriz td.pouco { opacity: 0.45; }
 .matriz td.espelho { background: var(--sunken); color: var(--muted); }
+/* Cartas x matchups: colunas de deck todas da mesma largura (o nome comprido quebra em duas linhas); as 3 primeiras, estreitas.
+   O min-width da tabela (no campeonatos.js) dá ~112px a cada deck: com muitos decks, a tabela rola para o lado. */
+.matriz.iguais { table-layout: fixed; }
+.matriz.iguais col.fixa { width: 80px; }
+.matriz.iguais th { vertical-align: bottom; overflow-wrap: anywhere; }
 .chart svg { width: 100%; height: auto; display: block; }
 .chart text { fill: var(--muted); font: 11px var(--f-body); }
 .chart .grade { stroke: var(--line); stroke-width: 1; }

@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.09-2 | 09/11/2026 | (ver `git log`: "v2026.11.09-2") | Cartas x matchups com colunas do mesmo tamanho |
 | 2026.11.09-1 | 09/11/2026 | (ver `git log`: "v2026.11.09-1") | Época da coleção nova nos torneios online |
 | 2026.11.07-1 | 07/11/2026 | (ver `git log`: "v2026.11.07-1") | Decisões mostra o placar sem a carta |
 | 2026.11.06-6 | 06/11/2026 | (ver `git log`: "v2026.11.06-6") | Telas ocupam a janela inteira |
@@ -33,6 +34,10 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.09-2 — 09/11/2026 (pedido do Pedro: caixas do mesmo tamanho em Cartas x matchups)
+- `web/js/campeonatos.js` (`renderCartasMatchups`): tabela `matriz iguais` com `<colgroup>` e `min-width` pelo número de decks;
+  `web/estilo.css`: `.matriz.iguais` (`table-layout: fixed`, 80px nas 3 primeiras, cabeçalho alinhado embaixo).
+- Conferido numa cópia com os dados do Pedro (Basic Box × Meowth ex, 8 decks): colunas de deck todas com 115px a 1600px de janela.
 ## 2026.11.09-1 — 09/11/2026 (pedido do Pedro: decks novos antes dos grandes eventos; D-048)
 - `tracker/colecoes.py`: tipo de época `online` (`inicio_online` = dia do lançamento) e `INICIO` com os três tipos.
 - `analises.torneios_da_fonte(..., epoca=)` e `app._lista_torneios` (`?epoca=`): cada fonte com o seu começo; `/api/epocas` com `online`.

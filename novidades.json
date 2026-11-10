@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.09-2",
+    "data": "2026-11-09",
+    "titulo": "Cartas x matchups com colunas do mesmo tamanho",
+    "mudancas": [
+      "Na tela Cartas x matchups, todas as colunas de deck agora têm a mesma largura. Nome de deck comprido (ex.: Ogerpon Meganium Hydrapple) quebra em duas ou três linhas em vez de alargar a coluna."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.09-2\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se a tela parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.09-1",
     "data": "2026-11-09",
     "titulo": "Época da coleção nova nos torneios online",
