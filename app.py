@@ -845,6 +845,15 @@ def deck(arq):
     return (jsonify(p), 200) if p else (jsonify({"erro": "Deck não encontrado nos torneios escolhidos."}), 404)
 
 
+@app.get("/api/deck/<arq>/listas")
+def deck_listas(arq):
+    """Listas de torneio do deck (mais recentes primeiro), com todas as cartas e o link do Limitless. ?com=<carta> (repetível):
+    só as listas que têm todas essas cartas (nome ou pedaço do nome). ?limite= (padrão 20, máximo 200)."""
+    a = request.args
+    limite = max(1, min(200, int(a.get("limite", 20) or 20)))
+    return jsonify(analises.listas_deck(arq, _lista_torneios(), a.getlist("com"), limite))
+
+
 @app.get("/api/cartas")
 def api_cartas():
     return jsonify(analises.cartas(_lista_torneios(), request.args.get("arq") or None))

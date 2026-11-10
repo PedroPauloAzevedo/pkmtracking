@@ -363,6 +363,15 @@ for d in m["divisao"]:
     assert d["taxa"] == round(100 * d["v"] / d["n"], 1), "a taxa não muda com a correção"
     assert d["ic_baixo"] <= ingenua[0] and d["ic_alto"] >= ingenua[1], (d, ingenua)   # faixa nunca mais estreita
 print("D-040/D-041/D-042: ok; ICC do meta de teste", m["icc"])
+# Perfil de deck > Listas: listas completas do deck, com link do Limitless e busca por cartas (todas ao mesmo tempo)
+arq_l = banco.consultar("SELECT j.arquetipo AS a FROM t_listas l JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id "
+                        "WHERE j.arquetipo != '' GROUP BY j.arquetipo ORDER BY COUNT(*) DESC LIMIT 1")[0]["a"]
+rl = cli.get(f"/api/deck/{arq_l}/listas?fonte=todos").get_json()
+assert rl["total"] > 0 and rl["listas"] and rl["listas"][0]["cartas"] and rl["listas"][0]["link"].startswith("https://labs.limitlesstcg.com/"), rl
+c1 = rl["listas"][0]["cartas"][0]["carta"]
+com1 = cli.get(f"/api/deck/{arq_l}/listas?fonte=todos&com={c1}").get_json()
+assert 1 <= com1["achadas"] <= rl["total"] and all(any(c1 == x["carta"] for x in l["cartas"]) for l in com1["listas"])
+assert cli.get(f"/api/deck/{arq_l}/listas?fonte=todos&com={c1}&com=Carta Que Nao Existe").get_json()["achadas"] == 0
 from tracker import auto_export  # modo automático leve: sem o jogo aberto, não fotografa a tela (2026.11.10-4)
 assert auto_export.estado_do_jogo() in ("fechado", "minimizado", "aberto")
 # D-050: deck cujo atacante principal não está em nenhuma lista de torneio ganha nome provisório (esse Pokémon) e fica "incerto"
