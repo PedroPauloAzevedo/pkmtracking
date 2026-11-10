@@ -20,6 +20,9 @@
   só torneios com pelo menos `online_min_jogadores` (64) dos últimos `online_dias` (21), no máximo `online_por_vez` (40) por vez.
 - **Sincronização automática:** a cada `sincronizar_horas` (6) importa os eventos dos últimos `sincronizar_dias` (45) que faltam,
   e depois os online. Também por `python app.py --sincronizar` ou `--importar <id>`.
+- **Dragapult × Dragapult Dudunsparce** (desde 2026.11.10-7; D-052): na importação (e uma vez ao abrir, `VERSAO_REGRAS_ARQ`),
+  `banco.separar_arquetipos` dá `dragapult-dudunsparce` a quem tem Dunsparce/Dudunsparce na lista e `dragapult-ex` a quem não tem;
+  `t_partidas.arq1/arq2` acompanham. Sem lista: fica o nome do Limitless.
 - ACE SPEC de cada lista gravada em `t_jogadores.ace_spec` na importação (e recalculada quando a biblioteca de cartas muda).
 
 ## Análises (Meta e torneios)

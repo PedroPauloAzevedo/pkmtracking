@@ -16,6 +16,8 @@ from pathlib import Path
 from . import config, leitor
 
 _trava = threading.Lock()
+# Regras próprias de arquétipo (D-052): aumente quando mudar separar_arquetipos (os torneios já importados são refeitos).
+VERSAO_REGRAS_ARQ = 1
 VERSAO_LEITOR = 4  # aumente quando o leitor passar a tirar mais informação dos logs: as partidas gravadas são relidas
 
 ESQUEMA = """
@@ -116,6 +118,11 @@ def iniciar():
         cfg["versao_leitor"] = VERSAO_LEITOR
         config.salvar_config(cfg)
     separar_partidas_de_outros()
+    if cfg.get("versao_regras_arq") != VERSAO_REGRAS_ARQ:  # regra nova de arquétipo: aplica nos torneios já importados
+        separar_arquetipos()
+        cfg = config.ler_config()
+        cfg["versao_regras_arq"] = VERSAO_REGRAS_ARQ
+        config.salvar_config(cfg)
 
 
 # ---------------------------------------------------------------- partidas
@@ -314,7 +321,38 @@ def salvar_torneio(t, jogadores, partidas, listas=None):
             )
     if listas:
         atualizar_ace_spec(t["id"])
+        separar_arquetipos(t["id"])
     marcar_mudanca_torneios()
+
+
+# D-052 (pedido do Pedro): o Limitless chama de "Dragapult" listas com e sem Dunsparce. Para o Coletor, lista com uma ou mais
+# cópias de Dunsparce (ou Dudunsparce) é "Dragapult Dudunsparce"; sem nenhuma, é "Dragapult". Só vale para quem tem lista
+# importada (sem lista não dá para saber: fica o nome do Limitless) e só entre esses dois decks.
+PAR_DRAGAPULT = ("dragapult-ex", "dragapult-dudunsparce")
+
+
+def separar_arquetipos(torneio=None):
+    """Aplica a regra D-052 em t_jogadores e nos confrontos (t_partidas) do torneio (None = todos). Devolve quantos mudaram."""
+    filtro, params = (" AND j.torneio=?", (torneio,)) if torneio else ("", ())
+    with _trava, conectar() as con:
+        linhas = con.execute(
+            "SELECT j.torneio, j.labs_id, j.nome_norm, j.arquetipo, "
+            "MAX(CASE WHEN COALESCE(NULLIF(l.carta_base, ''), l.carta) LIKE '%unsparce%' THEN 1 ELSE 0 END) AS dun "
+            "FROM t_jogadores j JOIN t_listas l ON l.torneio=j.torneio AND l.labs_id=j.labs_id "
+            f"WHERE j.arquetipo IN (?, ?){filtro} GROUP BY j.torneio, j.labs_id", (*PAR_DRAGAPULT, *params)).fetchall()
+        mudou = 0
+        for r in linhas:
+            novo = PAR_DRAGAPULT[1] if r["dun"] else PAR_DRAGAPULT[0]
+            if novo == r["arquetipo"]:
+                continue
+            mudou += 1
+            con.execute("UPDATE t_jogadores SET arquetipo=? WHERE torneio=? AND labs_id=?", (novo, r["torneio"], r["labs_id"]))
+            for lado in ("1", "2"):  # nos confrontos o jogador aparece pelo id (online) ou pelo nome (Labs)
+                con.execute(f"UPDATE t_partidas SET arq{lado}=? WHERE torneio=? AND (j{lado}=? OR j{lado}=?)",
+                            (novo, r["torneio"], r["labs_id"], r["nome_norm"]))
+    if mudou and torneio is None:
+        marcar_mudanca_torneios()
+    return mudou
 
 
 def _converter(c):

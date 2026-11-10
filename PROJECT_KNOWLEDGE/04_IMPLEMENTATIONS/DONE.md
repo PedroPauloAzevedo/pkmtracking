@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.10-7 | 10/11/2026 | (ver `git log`: "v2026.11.10-7") | Dragapult e Dragapult Dudunsparce separados pelo Dunsparce |
 | 2026.11.10-6 | 10/11/2026 | (ver `git log`: "v2026.11.10-6") | Listas completas no Perfil de deck |
 | 2026.11.10-5 | 10/11/2026 | (ver `git log`: "v2026.11.10-5") | Replay com melhores momentos |
 | 2026.11.10-4 | 10/11/2026 | (ver `git log`: "v2026.11.10-4") | Modo automático mais leve |
@@ -41,6 +42,12 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.10-7 — 10/11/2026 (pedido do Pedro; D-052)
+- `tracker/banco.py`: `PAR_DRAGAPULT`, `separar_arquetipos`, `VERSAO_REGRAS_ARQ` (roda uma vez em `iniciar` e a cada torneio salvo).
+- `tracker/decks.py`: `regra_dragapult` no resultado de `identificar_detalhe`.
+- `teste_tracker.py`: jogador sintético com e sem Dunsparce, confronto acompanha. Banco do Pedro: Dragapult 15,8% do campo →
+  Dragapult 9,1% + Dragapult Dudunsparce 7,9%; 1 partida pessoal muda; refazer não muda mais nada (1,1 s ao abrir).
 
 ## 2026.11.10-6 — 10/11/2026 (pedido do Pedro: listas dos últimos decks e busca por combinação de cartas)
 - `tracker/analises.py`: `listas_deck`, `_link_lista`; `app.py`: rota `/api/deck/<arq>/listas`.
