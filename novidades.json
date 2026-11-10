@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.10-1",
+    "data": "2026-11-10",
+    "titulo": "Logs com o código das cartas",
+    "mudancas": [
+      "O Coletor agora entende logs exportados com o código das cartas (no jogo: Settings > Battle Log > \"Hide card IDs from export\" desmarcado). Antes, o código ficava grudado no nome da carta e atrapalhava a identificação do deck, o uso de cartas e o replay.",
+      "Com o código, o replay sabe a versão exata de cada carta (antes ele adivinhava entre cartas de mesmo nome). Os logs sem código continuam funcionando como antes."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-1\" e confirme. O programa reinicia sozinho e relê as partidas gravadas (pode levar alguns segundos).",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Opcional: no TCG Live, em Settings > Battle Log, desmarque \"Hide card IDs from export\" para o replay usar a versão exata das cartas."
+    ]
+  },
+  {
     "versao": "2026.11.09-4",
     "data": "2026-11-09",
     "titulo": "Início novo: Hoje, tema e dados coletados",

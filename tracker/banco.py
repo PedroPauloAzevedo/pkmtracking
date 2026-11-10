@@ -16,7 +16,7 @@ from pathlib import Path
 from . import config, leitor
 
 _trava = threading.Lock()
-VERSAO_LEITOR = 3  # aumente quando o leitor passar a tirar mais informação dos logs: as partidas gravadas são relidas
+VERSAO_LEITOR = 4  # aumente quando o leitor passar a tirar mais informação dos logs: as partidas gravadas são relidas
 
 ESQUEMA = """
 CREATE TABLE IF NOT EXISTS partidas (

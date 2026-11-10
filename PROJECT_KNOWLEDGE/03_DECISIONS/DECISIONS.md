@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 09/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 10/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -176,6 +176,14 @@
   data em UTC e a coleção chega ao jogo às 17h ou 18h UTC da véspera (D-036): os torneios da véspera, quase todos antes da chegada,
   ficam na época anterior; os poucos do dia do lançamento que começaram antes da chegada (nenhum na Delta Reign) ficariam na nova.
   Os grandes eventos continuam com a validade em torneio. Código: `colecoes.inicio_online`, `analises.torneios_da_fonte(epoca=)`.
+- **D-049 · Logs com o código das cartas: o leitor tira o código do nome e guarda à parte** (10/11/2026, v2026.11.10-1; R1 da
+  pesquisa de outros apps, `REFERENCE_TOOLS.md`). *Por quê:* todos os apps de replay pedem para desmarcar "Hide card IDs from
+  export"; com isso o log escreve `(sv6_200) Dragapult ex` e o Coletor gravava o código como parte do nome (cartas vistas,
+  identificação do deck, uso de cartas e replay erravam). Tirar o código em `limpar_linha` mantém um único caminho de leitura (o
+  resto do programa não muda) e guardar os códigos em `resumo.codigos` permite a versão exata em `resolver_versoes`, que passa na
+  frente das pistas (só quando todos os códigos daquele nome do jogador apontam para a mesma arte). Medição: as 137 partidas do
+  Pedro (sem códigos) têm leitura idêntica antes e depois; o log público com códigos tem a mesma leitura da versão sem códigos
+  (teste em `teste_tracker.py`, seção 9).
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,
