@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.07-1",
+    "data": "2026-11-07",
+    "titulo": "Decisões mostra o placar sem a carta",
+    "mudancas": [
+      "Em Decisões, ao lado da Diferença aparece \"sem ela: V–D\", o placar das partidas em que você não jogou a carta. Assim dá para ver quando a diferença vem de pouquíssimas partidas (ex.: \"sem ela: 2–0\") e não deve ser levada a sério."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.07-1\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se a tela parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.06-6",
     "data": "2026-11-06",
     "titulo": "Telas ocupam a janela inteira",
