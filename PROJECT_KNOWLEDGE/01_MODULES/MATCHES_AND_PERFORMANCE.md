@@ -1,6 +1,6 @@
 # Minhas partidas: Partidas, Desempenho e Decisões
 
-> Atualizado em 05/11/2026. Código: `tracker/analises.py` (`analise_pessoal`, `decisoes`, `visao`, `perspectiva`),
+> Atualizado em 07/11/2026. Código: `tracker/analises.py` (`analise_pessoal`, `decisoes`, `visao`, `perspectiva`),
 > `tracker/banco.py`, `tracker/decks.py` (`vincular_automatico`, identificação do deck), `web/js/partidas.js`, `web/js/decisoes.js`.
 > Regras: `../02_BUSINESS_RULES/PLAYERS_AND_OWNERSHIP.md` e `../02_BUSINESS_RULES/STATISTICS.md`.
 
@@ -39,7 +39,8 @@ período. "Você" em cada partida é decidido pelas regras de `PLAYERS_AND_OWNER
 O que nas suas partidas anda junto com vencer ou perder (correlação, não causa):
 aberturas (cartas jogadas nos 2 primeiros turnos) **separadas por quem começou**, corrida de prêmios (primeiro prêmio, viradas,
 turno em que perdeu o controle), ritmo (turno do 1º ataque e do 1º prêmio) e cartas jogadas (taxa quando saiu × não saiu).
-Filtro Todas / Começando / Indo em segundo. Mínimo de 3 partidas por item.
+Filtro Todas / Começando / Indo em segundo. Mínimo de 3 partidas por item. Ao lado da Diferença, "sem ela: V–D" mostra o
+placar das partidas sem a carta (desde 2026.11.07-1): com 2–0 sem ela, um −27 p.p. é sorte, não sinal.
 
 ## Deck do adversário "incerto" (v2026.11.06-2, D-042)
 `analises.visao` devolve `deck_adv_incerto` quando o deck do adversário foi adivinhado pelo NB2 com confiança abaixo de
