@@ -220,6 +220,40 @@ def ver_todas_e_epocas(pagina):
     return problemas
 
 
+def tema_manual(pagina):
+    """Tema escolhido à mão: Escuro e Claro valem por cima do Windows, continuam depois de recarregar e Automático volta a
+    seguir o Windows. O navegador do teste está em tema claro, então "Automático" = fundo claro. Devolve os problemas."""
+    problemas = []
+    fundo = lambda: pagina.evaluate("getComputedStyle(document.body).backgroundColor")
+    claro, escuro = "rgb(238, 241, 245)", "rgb(15, 20, 32)"
+    try:
+        pagina.click("#tema [data-tema='escuro']")
+        if fundo() != escuro:
+            problemas.append(f"Escuro: fundo {fundo()}")
+        pagina.reload()
+        pagina.wait_for_selector("#tema [aria-pressed='true']", timeout=20000)
+        if fundo() != escuro or pagina.evaluate("document.querySelector('#tema [aria-pressed=\"true\"]').dataset.tema") != "escuro":
+            problemas.append("Escuro não continuou depois de recarregar")
+        pagina.click("#tema [data-tema='claro']")
+        if fundo() != claro:
+            problemas.append(f"Claro: fundo {fundo()}")
+        pagina.emulate_media(color_scheme="dark")
+        if fundo() != claro:
+            problemas.append("Claro escolhido não vale por cima do Windows escuro")
+        pagina.click("#tema [data-tema='']")
+        if fundo() != escuro or pagina.evaluate("'tema' in document.documentElement.dataset"):
+            problemas.append("Automático não voltou a seguir o Windows (escuro)")
+        pagina.emulate_media(color_scheme="light")
+        if fundo() != claro:
+            problemas.append("Automático não voltou a seguir o Windows (claro)")
+    except Exception as e:
+        problemas.append(str(e).splitlines()[0])
+    finally:
+        pagina.emulate_media(color_scheme="light")
+        pagina.evaluate("try { localStorage.removeItem('tema'); } catch (e) {} aplicarTema('')")
+    return problemas
+
+
 def main():
     from playwright.sync_api import sync_playwright
     preparar()
@@ -293,6 +327,13 @@ def main():
                   + ("" if not (erros or problemas) else "\n         " + "\n         ".join((problemas + erros)[:6])))
             if erros or problemas:
                 falhas.append("ver todas / época")
+            # tema claro / escuro / automático escolhido à mão
+            erros.clear()
+            problemas = tema_manual(pagina)
+            print(("ok    " if not (erros or problemas) else "FALHOU") + " tema claro / escuro / automático"
+                  + ("" if not (erros or problemas) else "\n         " + "\n         ".join((problemas + erros)[:6])))
+            if erros or problemas:
+                falhas.append("tema")
             # busca rápida (Ctrl+K)
             pagina.keyboard.press("Control+K")
             if not pagina.wait_for_selector("#busca-q", timeout=5000):  # o campo da busca (não outro campo da tela)

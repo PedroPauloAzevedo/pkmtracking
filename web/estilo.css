@@ -9,13 +9,22 @@
   --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   color-scheme: light;
 }
+/* Tema: sem escolha, segue o Windows (prefers-color-scheme). "Claro" ou "Escuro" escolhidos no canto da navegação ficam em
+   <html data-tema="claro|escuro"> (base.js, aplicarTema) e valem por cima do Windows. As cores escuras aparecem duas vezes de
+   propósito: uma para o Windows escuro sem escolha e outra para quem escolheu "Escuro". */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema="claro"]) {
     --bg: #0F1420; --surface: #171E2C; --sunken: #121826; --ink: #E6EBF3; --muted: #95A0B5; --line: #2A3447;
     --accent: #F2C443; --p1: #6E9BFF; --p2: #FF7A66; --good: #4CC28A; --bad: #FF6B5C;
     --c1: #6E9BFF; --c2: #FF7A66; --c3: #4CC28A; --c4: #E6B54A; --c5: #A78BFA; --c6: #3CC6D6; --c7: #F27BB0; --c8: #95A0B5;
     color-scheme: dark;
   }
+}
+:root[data-tema="escuro"] {
+    --bg: #0F1420; --surface: #171E2C; --sunken: #121826; --ink: #E6EBF3; --muted: #95A0B5; --line: #2A3447;
+    --accent: #F2C443; --p1: #6E9BFF; --p2: #FF7A66; --good: #4CC28A; --bad: #FF6B5C;
+    --c1: #6E9BFF; --c2: #FF7A66; --c3: #4CC28A; --c4: #E6B54A; --c5: #A78BFA; --c6: #3CC6D6; --c7: #F27BB0; --c8: #95A0B5;
+    color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -23,13 +32,17 @@ html, body { margin: 0; }
 p { margin: 0; }
 body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); }
 .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; background: linear-gradient(to right, var(--surface) 220px, transparent 220px); }
-nav { background: var(--surface); border-right: 1px solid var(--line); padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
+nav { background: var(--surface); border-right: 1px solid var(--line); padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }  /* janela baixa: a barra rola (o tema e o estado ficam no fim) */
 nav .marca { font: 800 1.1rem var(--f-display); padding: 0 10px 14px; line-height: 1.2; }
 nav .marca small { display: block; font: 500 0.72rem var(--f-body); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
 nav a { color: var(--muted); text-decoration: none; padding: 7px 10px; border-radius: 7px; font-weight: 500; }
 nav a:hover { color: var(--ink); background: var(--sunken); }
 nav a.ativo { color: var(--ink); background: var(--sunken); box-shadow: inset 3px 0 0 var(--accent); }
 nav .grupo { font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); padding: 12px 10px 4px; font-weight: 600; }
+nav .tema { display: flex; gap: 2px; padding: 3px; margin: 0 10px 6px; background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; }
+nav .tema button { flex: 1; background: none; border: none; padding: 4px 6px; font-size: .74rem; font-weight: 500; color: var(--muted); border-radius: 6px; cursor: pointer; }
+nav .tema button:hover { color: var(--ink); }
+nav .tema button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
 nav .estado { margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; font-size: 0.8rem; color: var(--muted); }
 .luz { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
 .luz.on { background: var(--good); } .luz.off { background: var(--bad); } .luz.warn { background: var(--accent); }
@@ -294,12 +307,14 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 .controles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .controles input[type=range] { flex: 1 1 200px; }
 :root { --mesa: #1d3b2f; }
-@media (prefers-color-scheme: dark) { :root { --mesa: #15291f; } }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) { --mesa: #15291f; } }
+:root[data-tema="escuro"] { --mesa: #15291f; }
 @media (max-width: 1100px) { .replay { grid-template-columns: 1fr; } .rp-lateral { position: static; } }
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; background: none; }
   nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; }
   nav .grupo, nav .estado { display: none; }
+  nav .tema { margin: 0 0 0 auto; }
   nav details.programa { flex-basis: 100%; margin-top: 4px; }
   main { padding: 18px 16px 48px; }
   .grid2, .grid3 { grid-template-columns: 1fr; }

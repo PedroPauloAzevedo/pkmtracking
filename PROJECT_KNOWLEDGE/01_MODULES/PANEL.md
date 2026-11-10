@@ -1,6 +1,6 @@
 # Painel, ícone na bandeja, atalhos e janela própria
 
-> Atualizado em 05/11/2026. Código: `web/index.html`, `web/estilo.css`, `web/js/*.js` (divisão explicada em `web/LEIA-ME.md`),
+> Atualizado em 09/11/2026. Código: `web/index.html`, `web/estilo.css`, `web/js/*.js` (divisão explicada em `web/LEIA-ME.md`),
 > `tracker/bandeja.py`, `tracker/atalhos.py`, `tracker/janela.py`, `tracker/novidades.py`. Decisões: D-002, D-003, D-030, D-037.
 
 ## Painel
@@ -20,6 +20,10 @@
 - Visual: tema claro/escuro por `prefers-color-scheme`; tokens CSS em `:root` (acento amarelo `#E8B321`/`#F2C443`, azul `#2B63D9`);
   fontes Bricolage Grotesque e IBM Plex Sans/Mono. Textos curtos, em português simples, explicando o porquê ("provável entre",
   "diferença provável", "formato não confirmado"); avisos por toast e notificação do Windows.
+- **Tema** (desde 2026.11.09-3): botões Claro / Automático / Escuro no canto da navegação (`#tema`). Automático segue o Windows
+  (`prefers-color-scheme`); Claro e Escuro ficam em `<html data-tema>` e valem por cima dele. A escolha fica no `localStorage`
+  (`tema`), aplicada por um script curto no `<head>` do `index.html` (a tela não pisca) e pelos botões em `base.js` (`aplicarTema`).
+  Cor nova no `estilo.css`: dar o valor escuro nos dois lugares (media query e `:root[data-tema="escuro"]`).
 - **Largura e altura** (desde 2026.11.06-6): `main` vai até 2000px (antes 1240px, que deixava faixa vazia em telas largas); as
   listas `.tabela.alta` têm altura máxima `max(520px, 100vh − 300px)`, o log do replay `max(380px, 100vh − 420px)` e a coluna
   lateral do replay `clamp(300px, 22vw, 420px)`. Textos longos continuam com largura própria (`.sub` 70ch, `.rg-doc` 82ch).
