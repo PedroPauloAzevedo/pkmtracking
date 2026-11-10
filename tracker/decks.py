@@ -391,11 +391,20 @@ def identificar_detalhe(vistas):
     if chave not in memoria:
         s, confianca = identificar_nb({normalizar_nome_carta(c) for c in vistas if not cartas.eh_energia_basica(c)})
         if s:
-            memoria[chave] = {"deck": s, "confianca": confianca, "metodo": "nb2"}
+            memoria[chave] = {"deck": regra_dragapult(s, vistas), "confianca": confianca, "metodo": "nb2"}
         else:
             ic = _identificar_por_icones(vistas)
-            memoria[chave] = {"deck": ic, "confianca": None, "metodo": "icones" if ic else ""}
+            memoria[chave] = {"deck": regra_dragapult(ic, vistas), "confianca": None, "metodo": "icones" if ic else ""}
     return memoria[chave]
+
+
+def regra_dragapult(deck, vistas):
+    """D-052: entre Dragapult e Dragapult Dudunsparce decide o Dunsparce. Nas partidas só se sabe o que o jogador mostrou:
+    Dunsparce (ou Dudunsparce) visto -> Dragapult Dudunsparce; nenhum visto -> Dragapult."""
+    if deck not in banco.PAR_DRAGAPULT:
+        return deck
+    viu = any("unsparce" in normalizar_nome_carta(c) for c in (vistas or {}))
+    return banco.PAR_DRAGAPULT[1] if viu else banco.PAR_DRAGAPULT[0]
 
 
 def identificar(vistas):

@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.10-7",
+    "data": "2026-11-10",
+    "titulo": "Dragapult e Dragapult Dudunsparce separados pelo Dunsparce",
+    "mudancas": [
+      "Lista de torneio de Dragapult com uma ou mais cópias de Dunsparce agora conta como \"Dragapult Dudunsparce\"; sem nenhuma cópia, conta como \"Dragapult\". Antes o Limitless chamava as duas de \"Dragapult\" na maioria das vezes, e as contas de meta e matchups misturavam os dois decks.",
+      "Nas suas partidas vale o que o adversário mostrou: se apareceu Dunsparce (ou Dudunsparce), é Dragapult Dudunsparce; se não apareceu, é Dragapult.",
+      "Jogadores de torneio sem lista importada continuam com o nome que o Limitless deu (não dá para saber se tinham Dunsparce)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-7\" e confirme. O programa reinicia sozinho e reorganiza os torneios já importados (cerca de 1 segundo)."
+    ],
+    "passos": [
+      "Nada a fazer."
+    ]
+  },
+  {
     "versao": "2026.11.10-6",
     "data": "2026-11-10",
     "titulo": "Listas completas no Perfil de deck",

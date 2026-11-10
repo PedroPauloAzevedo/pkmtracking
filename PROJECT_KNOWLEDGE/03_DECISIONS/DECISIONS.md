@@ -196,6 +196,13 @@
   TCG Live (inclusive o código das cartas do log, D-049) no dia da chegada. Uso leve: um arquivo por coleção que falta, só texto,
   só enquanto o TCGdex não tem; o TCGdex continua a fonte principal. Riscos aceitos: projeto de fã sem termos publicados e formato
   "alpha" (se mudar, a função não monta nada e a biblioteca segue como antes). Medição em `EVIDENCE.md`.
+- **D-052 · Dragapult × Dragapult Dudunsparce: decide o Dunsparce** (10/11/2026, v2026.11.10-7; pedido do Pedro). Lista com uma ou
+  mais cópias de Dunsparce (ou Dudunsparce) é `dragapult-dudunsparce`; sem nenhuma, `dragapult-ex`. *Por quê:* o Limitless chamava de
+  "Dragapult" a maioria das listas com Dunsparce (801 de 1.121 listas "Dragapult" no banco do Pedro tinham), misturando dois decks
+  no meta e nos matchups. Torneios: `banco.separar_arquetipos` (jogadores com lista; confrontos acompanham), na importação e uma vez
+  ao abrir (`VERSAO_REGRAS_ARQ`). Partidas: `decks.regra_dragapult`, pelo que o adversário mostrou (não visto = Dragapult). Limite:
+  jogador de torneio sem lista fica com o nome do Limitless (792 "Dragapult" no banco do Pedro), então o "Dragapult" ainda contém
+  parte de Dudunsparce entre quem não tem lista.
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,

@@ -51,5 +51,6 @@ Regra (COLLABORATION, seção 6): só acrescentar coluna ou tabela; migração e
 | 2026.11.02-2 | `t_jogadores.ace_spec` | Calculada uma vez para as listas já importadas (D-020) |
 | 2026.11.02-2 | `banco.VERSAO_LEITOR` = 3 | Partidas relidas na abertura |
 | 2026.11.10-1 | `banco.VERSAO_LEITOR` = 4; `dados_json.resumo.codigos` | Partidas relidas na abertura (códigos das cartas, D-049) |
+| 2026.11.10-7 | `config.versao_regras_arq` = 1 (`banco.VERSAO_REGRAS_ARQ`) | `t_jogadores.arquetipo` e `t_partidas.arq1/arq2` refeitos uma vez pela regra D-052 |
 
 Outros números que forçam refazer dados guardados: `cartas.VERSAO_INDICE` (hoje **2**; remonta o índice em `dados/cartas/`).

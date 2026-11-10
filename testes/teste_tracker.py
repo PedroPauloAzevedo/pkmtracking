@@ -363,6 +363,28 @@ for d in m["divisao"]:
     assert d["taxa"] == round(100 * d["v"] / d["n"], 1), "a taxa não muda com a correção"
     assert d["ic_baixo"] <= ingenua[0] and d["ic_alto"] >= ingenua[1], (d, ingenua)   # faixa nunca mais estreita
 print("D-040/D-041/D-042: ok; ICC do meta de teste", m["icc"])
+# D-052: Dragapult com Dunsparce na lista vira Dragapult Dudunsparce (e sem nenhum, Dragapult), também nos confrontos
+with banco.conectar() as con:
+    con.execute("INSERT INTO t_jogadores (torneio, labs_id, nome, nome_norm, arquetipo) VALUES ('0999','dragteste','Ana Teste','ana teste','dragapult-ex')")
+    con.execute("INSERT INTO t_listas (torneio, labs_id, carta, qtd) VALUES ('0999','dragteste','Dunsparce',1), ('0999','dragteste','Dreepy',4)")
+    con.execute("INSERT INTO t_partidas VALUES ('0999', 99, '1', 'ana teste', 'outro', 'W', 'dragapult-ex', 'x')")
+try:
+    assert banco.separar_arquetipos("0999") >= 1
+    assert banco.consultar("SELECT arquetipo FROM t_jogadores WHERE labs_id='dragteste'")[0]["arquetipo"] == "dragapult-dudunsparce"
+    assert banco.consultar("SELECT arq1 FROM t_partidas WHERE rodada=99 AND torneio='0999'")[0]["arq1"] == "dragapult-dudunsparce"
+    with banco.conectar() as con:
+        con.execute("DELETE FROM t_listas WHERE labs_id='dragteste' AND carta='Dunsparce'")
+    banco.separar_arquetipos("0999")
+    assert banco.consultar("SELECT arquetipo FROM t_jogadores WHERE labs_id='dragteste'")[0]["arquetipo"] == "dragapult-ex"
+finally:
+    with banco.conectar() as con:
+        for tab, col in (("t_jogadores", "labs_id"), ("t_listas", "labs_id")):
+            con.execute(f"DELETE FROM {tab} WHERE {col}='dragteste'")
+        con.execute("DELETE FROM t_partidas WHERE rodada=99 AND torneio='0999'")
+    banco.marcar_mudanca_torneios()
+assert decks.regra_dragapult("dragapult-ex", {"Dudunsparce": 1}) == "dragapult-dudunsparce"
+assert decks.regra_dragapult("dragapult-dudunsparce", {"Dreepy": 2}) == "dragapult-ex"
+assert decks.regra_dragapult("dragapult-dusknoir", {"Dunsparce": 1}) == "dragapult-dusknoir"
 # Perfil de deck > Listas: listas completas do deck, com link do Limitless e busca por cartas (todas ao mesmo tempo)
 arq_l = banco.consultar("SELECT j.arquetipo AS a FROM t_listas l JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id "
                         "WHERE j.arquetipo != '' GROUP BY j.arquetipo ORDER BY COUNT(*) DESC LIMIT 1")[0]["a"]
