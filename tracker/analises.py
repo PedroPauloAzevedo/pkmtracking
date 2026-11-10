@@ -796,7 +796,7 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
                 continue
             sem_n, sem_v = n_total - n, v_total - v
             com = placar(v, n - v)
-            saida.append({"carta": c, **com, "taxa_sem": round(100 * sem_v / sem_n, 1) if sem_n else None, "sem_n": sem_n,
+            saida.append({"carta": c, **com, "taxa_sem": round(100 * sem_v / sem_n, 1) if sem_n else None, "sem_n": sem_n, "sem_v": sem_v,
                           "diferenca": round(com["taxa"] - 100 * sem_v / sem_n, 1) if sem_n and com["taxa"] is not None else None})
         return sorted(saida, key=lambda x: (-(x["n"]), x["carta"]))
 

@@ -1,6 +1,6 @@
 # Contratos entre as partes do programa
 
-> Atualizado em 06/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
+> Atualizado em 07/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
 > (COLLABORATION, seção 6). Formato do banco e de `dados_json`: [`DATA_MODEL.md`](DATA_MODEL.md).
 
 ## 1. Camadas (nomes usados nas conversas → módulos que existem)
@@ -36,7 +36,7 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `GET /api/status` | `status` | base.js, campeonatos.js, inicio.js, partidas.js, programa.js |  |
 | `GET /api/atalhos` | `ver_atalhos` | inicio.js, partidas.js, programa.js |  |
 | `POST /api/atalhos` | `mudar_atalhos` | inicio.js, partidas.js, programa.js | {"area": true} cria o atalho na Área de Trabalho; {"inicializar": false} tira do início do Windows. |
-| `GET /api/decisoes` | `api_decisoes` | decisoes.js |  |
+| `GET /api/decisoes` | `api_decisoes` | decisoes.js | Cada carta (aberturas e cartas jogadas) traz `n`, `v`, `d`, `taxa`, `taxa_sem`, `sem_n`, `sem_v` (desde 2026.11.07-1) e `diferenca`. |
 | `GET /api/regras-standard` | `regras_standard` | regras_standard.js |  |
 | `POST /api/regras-standard/atualizar` | `regras_standard_atualizar` | regras_standard.js |  |
 | `GET /api/novidades` | `ver_novidades` | inicio.js |  |
