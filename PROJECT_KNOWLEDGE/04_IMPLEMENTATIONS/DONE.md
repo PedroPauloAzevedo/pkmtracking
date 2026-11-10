@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.09-3 | 09/11/2026 | (ver `git log`: "v2026.11.09-3") | Tema claro ou escuro à sua escolha |
 | 2026.11.09-2 | 09/11/2026 | (ver `git log`: "v2026.11.09-2") | Cartas x matchups com colunas do mesmo tamanho |
 | 2026.11.09-1 | 09/11/2026 | (ver `git log`: "v2026.11.09-1") | Época da coleção nova nos torneios online |
 | 2026.11.07-1 | 07/11/2026 | (ver `git log`: "v2026.11.07-1") | Decisões mostra o placar sem a carta |
@@ -34,6 +35,11 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.09-3 — 09/11/2026 (sugestão 9 da comparação com o Pokemon Champions Battle Logger; pedido do Pedro)
+- `web/estilo.css`: cores escuras também em `:root[data-tema="escuro"]`; a media query do Windows escuro não vale com
+  `data-tema="claro"`; botões `nav .tema`. `web/index.html`: botões e o script do `<head>`. `web/js/base.js`: `aplicarTema`.
+- `teste_telas.py`: `tema_manual` (Escuro, recarregar, Claro com o Windows escuro, Automático nos dois temas). Os 4 testes OK.
+- `nav` com `overflow-y: auto`: com a janela baixa, os botões do tema (no fim da barra) ficavam fora da tela.
 ## 2026.11.09-2 — 09/11/2026 (pedido do Pedro: caixas do mesmo tamanho em Cartas x matchups)
 - `web/js/campeonatos.js` (`renderCartasMatchups`): tabela `matriz iguais` com `<colgroup>` e `min-width` pelo número de decks;
   `web/estilo.css`: `.matriz.iguais` (`table-layout: fixed`, 80px nas 3 primeiras, cabeçalho alinhado embaixo).

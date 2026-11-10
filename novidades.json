@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.09-3",
+    "data": "2026-11-09",
+    "titulo": "Tema claro ou escuro à sua escolha",
+    "mudancas": [
+      "No canto de baixo da barra da esquerda há três botões: Claro, Automático e Escuro. Automático é como antes (segue o tema do Windows); Claro e Escuro valem sempre, mesmo que o Windows esteja no outro tema. A escolha fica guardada."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.09-3\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se os botões não aparecerem, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.09-2",
     "data": "2026-11-09",
     "titulo": "Cartas x matchups com colunas do mesmo tamanho",

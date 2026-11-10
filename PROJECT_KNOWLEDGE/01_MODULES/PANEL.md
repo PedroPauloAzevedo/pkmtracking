@@ -20,6 +20,10 @@
 - Visual: tema claro/escuro por `prefers-color-scheme`; tokens CSS em `:root` (acento amarelo `#E8B321`/`#F2C443`, azul `#2B63D9`);
   fontes Bricolage Grotesque e IBM Plex Sans/Mono. Textos curtos, em português simples, explicando o porquê ("provável entre",
   "diferença provável", "formato não confirmado"); avisos por toast e notificação do Windows.
+- **Tema** (desde 2026.11.09-3): botões Claro / Automático / Escuro no canto da navegação (`#tema`). Automático segue o Windows
+  (`prefers-color-scheme`); Claro e Escuro ficam em `<html data-tema>` e valem por cima dele. A escolha fica no `localStorage`
+  (`tema`), aplicada por um script curto no `<head>` do `index.html` (a tela não pisca) e pelos botões em `base.js` (`aplicarTema`).
+  Cor nova no `estilo.css`: dar o valor escuro nos dois lugares (media query e `:root[data-tema="escuro"]`).
 - **Tabela de colunas iguais** (`table.matriz.iguais`, desde 2026.11.09-2; Cartas x matchups): `table-layout: fixed`, as 3
   primeiras colunas com 80px e as de deck dividindo o resto por igual; o nome do deck quebra em linhas. A tabela tem `min-width` de
   ~112px por deck (com muitos decks, rola para o lado).

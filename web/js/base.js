@@ -194,6 +194,23 @@ function marcasEpoca(datas, tipo) {
 // "05/11/2026 às 15:00" (a hora só quando o começo tem hora, como no TCG Live)
 const quandoEpoca = iso => dataCurta(iso) + (iso && iso.length > 10 && iso.slice(11, 16) !== '00:00' ? ` às ${iso.slice(11, 16)}` : '');
 
+/* ---------------- tema: claro, escuro ou automático (segue o Windows) ---------------- */
+// A escolha fica neste navegador (localStorage 'tema'). O index.html já aplica antes de desenhar, para a tela não piscar;
+// aqui ficam os botões do canto da navegação. As cores de cada tema estão no topo do estilo.css (data-tema no <html>).
+function aplicarTema(t) {
+  if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t;
+  else delete document.documentElement.dataset.tema;
+  document.querySelectorAll('#tema button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tema === (t || ''))));
+}
+(function ligarTema() {
+  let t = ''; try { t = localStorage.getItem('tema') || ''; } catch (e) {}
+  aplicarTema(t);
+  document.querySelectorAll('#tema button').forEach(b => b.onclick = () => {
+    try { localStorage.setItem('tema', b.dataset.tema); } catch (e) {}
+    aplicarTema(b.dataset.tema);
+  });
+})();
+
 /* ---------------- status (canto da navegação) ---------------- */
 async function atualizarStatus() {
   try {
