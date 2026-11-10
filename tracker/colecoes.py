@@ -8,8 +8,13 @@ recente é a época atual. A chegada depende do que se analisa:
     16/07/2026, 30th Celebration em 15/09/2026, Delta Reign em 05/11/2026). A hora conta: em 05/11/2026 a Delta Reign
     saiu às 15h de Brasília, e as partidas daquela manhã ainda são da época anterior. A hora é convertida para o
     relógio deste computador (as partidas são gravadas com ele);
-  - torneios: a coleção passa a valer na SEGUNDA SEXTA-FEIRA depois do lançamento nos EUA (regra da Play! Pokémon,
-    em docs/regras-standard.md; ex.: Delta Reign lança em 06/11/2026 e vale em 20/11/2026). Aqui conta o dia.
+  - torneios (grandes eventos): a coleção passa a valer na SEGUNDA SEXTA-FEIRA depois do lançamento nos EUA (regra da
+    Play! Pokémon, em docs/regras-standard.md; ex.: Delta Reign lança em 06/11/2026 e vale em 20/11/2026). Aqui conta o dia;
+  - online (torneios do play.limitlesstcg.com, jogados no TCG Live): os organizadores liberam a coleção assim que ela chega
+    ao jogo (em 11/2026 vários torneios de 06/11 já se chamavam "DELTA REIGN LEGAL", e o deck mais jogado era da coleção
+    nova). A época começa no dia do lançamento nos EUA: é o dia, em UTC (a data que o Limitless dá aos torneios), em que a
+    coleção chegou ao TCG Live (17h ou 18h UTC). Torneios desse dia que começaram antes da chegada são raros e ficam na
+    época nova (D-048).
 Coleções lançadas no mesmo dia (Black Bolt e White Flare) formam uma época só.
 
 De onde vêm as coleções:
@@ -79,6 +84,14 @@ def validade_torneio(lancamento):
     return (d + timedelta(days=ate_sexta + 7)).isoformat()
 
 
+def inicio_online(lancamento):
+    """Dia em que a coleção passa a contar nos torneios online: o próprio dia do lançamento (ver o topo do arquivo)."""
+    return date.fromisoformat(lancamento).isoformat()
+
+
+INICIO = {"live": chegada_live, "torneios": validade_torneio, "online": inicio_online}
+
+
 def _da_biblioteca():
     """Coleções da biblioteca de cartas (TCGdex) que podem mudar o meta: [(id, nome, lançamento)]."""
     from . import cartas
@@ -111,13 +124,14 @@ def colecoes():
 
 def epocas(tipo="live", agora=None):
     """Épocas do meta, da mais recente para a mais antiga, só as que já começaram.
-    tipo: "live" (chegada ao TCG Live, para as suas partidas; com hora) ou "torneios" (validade em torneio; dia).
+    tipo: "live" (chegada ao TCG Live, para as suas partidas; com hora), "torneios" (validade nos grandes eventos; dia) ou
+    "online" (torneios online: o dia do lançamento).
     Cada uma: {"id", "nome", "lancamento", "de", "fim", "ate"}:
       de  = começo (incluído);  fim = começo da época seguinte (não incluído); None na época atual;
       ate = último dia da época, para mostrar (no TCG Live é o dia em que a seguinte chegou, que fica dividido).
     agora: AAAA-MM-DD[THH:MM:SS] (para testes); sem ele, o relógio do computador."""
     agora = agora or datetime.now().isoformat(timespec="seconds")
-    inicio = chegada_live if tipo == "live" else validade_torneio
+    inicio = INICIO[tipo]
     todas = sorted(({"id": c["ids"][0], "nome": c["nome"], "lancamento": c["lancamento"], "de": inicio(c["lancamento"])}
                     for c in colecoes()), key=lambda e: e["de"])
     comecadas = [e for e in todas if e["de"] <= agora]
@@ -135,7 +149,7 @@ def epocas(tipo="live", agora=None):
 def proxima(tipo="live", agora=None):
     """A próxima época, se já se sabe a data e ela ainda não começou (ex.: Delta Reign nos torneios até 20/11/2026)."""
     agora = agora or datetime.now().isoformat(timespec="seconds")
-    inicio = chegada_live if tipo == "live" else validade_torneio
+    inicio = INICIO[tipo]
     futuras = sorted((inicio(c["lancamento"]), c["nome"]) for c in colecoes() if inicio(c["lancamento"]) > agora)
     return {"nome": futuras[0][1], "de": futuras[0][0]} if futuras else None
 
