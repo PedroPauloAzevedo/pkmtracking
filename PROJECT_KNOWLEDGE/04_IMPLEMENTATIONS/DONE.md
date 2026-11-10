@@ -9,6 +9,9 @@
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
 | 2026.11.09-3 | 09/11/2026 | (ver `git log`: "v2026.11.09-3") | Tema claro ou escuro à sua escolha |
+| 2026.11.09-2 | 09/11/2026 | (ver `git log`: "v2026.11.09-2") | Cartas x matchups com colunas do mesmo tamanho |
+| 2026.11.09-1 | 09/11/2026 | (ver `git log`: "v2026.11.09-1") | Época da coleção nova nos torneios online |
+| 2026.11.07-1 | 07/11/2026 | (ver `git log`: "v2026.11.07-1") | Decisões mostra o placar sem a carta |
 | 2026.11.06-6 | 06/11/2026 | (ver `git log`: "v2026.11.06-6") | Telas ocupam a janela inteira |
 | 2026.11.06-5 | 06/11/2026 | (ver `git log`: "v2026.11.06-5") | Replay: Energias no Pokémon certo (listas de descarte e ligações ambíguas) |
 | 2026.11.06-4 | 06/11/2026 | (ver `git log`: "v2026.11.06-4") | Log original de cada partida (copiar / baixar .txt) |
@@ -37,6 +40,21 @@
   `data-tema="claro"`; botões `nav .tema`. `web/index.html`: botões e o script do `<head>`. `web/js/base.js`: `aplicarTema`.
 - `teste_telas.py`: `tema_manual` (Escuro, recarregar, Claro com o Windows escuro, Automático nos dois temas). Os 4 testes OK.
 - `nav` com `overflow-y: auto`: com a janela baixa, os botões do tema (no fim da barra) ficavam fora da tela.
+## 2026.11.09-2 — 09/11/2026 (pedido do Pedro: caixas do mesmo tamanho em Cartas x matchups)
+- `web/js/campeonatos.js` (`renderCartasMatchups`): tabela `matriz iguais` com `<colgroup>` e `min-width` pelo número de decks;
+  `web/estilo.css`: `.matriz.iguais` (`table-layout: fixed`, 80px nas 3 primeiras, cabeçalho alinhado embaixo).
+- Conferido numa cópia com os dados do Pedro (Basic Box × Meowth ex, 8 decks): colunas de deck todas com 115px a 1600px de janela.
+## 2026.11.09-1 — 09/11/2026 (pedido do Pedro: decks novos antes dos grandes eventos; D-048)
+- `tracker/colecoes.py`: tipo de época `online` (`inicio_online` = dia do lançamento) e `INICIO` com os três tipos.
+- `analises.torneios_da_fonte(..., epoca=)` e `app._lista_torneios` (`?epoca=`): cada fonte com o seu começo; `/api/epocas` com `online`.
+- `web/js/base.js`: `tipoMeta()`, `qsTorneios` manda `?epoca=`, seletor e aviso por fonte; `campeonatos.js`: linha da época nos
+  gráficos pela fonte.
+- `teste_tracker.py` (seção 6): épocas online e `?epoca=` com o torneio sintético como grande evento e como online. Os 4 testes OK;
+  conferido na tela numa cópia com os dados do Pedro e 7 torneios online de 05–08/11 (`EVIDENCE.md`).
+## 2026.11.07-1 — 07/11/2026 (dúvida do Pedro: Dreepy com −27 p.p.)
+- `analises.decisoes`: cada carta das tabelas de abertura e de cartas jogadas ganha `sem_v` (vitórias sem a carta).
+- `web/js/decisoes.js`: "sem ela: V–D" ao lado da Diferença (tabela compacta por ordem) e no lugar de "N partidas" em "Quando não
+  jogou". O caso: Dreepy 27–10 com ele e 2–0 sem ele dava −27 p.p., que parecia "jogar Dreepy atrapalha".
 
 ## 2026.11.06-6 — 06/11/2026 (pedido do Pedro: espaço vazio na lateral)
 - `web/estilo.css`: `main` com `max-width: 2000px`; `.tabela.alta`, `.rp-log` e a coluna do replay acompanham a janela.

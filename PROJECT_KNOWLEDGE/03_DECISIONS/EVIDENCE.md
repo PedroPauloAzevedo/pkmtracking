@@ -1,6 +1,6 @@
 # Evidências: medições que sustentam as decisões
 
-> Atualizado em 06/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
+> Atualizado em 09/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
 > Resultados completos dos experimentos 1 a 9 e da análise de ACE SPEC: `MISSION_REPORT_2026-11-02.md` (não repetidos aqui).
 
 ## Experimentos em `testes/experimentos/` (rodar numa cópia; os que gravam no banco, só com dados de teste)
@@ -170,3 +170,10 @@ Resultado em `.claude/skills/statistical-analyst/experiments/resultados/a12_*.js
 Os experimentos e1–e10 estão no repositório. Os scripts das medições do replay, das mãos e da simulação do modo automático foram
 escritos durante as sessões e ficaram **fora do repositório** (no computador do Pedro; ver `CLAUDE.local.md`). O método está descrito
 acima para poder refazê-los; trazê-los para `testes/experimentos/` está no `BACKLOG.md`.
+
+## Torneios online na chegada da Delta Reign (09/11/2026, D-048)
+API de play.limitlesstcg.com, torneios Standard de 05 a 09/11/2026. Maior: 07/11, 494 jogadores, deck mais jogado Mega Rayquaza (70),
+Talonflame Dusknoir com 10; vários com "DELTA REIGN LEGAL" no nome desde 06/11. Numa cópia com os dados do Pedro, os 7 torneios com
+100 ou mais jogadores de 05 a 08/11 importados: com a época Delta Reign e a fonte Todos entram os 5 de 06 a 08/11 (987 jogadores,
+792 com deck; Mega Rayquaza 13,0% do campo, Talonflame Dusknoir 19 jogadores); os 2 de 05/11 (01h30 e 17h10 UTC, antes da chegada às
+18h UTC) ficam na 30th Celebration; nos grandes eventos a Delta Reign ainda não tem torneio.

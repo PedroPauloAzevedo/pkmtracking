@@ -84,16 +84,22 @@ function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', alt
 try { S.fonte = localStorage.getItem('fonte') || 'grandes'; } catch (e) { S.fonte = 'grandes'; }
 const FONTES = [['grandes', 'Grandes eventos'], ['online', 'Torneios online'], ['todos', 'Todos']];
 const ehStandard = t => !t.formato || t.formato === 'standard';
-const naEpocaMeta = t => { const e = epocaEscolhida('torneios'); const d = (t.data || '').slice(0, 10); return !e || (d >= e.de && (!e.fim || d < e.fim)); };
+// Época nas telas de Meta: nos grandes eventos a coleção vale da segunda sexta-feira depois do lançamento; nos torneios
+// online, desde o lançamento (D-048). A lista de épocas do seletor segue a fonte ("Todos" usa a dos online, que começa antes).
+const tipoMeta = () => S.fonte === 'grandes' ? 'torneios' : 'online';
+const tipoDoTorneio = t => t.fonte === 'online' ? 'online' : 'torneios';
+const epocaMetaDe = tipo => S.epocaMeta ? (S.epocas?.[tipo] || []).find(e => e.id === S.epocaMeta) || null : null;
+const naEpocaMeta = t => { if (!epocaEscolhida(tipoMeta())) return true; const e = epocaMetaDe(tipoDoTorneio(t)); const d = (t.data || '').slice(0, 10); return !!e && d >= e.de && (!e.fim || d < e.fim); };
 const daFonte = t => ehStandard(t) && (S.fonte === 'todos' || (S.fonte === 'online') === (t.fonte === 'online')) && naEpocaMeta(t);
 function seletorTorneios() {
   if (!S.torneios || !S.torneios.length) return `<div class="aviso">Nenhum torneio importado ainda. Vá em <a href="#torneios">Importar torneios</a>.</div>`;
-  const lista = S.torneios.filter(daFonte), prox = S.epocas?.proxima?.torneios;
+  const lista = S.torneios.filter(daFonte), prox = S.fonte === 'online' ? null : S.epocas?.proxima?.torneios;
+  const jaOnline = prox && (S.epocas?.online || []).find(e => e.nome === prox.nome);
   const fontes = `<div class="row"><span class="label">Fonte</span><div class="chips">${FONTES.map(([k, n]) =>
     `<button class="chip ch-fonte" data-fonte="${k}" aria-pressed="${S.fonte === k}">${n}</button>`).join('')}</div>
-    <span class="grow"></span>${seletorEpoca('torneios')}</div>
-    ${prox ? `<p class="muted" style="font-size:.85rem;margin:0">A coleção <b>${esc(prox.nome)}</b> passa a valer nos torneios em ${dataCurta(prox.de)}: até lá, os torneios ainda são da época anterior.</p>` : ''}`;
-  if (!lista.length) return fontes + `<div class="aviso">Nenhum torneio desta fonte${epocaEscolhida('torneios') ? ' nesta época' : ' ainda'}.${S.fonte !== 'grandes' ? ' Os torneios online chegam pela atualização automática em <a href="#torneios">Torneios</a>.' : ''}</div>`;
+    <span class="grow"></span>${seletorEpoca(tipoMeta())}</div>
+    ${prox ? `<p class="muted" style="font-size:.85rem;margin:0">A coleção <b>${esc(prox.nome)}</b> passa a valer nos grandes eventos em ${dataCurta(prox.de)}: até lá, eles ainda são da época anterior.${jaOnline ? ` Os torneios online já a usam desde ${dataCurta(jaOnline.de)} (fonte <b>Torneios online</b>).` : ''}</p>` : ''}`;
+  if (!lista.length) return fontes + `<div class="aviso">Nenhum torneio desta fonte${epocaEscolhida(tipoMeta()) ? ' nesta época' : ' ainda'}.${S.fonte !== 'grandes' ? ' Os torneios online chegam pela atualização automática em <a href="#torneios">Torneios</a>.' : ''}</div>`;
   if (S.fonte !== 'grandes') {  // dezenas de torneios por semana: mostra um resumo em vez de um botão para cada
     const datas = lista.map(t => t.data).filter(Boolean).sort();
     const jog = lista.reduce((a, t) => a + (t.jogadores || 0), 0);
@@ -103,7 +109,7 @@ function seletorTorneios() {
     <div class="chips">${lista.map(t => `<button class="chip ch-torneio" data-id="${t.id}" aria-pressed="${!S.selTorneios.length || S.selTorneios.includes(t.id)}">${esc(t.nome)}</button>`).join('')}</div></div>`;
 }
 function ligarSeletor(recarregar) {
-  ligarSeletorEpoca('torneios', () => { S.selTorneios = []; recarregar(); });
+  ligarSeletorEpoca(tipoMeta(), () => { S.selTorneios = []; recarregar(); });
   document.querySelectorAll('.ch-fonte').forEach(b => b.onclick = () => {
     S.fonte = b.dataset.fonte; S.selTorneios = [];
     try { localStorage.setItem('fonte', S.fonte); } catch (e) {}
@@ -117,16 +123,17 @@ function ligarSeletor(recarregar) {
     recarregar();
   });
 }
-const qsTorneios = () => {
-  const { de, ate } = comEpoca('', '', 'torneios');
+const qsTorneios = () => {  // a época vai pelo id: o servidor aplica o começo de cada fonte (D-048)
+  const e = epocaEscolhida(tipoMeta());
   return `fonte=${S.fonte}` + (S.fonte === 'grandes' && S.selTorneios.length ? `&torneios=${S.selTorneios.join(',')}` : '')
-    + (de ? `&de=${de}` : '') + (ate ? `&ate=${ate}` : '');
+    + (e ? `&epoca=${encodeURIComponent(e.id)}` : '');
 };
 async function carregarTorneios() { await carregarEpocas(); S.torneios = await api('/api/torneios'); }
 
 /* ---------------- épocas do meta: uma por coleção (tracker/colecoes.py) ---------------- */
 // Cada coleção nova pode mudar o meta. "live" = suas partidas (a coleção chega ao TCG Live na véspera do lançamento,
-// às 10h do Pacífico: aqui a hora conta); "torneios" = validade em torneio (segunda sexta-feira depois do lançamento).
+// às 10h do Pacífico: aqui a hora conta); "torneios" = validade nos grandes eventos (segunda sexta-feira depois do
+// lançamento); "online" = torneios online (desde o lançamento, D-048).
 // Cada época: de (incluído), fim (começo da seguinte, não incluído; null na atual) e ate (último dia, para mostrar).
 // S.epoca (Minhas partidas) e S.epocaMeta (Meta e torneios) guardam a época escolhida ('' = todas) no navegador.
 try { S.epoca = localStorage.getItem('epoca') || ''; S.epocaMeta = localStorage.getItem('epoca-meta') || ''; } catch (e) { S.epoca = ''; S.epocaMeta = ''; }
@@ -150,7 +157,8 @@ function seletorEpoca(tipo) {
   const eps = epocasVisiveis(tipo); if (!eps.length) return '';
   const sel = epocaEscolhida(tipo)?.id || '';
   const dica = tipo === 'live' ? 'Cada coleção nova pode mudar o meta. A época de uma coleção vai da chegada dela ao TCG Live (na véspera do lançamento, às 10h do horário do Pacífico: 14h ou 15h em Brasília) até a chegada da seguinte.'
-    : 'Cada coleção nova pode mudar o meta. Nos torneios, uma coleção vale a partir da segunda sexta-feira depois do lançamento.';
+    : tipo === 'online' ? 'Cada coleção nova pode mudar o meta. Os torneios online usam a coleção desde o lançamento (ela já está no TCG Live); os grandes eventos, a partir da segunda sexta-feira depois do lançamento. Com a fonte Todos, cada torneio segue a regra da sua fonte.'
+    : 'Cada coleção nova pode mudar o meta. Nos grandes eventos, uma coleção vale a partir da segunda sexta-feira depois do lançamento.';
   return `<span class="par-epoca"><label class="label" for="sel-epoca" title="${dica}">Época</label><select id="sel-epoca" title="${dica}"><option value="">Todas as épocas</option>${eps.map(e => `<option value="${esc(e.id)}" ${e.id === sel ? 'selected' : ''}>${esc(rotuloEpoca(e))}</option>`).join('')}</select></span>`;
 }
 function ligarSeletorEpoca(tipo, aoMudar) {
