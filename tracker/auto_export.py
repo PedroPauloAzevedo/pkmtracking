@@ -15,6 +15,10 @@ Para não perder partidas (ideias do Full Bench):
   - se o log não chegar, tenta mais uma vez;
   - se ainda assim não chegar, avisa (notificação do Windows) e conta como "perdida".
 
+Para ficar leve (ideia do Full Bench, desde 2026.11.10-4): no Windows, com o jogo fechado ou minimizado, ele não
+fotografa a tela, só confere a cada 5 segundos se o jogo abriu (estado_do_jogo). E, quando pede para você copiar o log
+à mão, libera o Continue assim que o log chega, sem esperar os 20 segundos.
+
 Ele NÃO lê a memória do jogo, não mexe nos arquivos do jogo e não joga por você:
 só reconhece dois botões e clica neles depois que a partida acabou. Mesmo assim,
 é automação de cliques no cliente do jogo; use por sua conta e risco.
@@ -116,6 +120,20 @@ def tamanho_jogo():
     if not ctypes.windll.user32.GetClientRect(h, ctypes.byref(r)) or r.bottom < 100:
         return None  # minimizada
     return r.right, r.bottom
+
+
+def estado_do_jogo():
+    """"fechado", "minimizado" ou "aberto". Fora do Windows não dá para saber: "aberto" (olha a tela como antes)."""
+    if sys.platform != "win32":
+        return "aberto"
+    h = _janela_do_jogo()
+    if not h:
+        return "fechado"
+    import ctypes
+    return "minimizado" if ctypes.windll.user32.IsIconic(h) else "aberto"
+
+
+ESPERA_SEM_JOGO = 5.0  # segundos entre uma conferência e outra com o jogo fechado ou minimizado (sem foto da tela)
 
 
 def jogo_na_frente():
@@ -320,6 +338,14 @@ class AutoExport:
                 self.status = "desligado"
                 return
             conf = float(cfg.get("confianca_imagem", 0.85))
+            jogo = estado_do_jogo()
+            if jogo != "aberto":  # sem jogo na tela não há partida para capturar: não fotografa a tela (leve)
+                self.status = "esperando o jogo abrir" if jogo == "fechado" else "jogo minimizado"
+                tratada = False
+                self._parar.wait(ESPERA_SEM_JOGO)
+                continue
+            if self.status in ("esperando o jogo abrir", "jogo minimizado"):
+                self.status = "vigiando a tela"
             try:
                 tela = self._tela(pyautogui, np, cv2)
                 pequena = cv2.resize(tela, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
@@ -391,7 +417,14 @@ class AutoExport:
                               "abra o Battle Log e clique no botão de exportar.")
                 if capa:  # segura o Continue mais um pouco para dar tempo de copiar à mão
                     capa.texto("Copie o log antes de continuar (clique aqui para liberar)")
-                    capa.esperar_fechar(20)
+                    fim = time.time() + 20
+                    while time.time() < fim and not capa.fechada():
+                        if coletor.visto_em > antes:  # você copiou à mão: o log chegou, libera o Continue na hora
+                            self.cliques += 1
+                            self.perdidas -= 1
+                            self.erro = ""
+                            break
+                        time.sleep(0.5)
         finally:
             if capa:
                 capa.fechar()

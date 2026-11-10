@@ -350,4 +350,6 @@ for d in m["divisao"]:
     assert d["taxa"] == round(100 * d["v"] / d["n"], 1), "a taxa não muda com a correção"
     assert d["ic_baixo"] <= ingenua[0] and d["ic_alto"] >= ingenua[1], (d, ingenua)   # faixa nunca mais estreita
 print("D-040/D-041/D-042: ok; ICC do meta de teste", m["icc"])
+from tracker import auto_export  # modo automático leve: sem o jogo aberto, não fotografa a tela (2026.11.10-4)
+assert auto_export.estado_do_jogo() in ("fechado", "minimizado", "aberto")
 print("OK")
