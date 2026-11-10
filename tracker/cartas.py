@@ -75,6 +75,24 @@ _falhas = {}
 
 # ------------------------------------------------------------------ utilidades
 
+def id_do_codigo(codigo, ind=None):
+    """Código da carta no log do TCG Live -> id da biblioteca (TCGdex), ou None se a coleção não está nela.
+    "sv6_200" -> "sv06-200"; "me2-5_158" -> "me02.5-158"; "sv8-5_72_ph" -> "sv08.5-072" (o sufixo é o acabamento da arte)."""
+    ind = ind or indice()
+    m = re.match(r"^([a-z]+)(\d*)(?:-(\d+)([a-z]?))?_(\d+)([a-z]?)(?:_[a-z]+)*$", (codigo or "").lower())
+    if not m:
+        return None
+    letras, num, sub, sub_letra, numero, letra = m.groups()
+    colecoes = [letras + num.zfill(2) if num else letras, letras + num if num else letras]
+    if sub:
+        colecoes = [c + "." + sub + sub_letra for c in colecoes]
+    for c in dict.fromkeys(colecoes):
+        for n in dict.fromkeys([numero.zfill(3) + letra, numero + letra, numero.zfill(2) + letra]):
+            if f"{c}-{n}" in ind["cartas"]:
+                return f"{c}-{n}"
+    return None
+
+
 def normalizar(nome):
     nome = (nome or "").replace("’", "'").strip()
     nome = unicodedata.normalize("NFKD", nome).encode("ascii", "ignore").decode()
