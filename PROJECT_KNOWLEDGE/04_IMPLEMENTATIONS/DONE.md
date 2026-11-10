@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.10-4 | 10/11/2026 | (ver `git log`: "v2026.11.10-4") | Modo automático mais leve |
 | 2026.11.10-3 | 10/11/2026 | (ver `git log`: "v2026.11.10-3") | Coleção nova na biblioteca no mesmo dia |
 | 2026.11.10-2 | 10/11/2026 | (ver `git log`: "v2026.11.10-2") | Deck novo ganha nome provisório |
 | 2026.11.10-1 | 10/11/2026 | (ver `git log`: "v2026.11.10-1") | Logs com o código das cartas |
@@ -39,6 +40,10 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.10-4 — 10/11/2026 (R4 da pesquisa de outros apps)
+- `tracker/auto_export.py`: `estado_do_jogo`, `ESPERA_SEM_JOGO`; o laço não fotografa a tela com o jogo fechado ou minimizado; a
+  espera de 20 s com o Continue coberto termina quando o log chega. `tracker/cobertura.py`: `fechada()`.
+- `teste_tracker.py`: `estado_do_jogo` responde um dos três estados.
 ## 2026.11.10-3 — 10/11/2026 (R3 da pesquisa de outros apps; D-051)
 - `tracker/cartas.py`: `MALIE`, `id_malie`, `set_do_malie`, `_completar_pelo_malie`; `atualizar` troca o arquivo do malie.io pelo do
   TCGdex quando ele tiver a coleção com cartas.

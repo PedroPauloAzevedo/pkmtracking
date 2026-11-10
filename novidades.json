@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.10-4",
+    "data": "2026-11-10",
+    "titulo": "Modo automático mais leve",
+    "mudancas": [
+      "Com o TCG Live fechado ou minimizado, o modo automático não fica mais olhando a tela a cada 2 segundos: só confere a cada 5 segundos se o jogo abriu. O computador trabalha menos quando você não está jogando. Na barra da esquerda aparece \"esperando o jogo abrir\".",
+      "Quando ele não consegue copiar o log sozinho e pede para você copiar à mão, o botão Continue é liberado assim que o log chega, sem esperar os 20 segundos."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-4\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer."
+    ]
+  },
+  {
     "versao": "2026.11.10-3",
     "data": "2026-11-10",
     "titulo": "Coleção nova na biblioteca no mesmo dia",

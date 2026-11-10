@@ -156,6 +156,10 @@ class Cobertura:
         if self._hwnd and not self._fechada.is_set():
             _u.PostMessageW(self._hwnd, WM_CLOSE, 0, 0)
 
+    def fechada(self):
+        """A pessoa já clicou no quadrinho (ou ele já foi fechado)?"""
+        return self._fechada.is_set()
+
     def esperar_fechar(self, segundos):
         """Espera a pessoa clicar no quadrinho ou o tempo acabar."""
         if not self._fechada.wait(segundos):
