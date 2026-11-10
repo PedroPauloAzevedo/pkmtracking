@@ -259,7 +259,7 @@ async function renderCartasMatchups() {
     ${carta ? `<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:16px"><img src="${imgId(carta.carta_id, carta.carta)}" alt="" style="width:110px;border-radius:7px;flex:none">
       <section class="panel grow" style="min-width:0">
       ${r && r.linhas.length ? `<p class="muted">${r.listas} listas de ${esc(r.nome)} com resultado. Células apagadas têm menos de ${S.minMu ?? 5} partidas.</p>
-      <div class="tabela"><table class="matriz"><thead><tr><th>Cópias</th><th>Listas</th><th>Geral</th>${r.colunas.map(c => `<th>${icones(c.arquetipo)}<br>${esc(c.nome)}</th>`).join('')}</tr></thead>
+      <div class="tabela"><table class="matriz iguais" style="min-width:${3 * 80 + r.colunas.length * 112}px"><colgroup><col class="fixa"><col class="fixa"><col class="fixa">${r.colunas.map(() => '<col>').join('')}</colgroup><thead><tr><th>Cópias</th><th>Listas</th><th>Geral</th>${r.colunas.map(c => `<th>${icones(c.arquetipo)}<br>${esc(c.nome)}</th>`).join('')}</tr></thead>
       <tbody>${r.linhas.map(l => `<tr><td class="cab">${l.copias}×</td><td>${l.listas}</td><td style="${l.geral.n ? corTaxa(l.geral.taxa) : ''}">${l.geral.n ? pct(l.geral.taxa) : '–'}<small>${l.geral.n || ''}</small></td>
         ${l.celulas.map((c, i) => `<td class="${c.pouco ? 'pouco' : ''}" style="${c.n ? corTaxa(c.taxa) : ''}" title="${l.copias}× contra ${esc(r.colunas[i].nome)}: ${c.v}-${c.d}-${c.e}">${c.n ? pct(c.taxa) : '–'}<small>${c.n || ''}</small></td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : '<p class="muted">Sem partidas suficientes para esta combinação.</p>'}
