@@ -1,6 +1,6 @@
 # Backlog: ideias e pendências
 
-> Atualizado em 06/11/2026. Em ordem de prioridade dentro de cada grupo. Ao começar um item, mova para `IN_PROGRESS.md`;
+> Atualizado em 09/11/2026. Em ordem de prioridade dentro de cada grupo. Ao começar um item, mova para `IN_PROGRESS.md`;
 > ao terminar, registre em `DONE.md`. Sempre pergunte ao Pedro antes de começar algo grande.
 
 ## Prioridade alta
@@ -49,6 +49,17 @@ próprio, com o código do Mac dentro de `if sys.platform == ...` e os 4 testes 
 - **Testes automáticos no GitHub (Actions) em Windows e Mac** a cada PR: `teste_tracker`, `teste_seguranca` e `teste_replay` não
   precisam de dados pessoais; `teste_telas` precisa de navegador. Repositório público = minutos gratuitos. Pedir autorização.
 - **Teste que confere `API_CONTRACTS.md`** contra as rotas do `app.py` (falha se surgir rota sem documentação).
+
+## Ideias da comparação com o Pokemon Champions Battle Logger (09/11/2026; o app dele é de código fechado: só ideias)
+Feitas: "Hoje" no Início (5) e tema escolhido à mão (9), na 2026.11.09-4. Esperam o Pedro:
+- **Ficha do adversário** (1) no detalhe da partida e no replay: seu placar contra o deck, o matchup nos torneios (melhor de 3), as
+  cartas típicas marcando as vistas e a lista de torneio mais parecida com link para o Limitless. Também mostra quando o deck foi mal
+  identificado (cartas vistas que não estão nas listas daquele deck).
+- **Consulta rápida "contra quem estou jogando?"** (2): digitar o Pokémon visto e ver deck provável, cartas a esperar e matchup.
+- **"Copiar para IA"** (3) no detalhe da partida (texto pronto para colar; a versão com chave de API manda dados para fora: D-003).
+- **Sequências e horário** (6): taxa depois de derrotas seguidas, por período e por posição na sessão, com faixa de 95% e trava de
+  amostra (com 52 partidas nada se conclui); corrigir para várias comparações (Holm).
+- **Época por banimento ou rotação** (7), **"Relatar problema"** (8) e atualização assinada (item 3 acima).
 
 ## Em estudo, sem decisão
 - **Servidor central para análises coletivas** (o grupo enxergar as análises de todos). Estudado numa sessão de 02–03/11/2026 que foi

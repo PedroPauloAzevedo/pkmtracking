@@ -21,7 +21,9 @@
    EUA) numa versão nova, se ela ainda não estiver no TCGdex. Conferir se o TCG Live continuou liberando na véspera, às 10h do
    Pacífico (D-036). Nos torneios online a época começa no lançamento (D-048): conferir no Limitless se os torneios do dia do
    lançamento já usam a coleção.
-6. **Perguntar ao Pedro se ele guardou o texto completo do estudo do servidor central** e, se sim, registrar em `BACKLOG.md`.
-7. **Trazer para `testes/experimentos/` os scripts de medição do replay, das mãos, dos prêmios, dos descartes e do Risky Ruins**
+6. **Sugestões da comparação com o Pokemon Champions Battle Logger (09/11/2026)** esperam a escolha do Pedro: ficha do adversário
+   (sugestão 1) e sequências/horário (6) já têm maquete (mostrada ao Pedro em 09/11); lista em `../04_IMPLEMENTATIONS/BACKLOG.md`.
+7. **Perguntar ao Pedro se ele guardou o texto completo do estudo do servidor central** e, se sim, registrar em `BACKLOG.md`.
+8. **Trazer para `testes/experimentos/` os scripts de medição do replay, das mãos, dos prêmios, dos descartes e do Risky Ruins**
    (hoje fora do repositório), para que qualquer sessão consiga repetir as medições de `EVIDENCE.md`. É código de teste: pedir
    autorização antes.
