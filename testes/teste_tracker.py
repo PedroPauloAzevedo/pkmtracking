@@ -225,6 +225,19 @@ try:
     print("biblioteca sem falha:", cartas.progresso["etapa"])
 finally:
     cartas.requests.Session, _time.sleep = sessao_real, dormir_real
+# segunda fonte (malie.io, D-051): chave da coleção e conversão para o formato do TCGdex (só a impressão normal entra)
+assert [cartas.id_malie(x) for x in ("me06", "me02.5", "sv08.5", "sv10.5b", "30th")] == ["me6", "me2-5", "sv8-5", "sv10-5b", None]
+m_cartas = [{"name": "Bubbly {W} Energy", "card_type": "ENERGY", "subtype": "SPECIAL", "collector_number": {"numeric": 132},
+             "rarity": {"designation": "UNCOMMON"}, "ext": {"tcgl": {"longFormID": "Bubbly_me6_132_std_Uncommon"}}},
+            {"name": "Bubbly {W} Energy", "card_type": "ENERGY", "subtype": "SPECIAL", "collector_number": {"numeric": 132},
+             "ext": {"tcgl": {"longFormID": "Bubbly_me6_132_ph_Uncommon_Reverse"}}},
+            {"name": "Heracross", "card_type": "POKEMON", "hp": 130, "stage": "BASIC", "regulation_mark": "J",
+             "collector_number": {"numeric": 1}, "rarity": {"designation": "COMMON"}, "ext": {"tcgl": {"longFormID": "H_me6_1_std_C"}},
+             "text": [{"kind": "ATTACK", "name": "Spike Draw"}, {"kind": "ABILITY", "name": "Horn"}]}]
+conv = cartas.set_do_malie(m_cartas, "me06", "Delta Reign", "2026-11-06", "DLR")
+assert [c["id"] for c in conv["cards"]] == ["me06-132", "me06-001"] and conv["set"]["fonte"] == "malie", conv
+assert conv["cards"][0]["name"] == "Bubbly Water Energy" and conv["cards"][0]["energyType"] == "Special"
+assert cartas.chave_funcional(conv["cards"][1]) == "heracross|130|horn|spike draw" and conv["cards"][1]["regulationMark"] == "J"
 
 # 6) épocas do meta (uma por coleção): no TCG Live a coleção chega na véspera do lançamento nas lojas dos EUA, às 10h
 #    do Pacífico (a hora conta); nos torneios ela vale na segunda sexta-feira depois do lançamento (docs/regras-standard.md).

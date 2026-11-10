@@ -177,3 +177,11 @@ Talonflame Dusknoir com 10; vários com "DELTA REIGN LEGAL" no nome desde 06/11.
 100 ou mais jogadores de 05 a 08/11 importados: com a época Delta Reign e a fonte Todos entram os 5 de 06 a 08/11 (987 jogadores,
 792 com deck; Mega Rayquaza 13,0% do campo, Talonflame Dusknoir 19 jogadores); os 2 de 05/11 (01h30 e 17h10 UTC, antes da chegada às
 18h UTC) ficam na 30th Celebration; nos grandes eventos a Delta Reign ainda não tem torneio.
+
+## Delta Reign montada pelo malie.io × TCGdex (10/11/2026, D-051)
+Numa cópia com a biblioteca do Pedro, o arquivo da Delta Reign do TCGdex foi apagado e montado de novo pelo malie.io: 141 cartas nas
+duas fontes, os mesmos 141 ids; 138 com o mesmo nome (as 3 diferentes eram Energias escritas com símbolo, `Bubbly {W} Energy`,
+corrigido na conversão); 136 com a mesma chave funcional (Azurill: o TCGdex chama "Bouncy-Bounce Charge" de habilidade, o malie.io
+de ataque). O índice monta com as 5.137 cartas. Observação para D-036: o malie.io informa a chegada da Delta Reign ao TCG Live em
+05/11/2026 às 17:00 UTC; `colecoes.chegada_live` usa 18:00 UTC (10h do Pacífico no horário de inverno). Não mudado: falta conferir
+com mais coleções.

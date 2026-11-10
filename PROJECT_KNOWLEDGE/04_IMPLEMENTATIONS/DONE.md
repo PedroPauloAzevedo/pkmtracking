@@ -1,6 +1,6 @@
 # Concluído: histórico técnico por versão
 
-> Atualizado em 09/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
+> Atualizado em 10/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
 > `git log`. Aqui fica o que **não** está em nenhum dos dois: o porquê técnico, nomes no código e o que foi testado.
 > Mais recente primeiro. Versões publicadas na `main` de `PedroPauloAzevedo/pkmtracking`.
 
@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.10-3 | 10/11/2026 | (ver `git log`: "v2026.11.10-3") | Coleção nova na biblioteca no mesmo dia |
 | 2026.11.09-4 | 09/11/2026 | (ver `git log`: "v2026.11.09-4") | Início novo: Hoje, tema e dados coletados |
 | 2026.11.09-3 | 09/11/2026 | (ver `git log`: "v2026.11.09-3") | Tema claro ou escuro à sua escolha |
 | 2026.11.09-2 | 09/11/2026 | (ver `git log`: "v2026.11.09-2") | Cartas x matchups com colunas do mesmo tamanho |
@@ -35,6 +36,11 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.10-3 — 10/11/2026 (R3 da pesquisa de outros apps; D-051)
+- `tracker/cartas.py`: `MALIE`, `id_malie`, `set_do_malie`, `_completar_pelo_malie`; `atualizar` troca o arquivo do malie.io pelo do
+  TCGdex quando ele tiver a coleção com cartas.
+- `teste_tracker.py`: conversão e chave da coleção. Medição (Delta Reign pelas duas fontes) em `EVIDENCE.md`.
 
 ## 2026.11.09-4 — 09/11/2026 (pedido do Pedro: reformular o Início com a sugestão 5, o tema e dados gerais)
 - `web/js/partidas.js`: `contasHoje`, `painelHoje`, `painelDados`; `renderPainel` com tema no topo, Hoje, Geral, últimas partidas
