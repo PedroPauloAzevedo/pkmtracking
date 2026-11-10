@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 09/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 10/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -176,6 +176,12 @@
   data em UTC e a coleção chega ao jogo às 17h ou 18h UTC da véspera (D-036): os torneios da véspera, quase todos antes da chegada,
   ficam na época anterior; os poucos do dia do lançamento que começaram antes da chegada (nenhum na Delta Reign) ficariam na nova.
   Os grandes eventos continuam com a validade em torneio. Código: `colecoes.inicio_online`, `analises.torneios_da_fonte(epoca=)`.
+- **D-050 · Deck sem listas de torneio: nome provisório pelo Pokémon que mais causou dano** (10/11/2026, v2026.11.10-2; R2 da
+  pesquisa de outros apps, ideia do Full Bench). *Por quê:* o NB2 só escolhe entre decks com listas importadas; no começo de uma
+  coleção ele chama um deck novo de outro conhecido (Talonflame Dusknoir virou "Tera Box" em 09/11). Regra escolhida pela medição
+  (`EVIDENCE.md`): só quando o atacante principal não está em nenhuma lista (5% ou mais); critérios mais largos (atacante fora da
+  lista do deck escolhido; vários Pokémon vistos fora dela) disparavam em 10 a 22 partidas do Pedro, quase sempre por engano (cartas
+  de suporte como Fan Rotom e cartas do adversário nas "vistas"). Sempre marcado "incerto" (D-042).
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,

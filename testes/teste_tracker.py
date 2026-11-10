@@ -350,4 +350,10 @@ for d in m["divisao"]:
     assert d["taxa"] == round(100 * d["v"] / d["n"], 1), "a taxa não muda com a correção"
     assert d["ic_baixo"] <= ingenua[0] and d["ic_alto"] >= ingenua[1], (d, ingenua)   # faixa nunca mais estreita
 print("D-040/D-041/D-042: ok; ICC do meta de teste", m["icc"])
+# D-050: deck cujo atacante principal não está em nenhuma lista de torneio ganha nome provisório (esse Pokémon) e fica "incerto"
+r_nova = {"deck_palpite": {"Bia": "Pokémon Inventado ex"}, "vistas": {"Bia": {"Pokémon Inventado ex": 3, "Rare Candy": 1}}}
+d = decks.palpite_deck_detalhe(r_nova, "Bia")
+assert d == {"deck": "Pokémon Inventado ex", "confianca": None, "metodo": "provisorio"} and decks.incerto(d), d
+carta_comum = max(next(iter(decks._assinaturas()[0].values())).items(), key=lambda kv: kv[1])[0]  # carta comum nas listas
+assert not decks.carta_sem_listas(carta_comum) and decks.palpite_deck_detalhe({"deck_palpite": {"Bia": carta_comum}, "vistas": {}}, "Bia")["metodo"] != "provisorio"
 print("OK")

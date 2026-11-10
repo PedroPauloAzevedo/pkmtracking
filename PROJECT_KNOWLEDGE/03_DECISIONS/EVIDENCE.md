@@ -177,3 +177,10 @@ Talonflame Dusknoir com 10; vários com "DELTA REIGN LEGAL" no nome desde 06/11.
 100 ou mais jogadores de 05 a 08/11 importados: com a época Delta Reign e a fonte Todos entram os 5 de 06 a 08/11 (987 jogadores,
 792 com deck; Mega Rayquaza 13,0% do campo, Talonflame Dusknoir 19 jogadores); os 2 de 05/11 (01h30 e 17h10 UTC, antes da chegada às
 18h UTC) ficam na 30th Celebration; nos grandes eventos a Delta Reign ainda não tem torneio.
+
+## Nome provisório para deck sem listas (10/11/2026, D-050)
+Banco do Pedro de 10/11 (cópia, 292 lados de partida). Três critérios comparados: (a) atacante principal em menos de 5% das listas
+do deck que o NB2 escolheu: dispara em 22 lados, a maioria por engano (Fan Rotom, Dipplin, Solrock como "atacante"); (b) 3 ou mais
+Pokémon vistos fora das listas do deck escolhido: 10 lados, vários por cartas do adversário contadas nas "vistas"; (c) atacante
+principal fora de todas as listas: 1 lado (Kommo-o, que o NB2 chamava de Mega Golisopod com confiança 0,18). Escolhido (c). A
+partida de 09/11 (Talonflame Dusknoir) já é identificada certo nesse banco: os torneios online da Delta Reign trouxeram as listas.

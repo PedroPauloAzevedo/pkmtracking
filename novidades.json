@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.10-2",
+    "data": "2026-11-10",
+    "titulo": "Deck novo ganha nome provisório",
+    "mudancas": [
+      "Quando o adversário ataca com um Pokémon que ainda não aparece em nenhuma lista de torneio importada (por exemplo, no começo de uma coleção nova), o deck dele recebe o nome desse Pokémon, com a marca \"incerto\", em vez de ser chamado de um deck conhecido que não tem nada a ver. Quando as listas chegarem, o programa passa a usar o nome do Limitless sozinho."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-2\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer."
+    ]
+  },
+  {
     "versao": "2026.11.09-4",
     "data": "2026-11-09",
     "titulo": "Início novo: Hoje, tema e dados coletados",
