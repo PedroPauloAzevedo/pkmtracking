@@ -1,6 +1,6 @@
 # Evidências: medições que sustentam as decisões
 
-> Atualizado em 09/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
+> Atualizado em 10/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
 > Resultados completos dos experimentos 1 a 9 e da análise de ACE SPEC: `MISSION_REPORT_2026-11-02.md` (não repetidos aqui).
 
 ## Experimentos em `testes/experimentos/` (rodar numa cópia; os que gravam no banco, só com dados de teste)
@@ -184,3 +184,8 @@ do deck que o NB2 escolheu: dispara em 22 lados, a maioria por engano (Fan Rotom
 Pokémon vistos fora das listas do deck escolhido: 10 lados, vários por cartas do adversário contadas nas "vistas"; (c) atacante
 principal fora de todas as listas: 1 lado (Kommo-o, que o NB2 chamava de Mega Golisopod com confiança 0,18). Escolhido (c). A
 partida de 09/11 (Talonflame Dusknoir) já é identificada certo nesse banco: os torneios online da Delta Reign trouxeram as listas.
+## Códigos das cartas no log (10/11/2026, D-049)
+Leitor de antes × de depois nas 137 partidas da cópia com os dados do Pedro (logs sem código): 0 leituras diferentes (script
+`cmp_leitor.py` fora do repositório, comparando `ler_partida` campo a campo, sem `resumo.codigos`). Log público com códigos
+(Training Court, 19 turnos): os nomes saem limpos; 50 de 61 códigos acham a carta na biblioteca (os outros são reimpressões de
+coleções antigas, `sm`/`swsh`, que seguem pelo nome); o replay monta os 423 quadros e `resolver_versoes` usa os códigos.

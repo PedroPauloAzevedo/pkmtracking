@@ -669,9 +669,18 @@ def resolver_versoes(rep, partida, eu):
       2. a versão que está na sua lista de "Meus decks" ligada à partida;
       3. a versão mais usada nas listas dos torneios para o deck do adversário (ou no geral);
       4. a versão mais recente.
+    Antes de tudo: se o log traz o código da carta ("(sv6_200) Dragapult ex"; leitor.CODIGO_CARTA), vale a versão do
+    código, desde que todos os códigos daquele nome do jogador apontem para a mesma versão.
     Devolve {jogador: {nome: id da arte básica}}.
     """
     ind = cartas.indice()
+    exatas = {}  # jogador -> nome normalizado -> {ids da arte básica} pelos códigos do log
+    for j, cods in ((partida.get("resumo") or {}).get("codigos") or {}).items():
+        for cod in cods:
+            cid = cartas.id_do_codigo(cod, ind)
+            c = ind["cartas"].get(cid) if cid else None
+            if c:
+                exatas.setdefault(j, {}).setdefault(cartas.normalizar(c["nome"]), set()).add(ind["basica"].get(c["chave"], cid))
     golpes = defaultdict(set)  # (jogador, nome) -> golpes usados
     for q in rep["quadros"]:
         d = q["destaque"]
@@ -695,6 +704,10 @@ def resolver_versoes(rep, partida, eu):
     for j, ns in nomes.items():
         saida[j] = {}
         for nome in ns:
+            pelo_codigo = exatas.get(j, {}).get(cartas.normalizar(nome))
+            if pelo_codigo and len(pelo_codigo) == 1:
+                saida[j][nome] = next(iter(pelo_codigo))
+                continue
             chaves = ind["por_nome"].get(cartas.normalizar(nome)) or []
             if len(chaves) <= 1:
                 continue  # só existe uma versão: o padrão já resolve

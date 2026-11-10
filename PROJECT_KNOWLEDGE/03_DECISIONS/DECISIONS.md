@@ -182,6 +182,14 @@
   (`EVIDENCE.md`): só quando o atacante principal não está em nenhuma lista (5% ou mais); critérios mais largos (atacante fora da
   lista do deck escolhido; vários Pokémon vistos fora dela) disparavam em 10 a 22 partidas do Pedro, quase sempre por engano (cartas
   de suporte como Fan Rotom e cartas do adversário nas "vistas"). Sempre marcado "incerto" (D-042).
+- **D-049 · Logs com o código das cartas: o leitor tira o código do nome e guarda à parte** (10/11/2026, v2026.11.10-1; R1 da
+  pesquisa de outros apps, `REFERENCE_TOOLS.md`). *Por quê:* todos os apps de replay pedem para desmarcar "Hide card IDs from
+  export"; com isso o log escreve `(sv6_200) Dragapult ex` e o Coletor gravava o código como parte do nome (cartas vistas,
+  identificação do deck, uso de cartas e replay erravam). Tirar o código em `limpar_linha` mantém um único caminho de leitura (o
+  resto do programa não muda) e guardar os códigos em `resumo.codigos` permite a versão exata em `resolver_versoes`, que passa na
+  frente das pistas (só quando todos os códigos daquele nome do jogador apontam para a mesma arte). Medição: as 137 partidas do
+  Pedro (sem códigos) têm leitura idêntica antes e depois; o log público com códigos tem a mesma leitura da versão sem códigos
+  (teste em `teste_tracker.py`, seção 9).
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,

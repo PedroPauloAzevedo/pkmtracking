@@ -356,4 +356,21 @@ d = decks.palpite_deck_detalhe(r_nova, "Bia")
 assert d == {"deck": "Pokémon Inventado ex", "confianca": None, "metodo": "provisorio"} and decks.incerto(d), d
 carta_comum = max(next(iter(decks._assinaturas()[0].values())).items(), key=lambda kv: kv[1])[0]  # carta comum nas listas
 assert not decks.carta_sem_listas(carta_comum) and decks.palpite_deck_detalhe({"deck_palpite": {"Bia": carta_comum}, "vistas": {}}, "Bia")["metodo"] != "provisorio"
+
+# 9) códigos das cartas no log ("Hide card IDs from export" desmarcado no jogo): "(sv6_200) Dragapult ex". A leitura tem que ser
+#    a mesma do log sem códigos, e os códigos ficam guardados por jogador (versão exata da carta)
+base = leitor.ler_partida(exemplo, config.ler_regras())
+jog_a = base["jogadores"][0]
+carta_a = sorted(base["resumo"]["vistas"][jog_a], key=len, reverse=True)[0]
+com_cod = exemplo.replace(carta_a, "(sv6_200) " + carta_a)
+assert "(sv6_200) " + carta_a in com_cod
+lido = leitor.ler_partida(com_cod, config.ler_regras())
+codigos = lido["resumo"].pop("codigos")
+base["resumo"].pop("codigos")
+assert json.dumps(lido, sort_keys=True, default=str) == json.dumps(base, sort_keys=True, default=str), "código mudou a leitura"
+assert "sv6_200" in codigos[jog_a], codigos
+assert leitor.limpar_linha("Ana's (sv8-5_72_ph) Drakloak was Knocked Out!") == "Ana's Drakloak was Knocked Out!"
+ind_f = {"cartas": {"sv06-200": {}, "me02.5-158": {}, "sv08.5-072": {}}}
+assert [cartas.id_do_codigo(c, ind_f) for c in ("sv6_200", "me2-5_158", "sv8-5_72_ph", "swsh9_186")] == ["sv06-200", "me02.5-158", "sv08.5-072", None]
+print("códigos das cartas no log: ok,", carta_a)
 print("OK")
