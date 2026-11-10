@@ -1,6 +1,6 @@
 # Evidências: medições que sustentam as decisões
 
-> Atualizado em 09/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
+> Atualizado em 10/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
 > Resultados completos dos experimentos 1 a 9 e da análise de ACE SPEC: `MISSION_REPORT_2026-11-02.md` (não repetidos aqui).
 
 ## Experimentos em `testes/experimentos/` (rodar numa cópia; os que gravam no banco, só com dados de teste)
@@ -177,3 +177,22 @@ Talonflame Dusknoir com 10; vários com "DELTA REIGN LEGAL" no nome desde 06/11.
 100 ou mais jogadores de 05 a 08/11 importados: com a época Delta Reign e a fonte Todos entram os 5 de 06 a 08/11 (987 jogadores,
 792 com deck; Mega Rayquaza 13,0% do campo, Talonflame Dusknoir 19 jogadores); os 2 de 05/11 (01h30 e 17h10 UTC, antes da chegada às
 18h UTC) ficam na 30th Celebration; nos grandes eventos a Delta Reign ainda não tem torneio.
+
+## Delta Reign montada pelo malie.io × TCGdex (10/11/2026, D-051)
+Numa cópia com a biblioteca do Pedro, o arquivo da Delta Reign do TCGdex foi apagado e montado de novo pelo malie.io: 141 cartas nas
+duas fontes, os mesmos 141 ids; 138 com o mesmo nome (as 3 diferentes eram Energias escritas com símbolo, `Bubbly {W} Energy`,
+corrigido na conversão); 136 com a mesma chave funcional (Azurill: o TCGdex chama "Bouncy-Bounce Charge" de habilidade, o malie.io
+de ataque). O índice monta com as 5.137 cartas. Observação para D-036: o malie.io informa a chegada da Delta Reign ao TCG Live em
+05/11/2026 às 17:00 UTC; `colecoes.chegada_live` usa 18:00 UTC (10h do Pacífico no horário de inverno). Não mudado: falta conferir
+com mais coleções.
+## Nome provisório para deck sem listas (10/11/2026, D-050)
+Banco do Pedro de 10/11 (cópia, 292 lados de partida). Três critérios comparados: (a) atacante principal em menos de 5% das listas
+do deck que o NB2 escolheu: dispara em 22 lados, a maioria por engano (Fan Rotom, Dipplin, Solrock como "atacante"); (b) 3 ou mais
+Pokémon vistos fora das listas do deck escolhido: 10 lados, vários por cartas do adversário contadas nas "vistas"; (c) atacante
+principal fora de todas as listas: 1 lado (Kommo-o, que o NB2 chamava de Mega Golisopod com confiança 0,18). Escolhido (c). A
+partida de 09/11 (Talonflame Dusknoir) já é identificada certo nesse banco: os torneios online da Delta Reign trouxeram as listas.
+## Códigos das cartas no log (10/11/2026, D-049)
+Leitor de antes × de depois nas 137 partidas da cópia com os dados do Pedro (logs sem código): 0 leituras diferentes (script
+`cmp_leitor.py` fora do repositório, comparando `ler_partida` campo a campo, sem `resumo.codigos`). Log público com códigos
+(Training Court, 19 turnos): os nomes saem limpos; 50 de 61 códigos acham a carta na biblioteca (os outros são reimpressões de
+coleções antigas, `sm`/`swsh`, que seguem pelo nome); o replay monta os 423 quadros e `resolver_versoes` usa os códigos.

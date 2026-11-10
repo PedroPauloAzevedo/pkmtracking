@@ -73,8 +73,29 @@ def compilar_regras(regras):
     return ok, erros
 
 
+# Código da carta antes do nome, quando a opção "Hide card IDs from export" (Battle Log Settings do jogo) está desmarcada:
+# "(sv6_200) Dragapult ex", "(sv8-5_72_ph) Drakloak", "(me2-5_288) Fezandipiti ex". Os apps de replay pedem para desmarcar
+# (PTCG Tools, Dead Draw, TrainerLog; REFERENCE_TOOLS.md). O leitor tira o código do nome (senão "(sv6_200) Dragapult ex" vira
+# outra carta) e guarda os códigos de cada jogador em resumo["codigos"]: dizem a versão exata (decks.resolver_versoes).
+CODIGO_CARTA = re.compile(r"\(([a-z]+\d*(?:-\d+[a-z]?)?_\d+[a-z]?(?:_[a-z]+)*)\) ", re.I)
+
+
+def _codigos_da_linha(bruta, jogadores, dono):
+    """[(jogador, código)] dos códigos de carta de uma linha. O dono é quem aparece logo antes ("Ana's (sv6_200) ...");
+    sem isso, quem começa a linha (ou o dono das listas "•")."""
+    texto = bruta.replace("’", "'")
+    saida = []
+    for m in CODIGO_CARTA.finditer(texto):
+        antes = texto[:m.start()]
+        de = next((j for j in sorted(jogadores, key=len, reverse=True) if antes.endswith(j + "'s ")), None) or dono
+        if de:
+            saida.append((de, m.group(1).lower()))
+    return saida
+
+
 def limpar_linha(bruta):
-    # Troca o apóstrofo "curvo" (’), que o jogo às vezes usa, pelo reto (').
+    # Troca o apóstrofo "curvo" (’), que o jogo às vezes usa, pelo reto ('), e tira o código das cartas (CODIGO_CARTA).
+    bruta = CODIGO_CARTA.sub("", bruta)
     linha = re.sub(r"\s+", " ", bruta.replace("\u2019", "'").replace("\u00a0", " ")).strip()
     return re.sub(r"^- ", "", linha)
 
@@ -126,10 +147,14 @@ def ler_partida(texto, regras):
     turno, dono = 0, None
     expandir = None  # jogador que "played them to the Bench": as cartas vêm na linha "•" seguinte
     vistas = {j: {} for j in jogadores}  # cartas reveladas de cada jogador (inclui listas "•" de compra/descarte)
+    codigos = {j: {} for j in jogadores}  # códigos das cartas de cada jogador, quando o log os traz (CODIGO_CARTA)
     ultimo = None  # último jogador citado no começo de uma linha (dono das listas "•")
     for i, bruta in enumerate(linhas, start=1):
         linha = limpar_linha(bruta)
         if linha.startswith("•"):
+            for de, cod in _codigos_da_linha(bruta, jogadores, ultimo):
+                if de in codigos:
+                    codigos[de][cod] = codigos[de].get(cod, 0) + 1
             if ultimo in vistas and ":" not in linha:
                 for carta in (c.strip() for c in linha.lstrip("• ").split(",")):
                     if carta:
@@ -147,6 +172,9 @@ def ler_partida(texto, regras):
                            if linha.startswith(j + " ") or linha.startswith(j + "'s ")), None)
         if dono_linha:
             ultimo = dono_linha
+        for de, cod in _codigos_da_linha(bruta, jogadores, dono_linha or ultimo):
+            if de in codigos:
+                codigos[de][cod] = codigos[de].get(cod, 0) + 1
         if (not linha or linha == "Setup" or re.match(r"^\d+ drawn cards?\.?$", linha)
                 or re.match(r"^(Damage breakdown:|Cards revealed from Mulligan \d+)$", linha)):
             continue
@@ -185,6 +213,7 @@ def ler_partida(texto, regras):
             vistas[e["jogador"]][e["carta"]] = vistas[e["jogador"]].get(e["carta"], 0) + 1
     resumo = resumir(jogadores, eventos, texto)
     resumo["vistas"] = vistas
+    resumo["codigos"] = codigos
     resumo["exportou"] = quem_exportou(linhas, jogadores)
     resumo["problemas"] = conferir(jogadores, eventos, resumo, linhas)
     resumo["digital"] = impressao_digital(jogadores, resumo)

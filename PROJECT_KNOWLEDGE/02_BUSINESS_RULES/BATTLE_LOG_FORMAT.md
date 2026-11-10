@@ -1,6 +1,6 @@
 # Formato do Battle Log (e como o programa interpreta cada linha)
 
-> Atualizado em 06/11/2026. Conhecimento tirado dos logs reais do Pedro e dos amigos (dezenas de partidas, 02–05/11/2026).
+> Atualizado em 10/11/2026. Conhecimento tirado dos logs reais do Pedro e dos amigos (dezenas de partidas, 02–05/11/2026).
 > Usado por `tracker/leitor.py`, `tracker/replay.py` (mesa e mãos) e `tracker/decks.py`. Nos exemplos, **Ana exportou o log**
 > e **Bia é a adversária** (nomes fictícios). Achou uma linha nova ou uma "mania" nova? Registre aqui.
 
@@ -8,6 +8,14 @@
 - O log é o texto que o botão de exportar do Battle Log copia. O jogo precisa estar **em inglês**.
 - **Linha principal:** uma ação ("Ana played Ultra Ball."). **Sublinha:** começa com `- ` e é efeito da linha principal anterior
   ("- Ana discarded 2 cards."). **Lista:** começa com `•` e dá nomes ("   • Dreepy, Basic Fire Energy").
+- **Código das cartas** (desde 2026.11.10-1; D-049): com "Hide card IDs from export" desmarcado (Settings > Battle Log do jogo),
+  cada carta vem com o código antes do nome: `Ana played (sv6-5_72) Munkidori to the Active Spot.`, `• (sm5_166) Crushing Hammer,
+  (sv6_200) Dragapult ex`, `Bia moved 3 damage counters from Bia's (sv6_200) Dragapult ex to Bia's (sv6-5_72) Munkidori.`. Formato:
+  coleção do TCG Live + `_` + número, às vezes com sufixo de acabamento (`_ph`, `_mph`). `leitor.limpar_linha` tira o código
+  (`CODIGO_CARTA`), então todo o resto do programa vê o mesmo texto de antes; `resumo.codigos` guarda os códigos de cada jogador e
+  `cartas.id_do_codigo` converte para o id da biblioteca (`sv6_200` → `sv06-200`, `me2-5_158` → `me02.5-158`). Cartas de coleções
+  fora da biblioteca (`sm5_166`, `swsh9_186`: reimpressões antigas) continuam pelo nome. Conferido num log público com códigos
+  (Training Court, `__tests__/battle-logs/fixtures/dragapult-full.txt`): mesma leitura do log sem código.
 - O jogo às vezes usa o apóstrofo curvo (`Bia’s Budew`), principalmente em "used ... on <jogador>’s ...". O leitor troca pelo reto.
 - Começa com `Setup`; cada turno começa com `Ana's Turn` (logs antigos: `Turn # 1 - Ana's Turn`); turno termina com `Ana ended their turn.`
 - Ataques podem vir com `- Damage breakdown:` e uma lista de parcelas (`• Base damage: 60 damage`, `• Total damage: 230 damage`).
