@@ -1,21 +1,20 @@
 # Estado atual do projeto
 
-> Atualizado em 06/11/2026 (consolidado depois dos PRs #1–#3 e da 2026.11.06-3). **Atualize este arquivo no fim de toda sessão**
+> Atualizado em 09/11/2026 (depois da publicação da 2026.11.09-4). **Atualize este arquivo no fim de toda sessão**
 > (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
-- **No GitHub (`main`): 2026.11.06-3** — replay põe os contadores do Risky Ruins no Básico de quem o jogou (D-045), por PR do ramo
-  `fix/erros-replay`. Antes dela, em 06/11: 2026.11.06-2 (deck do adversário pelo NB2, marca "incerto", faixas do meta com a
-  dependência entre partidas; D-040–D-042) e 2026.11.06-1 (ícones dos decks sem recarregar o painel). Em 05/11: 2026.11.05-4 a -6
-  (biblioteca não para por uma carta, épocas de coleção, "Ver todas", descarte no replay, filtros de deck, ícones). Histórico
-  técnico em `../04_IMPLEMENTATIONS/DONE.md`.
-- Também na `main`: Skill "Statistical Analyst" com a rodada de hardening e a base estratégica (PR #1) e a preparação para dois
-  desenvolvedores (PR #2; D-043, D-044).
-- O Coletor do Pedro estava na 2026.11.06-2 em 06/11; o aviso de versão nova traz a -3.
-- **Pronta no ramo `feature/ver-log-original` (worktree próprio): 2026.11.06-4** — botão "Log original" no detalhe da partida
-  (copiar / baixar o log como veio do TCG Live). 4 testes OK. Entra na `main` pelo PR desse ramo.
+- **No GitHub (`main`): 2026.11.09-4** (09/11/2026), publicada junto com as anteriores que esperavam: 2026.11.07-1 (Decisões mostra
+  "sem ela: V–D"), 2026.11.09-1 (época dos torneios online começa no lançamento da coleção; D-048), 2026.11.09-2 (Cartas x matchups
+  com colunas iguais), 2026.11.09-3 (tema claro/escuro/automático) e 2026.11.09-4 (Início novo: Hoje, tema, Dados coletados;
+  `/api/resumo-geral`; `index.html` sem cache). Antes: 2026.11.06-6 (telas na largura da janela) e 2026.11.06-4/-5 (Log original,
+  replay). Histórico técnico em `../04_IMPLEMENTATIONS/DONE.md`.
+- Também na `main`: Skill "Statistical Analyst" (PR #1) e a preparação para dois desenvolvedores (PR #2; D-043, D-044, D-047).
 - O repositório `PedroPauloAzevedo/pkmtracking` é **público** e não tem Releases. Os programas se atualizam pelo aviso
   "Nova versão disponível".
+- **Achado de 09/11:** o Coletor do Pedro importa torneios online só com 256 jogadores ou mais; desde a Delta Reign só um passou.
+  Sem listas dos decks novos, o NB2 chamou um Talonflame Dusknoir de "Tera Box" (partida de 09/11 às 20:12). Recomendado ao Pedro:
+  Torneios > "com pelo menos 64 jogadores" > Verificar agora.
 
 ## Ramos e pastas
 - `main` = o que está no GitHub. Tudo entra por Pull Request e só o Pedro junta (D-043); no computador dele, o "publicar" autoriza o

@@ -261,6 +261,8 @@ ep = colecoes.epocas("live", agora="2027-03-01T12:00:00")
 assert (ep[0]["nome"], ep[0]["de"]) == ("Futura", local(2027, 1, 28, 18)) and ep[1]["nome"] == "Delta Reign", [e["nome"] for e in ep[:3]]
 for sid in novas:
     (cartas.PASTA_SETS / f"{sid}.json").unlink()
+g = cli.get("/api/resumo-geral").get_json()  # números gerais do Início ("Dados coletados")
+assert g["partidas"]["n"] > 0 and g["partidas"]["n"] == g["partidas"]["suas"] + g["partidas"]["amigos"] and g["torneios"]["n"] > 0, g
 r = cli.get("/api/epocas").get_json()
 assert r["live"] and r["torneios"] and r["online"] and r["primeira_partida"] and r["primeiro_torneio"] and set(r["proxima"]) == {"live", "torneios", "online"}, r
 # filtro de época nas suas partidas: de (com hora) e antes (fim da época, com hora, não incluído)

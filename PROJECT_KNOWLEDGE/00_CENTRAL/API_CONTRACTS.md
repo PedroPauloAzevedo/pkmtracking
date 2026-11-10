@@ -1,6 +1,6 @@
 # Contratos entre as partes do programa
 
-> Atualizado em 07/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
+> Atualizado em 09/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
 > (COLLABORATION, seção 6). Formato do banco e de `dados_json`: [`DATA_MODEL.md`](DATA_MODEL.md).
 
 ## 1. Camadas (nomes usados nas conversas → módulos que existem)
@@ -94,6 +94,8 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `POST /api/limitless/importar` | `importar` | campeonatos.js |  |
 | `POST /api/sincronizar` | `sincronizar_agora` | campeonatos.js | Procura torneios novos agora, sem esperar o próximo horário. |
 | `DELETE /api/torneios/<tid>` | `apagar_torneio` | campeonatos.js |  |
+| `GET /api/resumo-geral` | `resumo_geral` | partidas.js | Números do Início ("Dados coletados", desde 2026.11.09-4): `partidas` (n, suas, amigos, de, ate, dias, automatico, area, manual), `torneios` (n, grandes, online, jogadores, listas, ultimo; só Standard), `decks_conhecidos`, `biblioteca` (cartas, colecoes), `epoca` (atual no TCG Live) e `proxima` (grandes eventos). Só leitura. |
+| `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas) e pela validade em torneio. |
 | `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): `live` (chegada ao TCG Live, suas partidas), `torneios` (validade nos grandes eventos) e `online` (lançamento, torneios online; desde 2026.11.09-1); `proxima` com as mesmas três chaves. As telas de Meta mandam `?epoca=<id>` às rotas de torneio (`_lista_torneios`: cada fonte com o seu começo, D-048). |
 | `GET /api/meta` | `meta` | campeonatos.js |  |
 | `GET /api/variantes/<arq>` | `variantes_deck` | campeonatos.js | Variantes do deck (listas agrupadas por semelhança) com a taxa de vitória de cada uma. |

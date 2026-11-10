@@ -1,5 +1,24 @@
 [
   {
+    "versao": "2026.11.09-4",
+    "data": "2026-11-09",
+    "titulo": "Início novo: Hoje, tema e dados coletados",
+    "mudancas": [
+      "O Início ganhou o quadro \"Hoje\": placar do dia, da sessão atual (partidas com menos de 1 hora entre uma e outra), a última partida, a sequência atual de vitórias ou derrotas e as vitórias e derrotas de cada dia.",
+      "O botão de tema (Claro, Automático ou Escuro) passou para o topo do Início.",
+      "No fim do Início, \"Dados coletados\": quantas partidas estão gravadas (suas e dos amigos), o período, como chegaram, os torneios e listas importados, os decks conhecidos, a biblioteca de cartas, a época atual e a versão do programa."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.09-4\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se o Início parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.09-3",
     "data": "2026-11-09",
     "titulo": "Tema claro ou escuro à sua escolha",

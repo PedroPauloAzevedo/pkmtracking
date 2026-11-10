@@ -83,10 +83,72 @@ function trilha() {
     return `<div class="abas" role="tablist">${abas.map(([k, n]) => `<a href="#${k}" role="tab" aria-selected="${k === r}">${esc(n)}</a>`).join('')}</div>`;
   return NOME_SECAO[sec] ? `<span class="trilha">${NOME_SECAO[sec]}</span>` : '';
 }
+// ---- Início: "Hoje" (placar do dia, da sessão atual e de cada dia; sugestão 5 da comparação com o Pokemon Champions
+// Battle Logger) e "Dados coletados". Sessão = partidas com menos de SESSAO_MIN minutos entre uma e outra.
+const SESSAO_MIN = 60;
+const dataLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function contasHoje(partidas) {
+  const l = partidas.filter(p => p.resultado === 'V' || p.resultado === 'D').sort((a, b) => a.data < b.data ? -1 : 1);
+  const placarDe = ps => ({ v: ps.filter(p => p.resultado === 'V').length, d: ps.filter(p => p.resultado === 'D').length, n: ps.length });
+  const hoje = dataLocal();
+  const sessao = [];
+  for (let i = l.length - 1; i >= 0; i--) {  // de trás para a frente até um intervalo maior que SESSAO_MIN
+    if (sessao.length && (new Date(sessao[0].data) - new Date(l[i].data)) / 60000 > SESSAO_MIN) break;
+    sessao.unshift(l[i]);
+  }
+  const ultima = l[l.length - 1] || null;
+  let seq = 0; for (let i = l.length - 1; i >= 0 && l[i].resultado === ultima?.resultado; i--) seq++;
+  const porDia = {};
+  l.forEach(p => { const k = p.data.slice(0, 10); (porDia[k] = porDia[k] || []).push(p); });
+  const dias = Object.keys(porDia).sort().slice(-14).map(k => ({ dia: k, ...placarDe(porDia[k]) }));
+  const sessaoAtiva = ultima && (Date.now() - new Date(ultima.data)) / 60000 <= SESSAO_MIN;
+  return { hoje: placarDe(l.filter(p => p.data.slice(0, 10) === hoje)), hojeDia: hoje, sessao: placarDe(sessao),
+    sessaoDe: sessao[0]?.data, sessaoAtiva, ultima, seq, dias };
+}
+function painelHoje(h) {
+  const hm = iso => iso ? iso.slice(11, 16) : '';
+  const vd = x => `${x.v}–${x.d}`;
+  const taxaTxt = x => x.n ? `${fmt(100 * x.v / x.n, 0)}% em ${x.n} partida${x.n === 1 ? '' : 's'}` : 'nenhuma partida';
+  const maior = Math.max(1, ...h.dias.map(d => d.n));
+  const u = Math.min(9, 110 / maior);
+  const ult = h.ultima;
+  return `<section class="panel" id="in-hoje">
+    <div class="row"><h2 class="grow">Hoje</h2><span class="muted">${dataCurta(h.hojeDia)}</span></div>
+    <div class="kpis">
+      <div class="kpi"><span class="label">Hoje</span><span class="v">${h.hoje.n ? vd(h.hoje) : '–'}</span><span class="d">${taxaTxt(h.hoje)}</span></div>
+      <div class="kpi"><span class="label">${h.sessaoAtiva ? 'Sessão atual' : 'Última sessão'}</span><span class="v">${h.sessao.n ? vd(h.sessao) : '–'}</span><span class="d">${h.sessao.n ? `desde ${dataCurta(h.sessaoDe).slice(0, 5)} às ${hm(h.sessaoDe)}` : '–'}</span></div>
+      <div class="kpi"><span class="label">Última partida</span><span class="v" style="color:${ult ? (ult.resultado === 'V' ? 'var(--good)' : 'var(--bad)') : 'inherit'}">${ult ? (ult.resultado === 'V' ? 'Vitória' : 'Derrota') : '–'}</span><span class="d">${ult ? `${dataCurta(ult.data).slice(0, 5)} às ${hm(ult.data)} · ${esc(nomeDeck(ult.meu_deck) || '?')} × ${esc(nomeDeck(ult.deck_adv) || '?')}` : '–'}</span></div>
+      <div class="kpi"><span class="label">Sequência atual</span><span class="v">${ult ? h.seq : '–'}</span><span class="d">${ult ? `${ult.resultado === 'V' ? 'vitória' : 'derrota'}${h.seq === 1 ? '' : 's'} seguida${h.seq === 1 ? '' : 's'}` : '–'}</span></div>
+    </div>
+    ${h.dias.length ? `<div class="row" style="align-items:flex-end;gap:16px"><span class="label grow">Vitórias e derrotas por dia (últimos ${h.dias.length} dias com partidas)</span><span class="legenda-vd"><span class="v">vitórias</span><span class="d">derrotas</span></span></div>
+    <div class="hoje-dias">${h.dias.map(d => `<div class="hoje-dia${d.dia === h.hojeDia ? ' hoje-atual' : ''}" title="${dataCurta(d.dia)}: ${d.v} vitória(s) e ${d.d} derrota(s)">
+      <b>${d.v}–${d.d}</b><div class="hoje-col">${d.v ? `<i class="v" style="height:${Math.max(3, d.v * u)}px"></i>` : ''}${d.d ? `<i class="d" style="height:${Math.max(3, d.d * u)}px"></i>` : ''}</div><span>${dataCurta(d.dia).slice(0, 5)}</span></div>`).join('')}</div>` : ''}
+    <p class="muted" style="font-size:.8rem">Sessão = partidas com menos de ${SESSAO_MIN} minutos entre uma e outra.</p>
+  </section>`;
+}
+function painelDados(g, st) {
+  if (!g) return '';
+  const n = x => Number(x || 0).toLocaleString('pt-BR');
+  const p = g.partidas, t = g.torneios, sync = st.sincronizacao || {}, cfg = st.config || {};
+  const item = (rot, val, sub) => `<div class="dado"><span class="label">${rot}</span><b>${val}</b>${sub ? `<small>${sub}</small>` : ''}</div>`;
+  const outras = Math.max(0, p.n - p.area - p.automatico - p.manual);  // logs dos amigos (chegam por arquivo)
+  return `<section class="panel" id="in-dados"><h2>Dados coletados</h2><div class="dados-col">
+    ${item('Partidas gravadas', n(p.n), `${n(p.suas)} suas${p.amigos ? ` · ${n(p.amigos)} dos amigos` : ''}`)}
+    ${item('Período', p.de ? `${fmtData(p.de)} a ${fmtData(p.ate)}` : '–', `${n(p.dias)} dia${p.dias === 1 ? '' : 's'} com partidas`)}
+    ${item('Como chegaram', `${n(p.area + p.automatico)} pela captura`, `${n(p.automatico)} delas pelo modo automático · ${n(p.manual)} coladas à mão${outras ? ` · ${n(outras)} de arquivos dos amigos` : ''}`)}
+    ${item('Torneios importados', n(t.n), `${n(t.grandes)} grandes eventos · ${n(t.online)} online${t.ultimo ? ` · último em ${fmtData(t.ultimo)}` : ''}`)}
+    ${item('Jogadores nos torneios', n(t.jogadores), `${n(t.listas)} listas de deck`)}
+    ${item('Decks conhecidos', n(g.decks_conhecidos), 'nomes e ícones do Limitless')}
+    ${item('Biblioteca de cartas', n(g.biblioteca.cartas), `${n(g.biblioteca.colecoes)} coleções`)}
+    ${item('Época atual', g.epoca ? esc(g.epoca.nome) : '–', g.epoca ? `no TCG Live desde ${quandoEpoca(g.epoca.de)}${g.proxima ? ` · nos grandes eventos a partir de ${dataCurta(g.proxima.de)}` : ''}` : '')}
+    ${item('Programa', 'Versão ' + esc(st.versao || ''), `torneios: ${cfg.sincronizar_auto ? `atualização automática a cada ${cfg.sincronizar_horas || 6} h` : 'atualização manual'}${sync.ultima ? ` · última verificação ${esc(sync.ultima)}` : ''}`)}
+  </div></section>`;
+}
 async function renderPainel() {
   const vez = novaTela();
   await carregarJogadores();
-  const [d, st] = await Promise.all([api(comJog('/api/partidas')), api('/api/status'), carregarEpocas()]); const cfg = st.config || {};
+  const [d, st, g] = await Promise.all([api(comJog('/api/partidas')), api('/api/status'),
+    api('/api/resumo-geral').catch(() => null), carregarEpocas()]); const cfg = st.config || {};
   const pend = S.status?.linhas_pendentes || 0;
   const boasVindas = cfg.nick || d.eu ? '' : `<section class="panel" style="border-left:3px solid var(--accent)"><h2>Bem-vindo! Primeiro passo</h2>
     <p>Digite seu nick do TCG Live <b>exatamente como aparece no jogo</b> (maiúsculas e minúsculas contam). É assim que o programa sabe quais partidas são vitórias suas. Se preferir, deixe em branco: ele descobre sozinho na primeira partida capturada.</p>
@@ -102,12 +164,15 @@ async function renderPainel() {
     ${c.ativo ? '' : '<button class="primary" id="in-ligar">Ligar captura</button>'}</section>`;
   if (telaVelha(vez)) return;
   main.innerHTML = `
-    ${trilha()}<header><h1>Início</h1><p class="sub">${!soEu() ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+    ${trilha()}<div class="inicio-topo"><header><h1>Início</h1><p class="sub">${!soEu() ? `Estatísticas de <b>${esc(nomeJogadorSel())}</b>.` : d.eu ? `Estatísticas de <b>${esc(d.eu)}</b>.` : 'Informe seu nick em Ajustes para separar suas vitórias e derrotas.'} Com o programa aberto, toda partida que você exportar no TCG Live entra aqui sozinha.</p></header>
+      <div class="row" style="gap:8px"><span class="label">Tema</span>${seletorTema()}</div></div>
     ${variosJogadores() ? `<div class="row">${seletorJogador()}</div>` : ''}
     ${boasVindas}
     ${captura}
     <div id="in-atalho"></div>
     ${pend ? `<div class="aviso">${pend} partida(s) com linhas que o leitor não reconheceu. <a href="#revisao">Revisar agora</a></div>` : ''}
+    ${d.partidas.length ? painelHoje(contasHoje(d.partidas)) : ''}
+    <h2 style="margin:4px 0 -4px">Geral</h2>
     <div class="kpis">
       <div class="kpi"><span class="label">Partidas</span><span class="v">${t.n}</span><span class="d">${d.sem_resultado ? `${d.sem_resultado} sem resultado identificado` : 'com resultado'}</span></div>
       <div class="kpi"><span class="label">Taxa de vitória</span><span class="v">${pct(t.taxa)}</span><span class="d">${t.ic_baixo != null ? `provável entre ${fmt(t.ic_baixo, 0)}% e ${fmt(t.ic_alto, 0)}%` : '–'}</span></div>
@@ -118,6 +183,7 @@ async function renderPainel() {
       <div class="row"><h2 class="grow">Últimas partidas</h2><a class="btn" href="#partidas">Ver todas</a></div>
       ${ult.length ? tabelaPartidas(ult) : '<p class="vazio">Nenhuma partida ainda. Jogue uma partida e exporte o Battle Log, ou cole um log abaixo.</p>'}
     </section>
+    ${painelDados(g, st)}
     <details class="panel manual">
       <summary>Colar um log à mão</summary>
       <p class="sub">Para logs antigos ou copiados no celular. Logs repetidos são ignorados.</p>
@@ -126,6 +192,7 @@ async function renderPainel() {
     </details>`;
   ligarLinhasPartidas();
   ligarSeletorJogador(renderPainel);
+  ligarTema();
   if ($('#in-ligar')) $('#in-ligar').onclick = async () => {
     await api('/api/config', { method: 'POST', body: JSON.stringify({ coletor_ativo: true }) }); toast('Captura ligada');
     setTimeout(() => { atualizarStatus(); render(); }, 600); };

@@ -67,7 +67,10 @@ def so_pedidos_do_painel():
 # ------------------------------------------------------------------ páginas
 @app.get("/")
 def inicio():
-    return send_from_directory(PASTA_WEB, "index.html")
+    # sem cache: depois de uma atualização, a janela já abre com o index.html novo (antes podia ficar com o velho até o F5)
+    resp = send_from_directory(PASTA_WEB, "index.html")
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 @app.get("/api/exemplo-log")
@@ -760,6 +763,35 @@ def _lista_torneios():
     if t:
         return analises.torneios_da_fonte("todos", de, ate, ids=t, epoca=epoca) if (de or ate or epoca) else t
     return analises.torneios_da_fonte(a.get("fonte", "grandes"), de, ate, epoca=epoca)
+
+
+@app.get("/api/resumo-geral")
+def resumo_geral():
+    """Números gerais do Início ("Dados coletados"): partidas gravadas (suas e dos amigos), período, como chegaram,
+    torneios, listas, decks conhecidos, biblioteca de cartas e a época atual. Só contagens: não muda nada."""
+    p = banco.consultar(
+        "SELECT COUNT(*) AS n, SUM(COALESCE(dono, '') = '') AS suas, MIN(capturada_em) AS de, MAX(capturada_em) AS ate, "
+        "COUNT(DISTINCT substr(capturada_em, 1, 10)) AS dias, SUM(origem = 'automatico') AS automatico, "
+        "SUM(origem = 'area_transferencia') AS area, SUM(origem = 'manual') AS manual FROM partidas")[0]
+    t = banco.consultar(
+        "SELECT COUNT(*) AS n, SUM(COALESCE(fonte, 'labs') = 'labs') AS grandes, SUM(fonte = 'online') AS online, "
+        "COALESCE(SUM(jogadores), 0) AS jogadores, MAX(data) AS ultimo FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')")[0]
+    listas = banco.consultar("SELECT COUNT(*) AS n FROM (SELECT DISTINCT torneio, labs_id FROM t_listas)")[0]["n"]
+    decks_conhecidos = banco.consultar("SELECT COUNT(*) AS n FROM arquetipos")[0]["n"]
+    try:
+        bib = cartas.status()
+        biblioteca = {"cartas": bib["cartas"], "colecoes": bib["colecoes"]}
+    except Exception as e:  # biblioteca ainda não baixada ou arquivo com problema: o Início abre mesmo assim
+        print("[resumo-geral] biblioteca:", e)
+        biblioteca = {"cartas": 0, "colecoes": 0}
+    eps = colecoes.epocas("live")
+    return jsonify({
+        "partidas": {k: p[k] or 0 for k in ("n", "suas", "dias", "automatico", "area", "manual")} | {
+            "amigos": (p["n"] or 0) - (p["suas"] or 0), "de": p["de"], "ate": p["ate"]},
+        "torneios": {k: t[k] or 0 for k in ("n", "grandes", "online", "jogadores")} | {"ultimo": t["ultimo"], "listas": listas},
+        "decks_conhecidos": decks_conhecidos, "biblioteca": biblioteca,
+        "epoca": eps[0] if eps else None, "proxima": colecoes.proxima("torneios"),
+    })
 
 
 @app.get("/api/epocas")
