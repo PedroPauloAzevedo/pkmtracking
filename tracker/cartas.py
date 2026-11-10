@@ -24,6 +24,14 @@ coleção recente, e baixa só o que mudou.
 Se o TCGdex falhar numa carta (fica lento ou recusa por excesso de pedidos), só aquela
 coleção fica como estava: as outras seguem, e o fim avisa qual não foi atualizada. Com
 falha, a data da última verificação não avança, para o programa tentar de novo em 1 hora.
+
+SEGUNDA FONTE: malie.io (desde 2026.11.10-3; D-051)
+O TCGdex costuma levar dias para ter uma coleção nova (a Delta Reign chegou ao TCG Live em
+05/11/2026 sem estar nele). Coleção da tabela de colecoes.py que já chegou ao jogo e não está
+no TCGdex é montada com a exportação dos dados do TCG Live feita pelo malie.io (projeto de fã,
+sem termos publicados, formato marcado como "alpha"): um arquivo por coleção, só texto, sem
+imagens. O arquivo fica marcado com "fonte": "malie" e é trocado pelo do TCGdex assim que ele
+tiver a coleção. Ideia do tcgreplay (REFERENCE_TOOLS.md).
 """
 import json
 import re
@@ -40,6 +48,7 @@ import requests
 from . import config
 
 API = "https://api.tcgdex.net/v2/en"
+MALIE = "https://cdn.malie.io/file/malie-io/tcgl/export"  # exportação do TCG Live (ver SEGUNDA FONTE, no topo)
 ASSETS = "https://assets.tcgdex.net"
 LIMITLESS_IMG = "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci"
 PASTA = config.PASTA_DADOS / "cartas"
@@ -465,6 +474,84 @@ def _get(sessao, caminho):
     raise RuntimeError(f"O TCGdex não respondeu para {caminho}.")
 
 
+SIMBOLO_ENERGIA = {"G": "Grass", "R": "Fire", "W": "Water", "L": "Lightning", "P": "Psychic", "F": "Fighting",
+                   "D": "Darkness", "M": "Metal", "Y": "Fairy", "N": "Dragon", "C": "Colorless"}
+
+
+def id_malie(tid):
+    """Id do TCGdex -> chave da coleção no malie.io: "me06" -> "me6", "me02.5" -> "me2-5", "sv08.5" -> "sv8-5"."""
+    m = re.match(r"^([a-z]+)0*(\d+)(?:\.(\d+[a-z]?))?$", tid or "")
+    return f"{m.group(1)}{m.group(2)}" + (f"-{m.group(3)}" if m.group(3) else "") if m else None
+
+
+def set_do_malie(cartas_malie, tid, nome, lancamento, sigla=""):
+    """Converte um arquivo de coleção do malie.io no formato que o TCGdex usa (o que montar_indice lê)."""
+    tipo = {"POKEMON": "Pokemon", "TRAINER": "Trainer", "ENERGY": "Energy"}
+    titulo = lambda x: (x or "").replace("_", " ").title()
+    cards = []
+    for c in cartas_malie:
+        if "_std_" not in ((c.get("ext") or {}).get("tcgl") or {}).get("longFormID", "_std_"):
+            continue  # cada impressão vem duas vezes (normal e reverse holo), com o mesmo texto
+        num = str(((c.get("collector_number") or {}).get("numeric")) or "").strip()
+        if not num:
+            continue
+        local = num.zfill(3)
+        textos = c.get("text") or []
+        categoria = tipo.get(c.get("card_type"), "")
+        cards.append({
+            "id": f"{tid}-{local}", "localId": local, "category": categoria,
+            # o malie.io escreve o tipo de Energia com símbolo ("Bubbly {W} Energy"); o TCGdex e o log, por extenso
+            "name": re.sub(r"\{([A-Z])\}", lambda m: SIMBOLO_ENERGIA.get(m.group(1), m.group(0)), c.get("name", "")),
+            "rarity": titulo((c.get("rarity") or {}).get("designation")), "hp": c.get("hp"),
+            "types": [titulo(t) for t in c.get("types") or []], "stage": titulo(c.get("stage")).replace(" ", ""),
+            "attacks": [{"name": t.get("name", "")} for t in textos if t.get("kind") == "ATTACK"],
+            "abilities": [{"name": t.get("name", "")} for t in textos if t.get("kind") == "ABILITY"],
+            "regulationMark": c.get("regulation_mark") or "",
+            "trainerType": titulo(c.get("subtype")) if categoria == "Trainer" else "",
+            "energyType": ("Special" if c.get("subtype") == "SPECIAL" else "Normal") if categoria == "Energy" else "",
+        })
+    return {"set": {"id": tid, "name": nome, "releaseDate": lancamento, "serie": {"id": re.sub(r"\d.*", "", tid)},
+                    "tcgOnline": sigla, "cardCount": {"total": len(cards)}, "fonte": "malie"}, "cards": cards}
+
+
+def _completar_pelo_malie(sessao, no_tcgdex):
+    """Coleções da tabela de colecoes.py que já chegaram ao TCG Live e o TCGdex ainda não tem: monta pelo malie.io.
+    Devolve os nomes montados. Falha no malie.io não atrapalha nada (a coleção só fica para a próxima verificação)."""
+    from . import colecoes
+    agora = datetime.now().isoformat(timespec="seconds")
+    faltam = [c for c in colecoes.COLECOES if colecoes.chegada_live(c[2]) <= agora and c[0] not in no_tcgdex
+              and (_ler_json(PASTA_SETS / f"{c[0]}.json", None) or {"set": {"fonte": "malie"}})["set"].get("fonte") == "malie"]
+    if not faltam:
+        return []
+    try:
+        r = sessao.get(f"{MALIE}/index.json", timeout=30)
+        indice_malie = r.json().get("en-US") or {} if r.status_code == 200 else {}
+    except (requests.RequestException, ValueError):
+        return []
+    feitos = []
+    for tid, nome, lancamento in faltam:
+        ref = indice_malie.get(id_malie(tid) or "")
+        if not ref or not ref.get("num") or not ref.get("path"):
+            continue
+        arq = PASTA_SETS / f"{tid}.json"
+        atual = _ler_json(arq, None)
+        if atual and atual["set"].get("hash_malie") == ref.get("hash"):
+            continue  # nada mudou desde a última vez
+        try:
+            r = sessao.get(f"{MALIE}/{ref['path']}", timeout=60)
+            dados = r.json() if r.status_code == 200 else None
+        except (requests.RequestException, ValueError):
+            dados = None
+        if not isinstance(dados, list) or not dados:
+            continue
+        convertido = set_do_malie(dados, tid, nome, lancamento, ref.get("abbr", ""))
+        convertido["set"]["hash_malie"] = ref.get("hash")
+        if convertido["cards"]:
+            _gravar_json(arq, convertido)
+            feitos.append(f"{nome} ({len(convertido['cards'])} cartas, pelo malie.io)")
+    return feitos
+
+
 def _baixar_cartas(sessao, ids):
     """Baixa as cartas de uma coleção, 6 por vez. Se uma falhar, cancela as que faltam e avisa (RuntimeError)."""
     ex = ThreadPoolExecutor(max_workers=6)
@@ -505,6 +592,11 @@ def atualizar(forcar=False):
             # Coleções recentes ganham imagens alguns dias depois do lançamento: rebaixa se faltar alguma.
             recente = atual and (atual["set"].get("releaseDate") or "") >= (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
             falta_imagem = atual and recente and any(not c.get("image") for c in atual["cards"])
+            do_malie = atual and atual["set"].get("fonte") == "malie"  # o TCGdex chegou: troca pelo dele
+            if do_malie and not total:
+                continue  # o TCGdex lista a coleção, mas ainda sem cartas: fica a do malie.io
+            if do_malie:
+                atual = None
             if atual and not forcar and len(atual["cards"]) >= total and not falta_imagem:
                 continue
             try:
@@ -523,6 +615,8 @@ def atualizar(forcar=False):
                 continue  # nada mudou
             _gravar_json(arq, {"set": info_set, "cards": cartas})
             novos.append(f"{b.get('name')} ({len(cartas)} cartas)")
+        progresso["etapa"] = "Procurando coleções novas que o TCGdex ainda não tem"
+        novos += _completar_pelo_malie(s, {b["id"] for b in alvo if (b.get("cardCount") or {}).get("total")})
         progresso["etapa"] = "Montando o índice"
         ind = montar_indice()
         progresso["resumo"] = (f"{len(ind['cartas'])} cartas em {len(list(PASTA_SETS.glob('*.json')))} coleções. "

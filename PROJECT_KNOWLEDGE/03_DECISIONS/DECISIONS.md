@@ -176,6 +176,12 @@
   data em UTC e a coleção chega ao jogo às 17h ou 18h UTC da véspera (D-036): os torneios da véspera, quase todos antes da chegada,
   ficam na época anterior; os poucos do dia do lançamento que começaram antes da chegada (nenhum na Delta Reign) ficariam na nova.
   Os grandes eventos continuam com a validade em torneio. Código: `colecoes.inicio_online`, `analises.torneios_da_fonte(epoca=)`.
+- **D-051 · Coleção nova que o TCGdex ainda não tem: dados das cartas pelo malie.io** (10/11/2026, v2026.11.10-3; R3 da pesquisa
+  de outros apps, ideia do tcgreplay). *Por quê:* a Delta Reign chegou ao TCG Live em 05/11/2026 sem estar no TCGdex, e sem a
+  coleção na biblioteca as cartas novas ficam sem versão, Pokémon e marca de regulamento. O malie.io exporta os dados do próprio
+  TCG Live (inclusive o código das cartas do log, D-049) no dia da chegada. Uso leve: um arquivo por coleção que falta, só texto,
+  só enquanto o TCGdex não tem; o TCGdex continua a fonte principal. Riscos aceitos: projeto de fã sem termos publicados e formato
+  "alpha" (se mudar, a função não monta nada e a biblioteca segue como antes). Medição em `EVIDENCE.md`.
 - **D-050 · Deck sem listas de torneio: nome provisório pelo Pokémon que mais causou dano** (10/11/2026, v2026.11.10-2; R2 da
   pesquisa de outros apps, ideia do Full Bench). *Por quê:* o NB2 só escolhe entre decks com listas importadas; no começo de uma
   coleção ele chama um deck novo de outro conhecido (Talonflame Dusknoir virou "Tera Box" em 09/11). Regra escolhida pela medição

@@ -1,5 +1,22 @@
 [
   {
+    "versao": "2026.11.10-3",
+    "data": "2026-11-10",
+    "titulo": "Coleção nova na biblioteca no mesmo dia",
+    "mudancas": [
+      "Quando uma coleção nova chega ao TCG Live e a base de cartas que o Coletor usa (TCGdex) ainda não a tem, a biblioteca passa a buscar os dados dessas cartas numa segunda fonte (malie.io). Assim nomes, Pokémon e versões da coleção nova funcionam desde o primeiro dia. As imagens dessas cartas só aparecem quando o TCGdex tiver a coleção, e aí ele substitui a segunda fonte sozinho."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-3\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer."
+    ]
+  },
+  {
     "versao": "2026.11.10-2",
     "data": "2026-11-10",
     "titulo": "Deck novo ganha nome provisório",
