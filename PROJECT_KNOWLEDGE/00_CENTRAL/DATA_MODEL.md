@@ -1,6 +1,6 @@
 # Modelo de dados (banco, formato do leitor e registro de migrações)
 
-> Atualizado em 06/11/2026. Fonte: `tracker/banco.py` (`ESQUEMA` e `iniciar()`) e `tracker/leitor.py`. Esta seção saiu do
+> Atualizado em 10/11/2026. Fonte: `tracker/banco.py` (`ESQUEMA` e `iniciar()`) e `tracker/leitor.py`. Esta seção saiu do
 > [`ARCHITECTURE.md`](ARCHITECTURE.md) para ter um lugar único onde registrar mudança de banco e de formato (COLLABORATION, seção 6).
 > Pasta `dados/` e `config.json`: ver `ARCHITECTURE.md`.
 
@@ -29,7 +29,8 @@ Esquema em `banco.ESQUEMA`; colunas em **negrito** foram acrescentadas por migra
 - `nao_lidas`: `{linha, texto}` das linhas que nenhuma regra reconheceu (alimentam a tela de Revisão).
 - `resumo`: `primeiro`, `vencedor`, `motivo`, `turnos`, `por_jogador` (prêmios, nocautes, ... de cada um), `cartas`, `nocautes`,
   `serie`, `deck_palpite`, `primeiro_nocaute`, `linha_final`, `vistas` (cartas reveladas por jogador), `exportou` (quem exportou),
-  `problemas` (avisos de log estranho), `digital` (impressão digital para achar o mesmo jogo pelos dois lados).
+  `problemas` (avisos de log estranho), `digital` (impressão digital para achar o mesmo jogo pelos dois lados), `codigos`
+  (desde 2026.11.10-1: `{jogador: {código da carta: vezes}}`, vazio em logs sem código; D-049).
 - Regra: **acrescentar** campo é seguro (quem não conhece ignora); mudar o significado de um campo existente exige procurar todos os
   usuários (`grep` do nome do campo em `tracker/`, `app.py` e `web/js/`). Campo novo tirado do log → aumentar `banco.VERSAO_LEITOR`.
 - Linhas do log e suas "manias": [`../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`](../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md).
@@ -49,5 +50,6 @@ Regra (COLLABORATION, seção 6): só acrescentar coluna ou tabela; migração e
 | 2026.11.02-2 | `torneios.fonte`, `torneios.formato` | Torneios online; só Standard nas contas (D-001) |
 | 2026.11.02-2 | `t_jogadores.ace_spec` | Calculada uma vez para as listas já importadas (D-020) |
 | 2026.11.02-2 | `banco.VERSAO_LEITOR` = 3 | Partidas relidas na abertura |
+| 2026.11.10-1 | `banco.VERSAO_LEITOR` = 4; `dados_json.resumo.codigos` | Partidas relidas na abertura (códigos das cartas, D-049) |
 
 Outros números que forçam refazer dados guardados: `cartas.VERSAO_INDICE` (hoje **2**; remonta o índice em `dados/cartas/`).

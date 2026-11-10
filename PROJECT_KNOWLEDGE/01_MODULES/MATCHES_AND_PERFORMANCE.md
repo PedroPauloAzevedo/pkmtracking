@@ -1,6 +1,6 @@
 # Minhas partidas: Partidas, Desempenho e Decisões
 
-> Atualizado em 07/11/2026. Código: `tracker/analises.py` (`analise_pessoal`, `decisoes`, `visao`, `perspectiva`),
+> Atualizado em 10/11/2026. Código: `tracker/analises.py` (`analise_pessoal`, `decisoes`, `visao`, `perspectiva`),
 > `tracker/banco.py`, `tracker/decks.py` (`vincular_automatico`, identificação do deck), `web/js/partidas.js`, `web/js/decisoes.js`.
 > Regras: `../02_BUSINESS_RULES/PLAYERS_AND_OWNERSHIP.md` e `../02_BUSINESS_RULES/STATISTICS.md`.
 
@@ -41,6 +41,11 @@ aberturas (cartas jogadas nos 2 primeiros turnos) **separadas por quem começou*
 turno em que perdeu o controle), ritmo (turno do 1º ataque e do 1º prêmio) e cartas jogadas (taxa quando saiu × não saiu).
 Filtro Todas / Começando / Indo em segundo. Mínimo de 3 partidas por item. Ao lado da Diferença, "sem ela: V–D" mostra o
 placar das partidas sem a carta (desde 2026.11.07-1): com 2–0 sem ela, um −27 p.p. é sorte, não sinal.
+
+## Deck novo sem listas: nome provisório (v2026.11.10-2, D-050)
+`decks.palpite_deck_detalhe`: se o Pokémon que mais causou dano (`resumo.deck_palpite`) não está em 5% ou mais das listas de
+nenhum deck importado (`decks.carta_sem_listas`), o deck se chama por esse Pokémon (método `provisorio`, sempre "incerto"), em vez
+do palpite do NB2, que só escolhe entre decks conhecidos. Com as listas importadas, o NB2 volta a decidir.
 
 ## Deck do adversário "incerto" (v2026.11.06-2, D-042)
 `analises.visao` devolve `deck_adv_incerto` quando o deck do adversário foi adivinhado pelo NB2 com confiança abaixo de

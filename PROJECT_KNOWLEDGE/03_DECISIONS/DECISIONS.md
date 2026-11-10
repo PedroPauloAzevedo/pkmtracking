@@ -182,6 +182,20 @@
   TCG Live (inclusive o código das cartas do log, D-049) no dia da chegada. Uso leve: um arquivo por coleção que falta, só texto,
   só enquanto o TCGdex não tem; o TCGdex continua a fonte principal. Riscos aceitos: projeto de fã sem termos publicados e formato
   "alpha" (se mudar, a função não monta nada e a biblioteca segue como antes). Medição em `EVIDENCE.md`.
+- **D-050 · Deck sem listas de torneio: nome provisório pelo Pokémon que mais causou dano** (10/11/2026, v2026.11.10-2; R2 da
+  pesquisa de outros apps, ideia do Full Bench). *Por quê:* o NB2 só escolhe entre decks com listas importadas; no começo de uma
+  coleção ele chama um deck novo de outro conhecido (Talonflame Dusknoir virou "Tera Box" em 09/11). Regra escolhida pela medição
+  (`EVIDENCE.md`): só quando o atacante principal não está em nenhuma lista (5% ou mais); critérios mais largos (atacante fora da
+  lista do deck escolhido; vários Pokémon vistos fora dela) disparavam em 10 a 22 partidas do Pedro, quase sempre por engano (cartas
+  de suporte como Fan Rotom e cartas do adversário nas "vistas"). Sempre marcado "incerto" (D-042).
+- **D-049 · Logs com o código das cartas: o leitor tira o código do nome e guarda à parte** (10/11/2026, v2026.11.10-1; R1 da
+  pesquisa de outros apps, `REFERENCE_TOOLS.md`). *Por quê:* todos os apps de replay pedem para desmarcar "Hide card IDs from
+  export"; com isso o log escreve `(sv6_200) Dragapult ex` e o Coletor gravava o código como parte do nome (cartas vistas,
+  identificação do deck, uso de cartas e replay erravam). Tirar o código em `limpar_linha` mantém um único caminho de leitura (o
+  resto do programa não muda) e guardar os códigos em `resumo.codigos` permite a versão exata em `resolver_versoes`, que passa na
+  frente das pistas (só quando todos os códigos daquele nome do jogador apontam para a mesma arte). Medição: as 137 partidas do
+  Pedro (sem códigos) têm leitura idêntica antes e depois; o log público com códigos tem a mesma leitura da versão sem códigos
+  (teste em `teste_tracker.py`, seção 9).
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,

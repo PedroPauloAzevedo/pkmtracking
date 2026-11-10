@@ -24,6 +24,15 @@ próprio, com o código do Mac dentro de `if sys.platform == ...` e os 4 testes 
 - **M6. Instalação mais simples no Mac** (hoje: Terminal + Python instalado à parte; não há equivalente do instalador .exe).
 - **M7. Diagnóstico** (`diagnostico.py`): confirmar onde o TCG Live do Mac guarda arquivos.
 
+## Vindos da pesquisa de outros apps (09/11/2026; detalhes em `../03_DECISIONS/REFERENCE_TOOLS.md`, seção 2)
+- **R1. Códigos das cartas no log** (`(sv6_200) Dragapult ex`, opção *Hide card IDs from export* desmarcada): hoje o leitor guarda
+  o código como parte do nome. Tirar do nome e usar para a versão exata da carta (medição + `VERSAO_LEITOR`). Alta.
+- **R2. Nome provisório para deck sem listas de torneio** (pelo Pokémon que mais causou dano, à moda do Full Bench). Alta.
+- **R3. Segunda fonte para coleção nova** antes do TCGdex (exportação do TCG Live do malie.io; conferir termos). Média.
+- **R4. Modo automático:** começar/parar com o jogo, segunda tentativa de cópia e pedido de clique, espera de 12 s, repetida em 10 min. Média.
+- **R5. Replay:** alvo dos contadores pelo texto do ataque; casos de teste no estilo do Training Court; "melhores momentos". Média/baixa.
+- **R6. Log em português** (decisão do Pedro). **R7. Skills** "coach de partida" e "importar coleção" (ver seção 3). A decidir.
+
 ## Prioridade média
 2. **Instalador como Release no GitHub** (hoje só existe o .exe da 2026.11.02-2, no computador do Pedro). Gerar um .exe novo e publicar
    como Release; o README já não promete Releases (corrigido em 05/11/2026).

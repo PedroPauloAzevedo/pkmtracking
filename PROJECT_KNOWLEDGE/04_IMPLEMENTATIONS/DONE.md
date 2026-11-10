@@ -9,6 +9,8 @@
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
 | 2026.11.10-3 | 10/11/2026 | (ver `git log`: "v2026.11.10-3") | Coleção nova na biblioteca no mesmo dia |
+| 2026.11.10-2 | 10/11/2026 | (ver `git log`: "v2026.11.10-2") | Deck novo ganha nome provisório |
+| 2026.11.10-1 | 10/11/2026 | (ver `git log`: "v2026.11.10-1") | Logs com o código das cartas |
 | 2026.11.09-4 | 09/11/2026 | (ver `git log`: "v2026.11.09-4") | Início novo: Hoje, tema e dados coletados |
 | 2026.11.09-3 | 09/11/2026 | (ver `git log`: "v2026.11.09-3") | Tema claro ou escuro à sua escolha |
 | 2026.11.09-2 | 09/11/2026 | (ver `git log`: "v2026.11.09-2") | Cartas x matchups com colunas do mesmo tamanho |
@@ -41,6 +43,13 @@
 - `tracker/cartas.py`: `MALIE`, `id_malie`, `set_do_malie`, `_completar_pelo_malie`; `atualizar` troca o arquivo do malie.io pelo do
   TCGdex quando ele tiver a coleção com cartas.
 - `teste_tracker.py`: conversão e chave da coleção. Medição (Delta Reign pelas duas fontes) em `EVIDENCE.md`.
+## 2026.11.10-2 — 10/11/2026 (R2 da pesquisa de outros apps; D-050)
+- `tracker/decks.py`: `carta_sem_listas`; `palpite_deck_detalhe` com o método `provisorio`; `incerto` marca o provisório.
+- `teste_tracker.py`: caso do atacante sem listas. Medição de três critérios em `EVIDENCE.md`.
+## 2026.11.10-1 — 10/11/2026 (R1 da pesquisa de outros apps; D-049)
+- `tracker/leitor.py`: `CODIGO_CARTA`, `limpar_linha` tira o código, `_codigos_da_linha`, `resumo.codigos`. `banco.VERSAO_LEITOR` = 4.
+- `tracker/cartas.py`: `id_do_codigo`. `tracker/decks.py`: `resolver_versoes` usa os códigos antes das pistas.
+- `teste_tracker.py` seção 9. Medição em `EVIDENCE.md`.
 
 ## 2026.11.09-4 — 09/11/2026 (pedido do Pedro: reformular o Início com a sugestão 5, o tema e dados gerais)
 - `web/js/partidas.js`: `contasHoje`, `painelHoje`, `painelDados`; `renderPainel` com tema no topo, Hoje, Geral, últimas partidas
