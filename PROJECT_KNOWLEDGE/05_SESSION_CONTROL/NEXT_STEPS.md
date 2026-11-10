@@ -1,6 +1,6 @@
 # Próximos passos
 
-> Atualizado em 06/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
+> Atualizado em 09/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
 > **Atualize este arquivo no fim de toda sessão.** Sempre pergunte ao Pedro antes de começar algo grande.
 
 1. **Pedro, no GitHub:** proteger a `main`, convidar o segundo desenvolvedor (Write), 2FA, apagar ramos ao juntar, esconder o
@@ -19,7 +19,8 @@
    experimento a12 (ramo `docs/etapas-de-ataque`, sem commit).
 5. **Quando sair a próxima coleção:** acrescentar a linha dela em `tracker/colecoes.py` (`COLECOES`, com a data de lançamento nos
    EUA) numa versão nova, se ela ainda não estiver no TCGdex. Conferir se o TCG Live continuou liberando na véspera, às 10h do
-   Pacífico (D-036).
+   Pacífico (D-036). Nos torneios online a época começa no lançamento (D-048): conferir no Limitless se os torneios do dia do
+   lançamento já usam a coleção.
 6. **Perguntar ao Pedro se ele guardou o texto completo do estudo do servidor central** e, se sim, registrar em `BACKLOG.md`.
 7. **Trazer para `testes/experimentos/` os scripts de medição do replay, das mãos, dos prêmios, dos descartes e do Risky Ruins**
    (hoje fora do repositório), para que qualquer sessão consiga repetir as medições de `EVIDENCE.md`. É código de teste: pedir

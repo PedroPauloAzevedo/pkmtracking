@@ -301,10 +301,22 @@ def analise_pessoal(nick, de=None, ate=None, deck=None, tag=None, lista=None, ad
 FONTES = {"grandes": "Grandes eventos", "online": "Torneios online", "todos": "Todos"}
 
 
-def torneios_da_fonte(fonte="todos", de=None, ate=None, ids=None):
+def torneios_da_fonte(fonte="todos", de=None, ate=None, ids=None, epoca=None):
     """Ids dos torneios que entram nas contas: só Standard (confirmado ou ainda não confirmado).
     fonte: 'grandes' (Limitless Labs), 'online' (play.limitlesstcg.com) ou 'todos'.
-    de/ate (AAAA-MM-DD): só os torneios dessas datas (época do meta). ids: só entre estes torneios."""
+    de/ate (AAAA-MM-DD): só os torneios dessas datas. ids: só entre estes torneios.
+    epoca (id da coleção): só os torneios da época dessa coleção, com o começo de cada fonte: nos grandes eventos a
+    validade em torneio, nos online o lançamento (colecoes.py; D-048). Uma época que ainda não começou numa fonte não
+    traz nenhum torneio dela (ex.: Delta Reign nos grandes eventos antes de 20/11/2026)."""
+    if epoca:
+        from . import colecoes
+        saida = []
+        for f, tipo in (("grandes", "torneios"), ("online", "online")):
+            e = next((x for x in colecoes.epocas(tipo) if x["id"] == epoca), None) if fonte in (f, "todos") else None
+            if e:
+                d2, a2 = max(filter(None, [de, e["de"]])), min(filter(None, [ate, e["ate"]]), default=None)
+                saida += torneios_da_fonte(f, d2, a2, ids)
+        return saida
     sql, params = "SELECT id FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')", []
     if fonte == "grandes":
         sql += " AND COALESCE(fonte, 'labs') = 'labs'"
@@ -784,7 +796,7 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
                 continue
             sem_n, sem_v = n_total - n, v_total - v
             com = placar(v, n - v)
-            saida.append({"carta": c, **com, "taxa_sem": round(100 * sem_v / sem_n, 1) if sem_n else None, "sem_n": sem_n,
+            saida.append({"carta": c, **com, "taxa_sem": round(100 * sem_v / sem_n, 1) if sem_n else None, "sem_n": sem_n, "sem_v": sem_v,
                           "diferenca": round(com["taxa"] - 100 * sem_v / sem_n, 1) if sem_n and com["taxa"] is not None else None})
         return sorted(saida, key=lambda x: (-(x["n"]), x["carta"]))
 

@@ -30,8 +30,8 @@ async function renderMeta() {
       </tbody></table></div>
     </section>
     <section class="panel"><h2>Tendência do meta</h2><p class="sub">Participação dos 8 decks mais jogados em cada torneio importado, em ordem de data.</p>
-      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5), marcas: marcasEpoca(tend.torneios.map(t => t.data || ''), 'torneios') }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
-      ${tend.torneios.length > 1 && marcasEpoca(tend.torneios.map(t => t.data || ''), 'torneios').length ? '<p class="muted" style="font-size:.82rem">A linha tracejada marca onde uma coleção nova passou a valer nos torneios: dali em diante o meta pode ser outro. Para ver uma época só, escolha em <b>Época</b>, acima.</p>' : ''}
+      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5), marcas: marcasEpoca(tend.torneios.map(t => t.data || ''), tipoMeta()) }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
+      ${tend.torneios.length > 1 && marcasEpoca(tend.torneios.map(t => t.data || ''), tipoMeta()).length ? `<p class="muted" style="font-size:.82rem">A linha tracejada marca onde uma coleção nova passou a valer ${S.fonte === 'grandes' ? 'nos grandes eventos' : 'nos torneios online'}: dali em diante o meta pode ser outro. Para ver uma época só, escolha em <b>Época</b>, acima.</p>` : ''}
     </section>
     <section class="panel" id="qual-deck"><h2>Qual deck jogar?</h2><p class="muted">Calculando…</p></section>`;
   ligarSeletor(renderMeta);
@@ -148,7 +148,7 @@ async function renderDeck() {
         ${p.melhores.map(j => `<tr><td class="n">${j.posicao}</td><td>${esc(j.nome)}</td><td class="muted">${esc((S.torneios.find(t => t.id === j.torneio) || {}).nome || j.torneio)}</td><td>${j.ace_spec == null ? '<span class="muted">sem lista</span>' : j.ace_spec ? esc(j.ace_spec) : '<span class="muted">nenhuma</span>'}</td><td class="n">${j.v}–${j.d}–${j.e}</td></tr>`).join('')}
         </tbody></table></div></section>
       <section class="panel"><h2>Presença por torneio</h2>
-        ${p.por_torneio.length > 1 ? graficoLinhas([{ nome: p.nome, valores: p.por_torneio.map(t => t.pct), cor: 'var(--p1)' }], p.por_torneio.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...p.por_torneio.map(t => t.pct)) / 5) * 5), marcas: marcasEpoca(p.por_torneio.map(t => t.data || ''), 'torneios') }) : '<p class="muted">Importe mais torneios para ver a evolução.</p>'}
+        ${p.por_torneio.length > 1 ? graficoLinhas([{ nome: p.nome, valores: p.por_torneio.map(t => t.pct), cor: 'var(--p1)' }], p.por_torneio.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...p.por_torneio.map(t => t.pct)) / 5) * 5), marcas: marcasEpoca(p.por_torneio.map(t => t.data || ''), tipoMeta()) }) : '<p class="muted">Importe mais torneios para ver a evolução.</p>'}
         <table><tbody>${Object.entries(p.colocacoes).map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('')}</tbody></table>
       </section>
     </div>

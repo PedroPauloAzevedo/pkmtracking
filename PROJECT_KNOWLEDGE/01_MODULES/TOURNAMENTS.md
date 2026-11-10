@@ -1,6 +1,6 @@
 # Campeonatos: importação e análises de meta
 
-> Atualizado em 06/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
+> Atualizado em 09/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
 > `tracker/estrategia.py`, `tracker/variantes.py`, `tracker/regressao.py`, `tracker/decks.py` (arquétipos, ícones),
 > `web/js/campeonatos.js`. Fórmulas e limites: `../02_BUSINESS_RULES/STATISTICS.md`. Decisões: D-018 a D-021.
 
@@ -11,6 +11,10 @@
 - **Formato do evento:** o Labs não mostra; vem do índice `limitlesstcg.com/tournaments?show=100` (`tr[data-format]`) e da página
   do evento (id do Labs). Cache em `dados/limitless_formatos.json`. Evento que não aparece no índice fica "formato não
   confirmado" e **entra** nas contas; outro formato fica no banco e **fora** das contas.
+- **Decks novos antes dos grandes eventos:** vêm dos torneios online. Cada jogador traz o deck (`id`, nome e ícones do Limitless);
+  deck que o cadastro ainda não tem entra sozinho em `arquetipos` (`importar_online`). Na Delta Reign (06–08/11/2026), Mega
+  Rayquaza e Talonflame Dusknoir apareceram assim. Com `online_min_jogadores` em 256, só um torneio da primeira semana entrava; com
+  64, cerca de dez.
 - **Torneios online:** API pública de play.limitlesstcg.com (`/tournaments?game=PTCG&format=STANDARD`, `/standings` com deck e
   lista, `/pairings`). Sem chave: 50 pedidos a cada 5 min (pausa de 6,5 s, trata 429; ~14 s por torneio). Ids `on-<id>`;
   só torneios com pelo menos `online_min_jogadores` (64) dos últimos `online_dias` (21), no máximo `online_por_vez` (40) por vez.
@@ -20,11 +24,15 @@
 
 ## Análises (Meta e torneios)
 - **Fonte:** Grandes eventos / Online / Todos (`S.fonte` no painel, `torneios_da_fonte` no código). Só torneios Standard.
-- **Época** (desde 2026.11.05-5; D-036): ao lado de Fonte, em todas as telas de análise (`seletorEpoca('torneios')`, `S.epocaMeta`,
-  guardado como `epoca-meta`). Nos torneios a época de uma coleção começa quando ela passa a valer: segunda sexta-feira depois do
-  lançamento nos EUA (`colecoes.validade_torneio`). O painel manda `?de=&ate=` e `app._lista_torneios` deixa só os torneios dessas
-  datas (também com uma escolha de torneios). Quando a próxima coleção já tem data e ainda não vale, a tela avisa
-  (ex.: "Delta Reign passa a valer nos torneios em 20/11/2026"). Os gráficos de tendência e de presença por torneio ganham uma linha
+- **Época** (desde 2026.11.05-5; D-036, D-048): ao lado de Fonte, em todas as telas de análise (`seletorEpoca(tipoMeta())`,
+  `S.epocaMeta`, guardado como `epoca-meta`). Cada fonte tem o seu começo: nos **grandes eventos** a coleção vale na segunda
+  sexta-feira depois do lançamento nos EUA (`colecoes.validade_torneio`, tipo `torneios`); nos **torneios online**, desde o dia do
+  lançamento (`colecoes.inicio_online`, tipo `online`; desde 2026.11.09-1), porque os organizadores liberam a coleção assim que ela
+  chega ao TCG Live. O painel manda `?epoca=<coleção>` e `analises.torneios_da_fonte(..., epoca=)` aplica a data de cada fonte (com
+  "Todos", um torneio online de 06/11 já é Delta Reign e um grande evento só a partir de 20/11). O seletor mostra as épocas dos
+  grandes eventos com a fonte Grandes eventos e as dos online com Online ou Todos. `?de=&ate=` continua aceito (mesmas datas para
+  todas as fontes). Quando a próxima coleção ainda não vale nos grandes eventos, a tela avisa e diz desde quando os online já a
+  usam (ex.: "Delta Reign passa a valer nos grandes eventos em 20/11/2026 ... Os torneios online já a usam desde 06/11/2026"). Os gráficos de tendência e de presença por torneio ganham uma linha
   tracejada onde começa cada época.
 - **Meta:** participação, taxa de vitória, conversão para o corte, matriz de matchups, tendência (por semana quando há mais de 20 torneios).
 - **Qual deck jogar?:** força de cada deck (Bradley-Terry), taxa esperada contra o campo, pior confronto, equilíbrio do meta.
