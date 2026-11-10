@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.10-6",
+    "data": "2026-11-10",
+    "titulo": "Listas completas no Perfil de deck",
+    "mudancas": [
+      "Em Meta e torneios > Perfil de deck, a seção \"Listas\" mostra as listas de torneio do deck, das mais recentes para as mais antigas: colocação, jogador, torneio e todas as cartas. Cada lista tem \"Abrir no Limitless\" e \"Copiar lista\", no formato que o TCG Live importa.",
+      "Dá para buscar uma combinação de cartas: digite uma carta e aperte Enter, depois outra. Aparecem só as listas que têm todas elas (por exemplo, Mega Rayquaza com Unfair Stamp e Tapu Koko ex)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-6\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se o Perfil de deck parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.10-5",
     "data": "2026-11-10",
     "titulo": "Replay com melhores momentos",

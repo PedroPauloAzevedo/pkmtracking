@@ -1,6 +1,6 @@
 # Campeonatos: importação e análises de meta
 
-> Atualizado em 09/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
+> Atualizado em 10/11/2026. Código: `tracker/limitless.py` (importação), `tracker/analises.py` (meta, matchups, perfil, cartas),
 > `tracker/estrategia.py`, `tracker/variantes.py`, `tracker/regressao.py`, `tracker/decks.py` (arquétipos, ícones),
 > `web/js/campeonatos.js`. Fórmulas e limites: `../02_BUSINESS_RULES/STATISTICS.md`. Decisões: D-018 a D-021.
 
@@ -39,6 +39,10 @@
 - **Matchups:** taxa real (padrão) ou ajustada (opção).
 - **Perfil de deck:** participação, matchups, melhores colocações (com a ACE SPEC de cada jogador), esqueleto, taxa esperada,
   **ACE SPEC e versões** (tabela com cada ACE SPEC e "diferença provável").
+- **Perfil de deck > Listas** (desde 2026.11.10-6): `analises.listas_deck`, rota `/api/deck/<arq>/listas` — listas do deck nos
+  torneios escolhidos, da mais recente para a mais antiga (empate: melhor colocação), com todas as cartas por seção, o link da lista no
+  Limitless (Labs ou play.limitlesstcg.com) e "Copiar lista" no formato do TCG Live. `?com=` (repetível): só as listas que têm todas
+  essas cartas (nome ou pedaço do nome). Só listas importadas (as do topo de cada torneio: "Listas do topo").
 - **Uso de cartas:** % das listas, média de cópias, distribuição, vitória com/sem; **Efeito de cada carta** (regressão
   logística, desde 2026.11.02-7) quando um deck é escolhido; comparação de duas listas.
 - **Cartas x matchups:** para um deck, a taxa contra cada adversário conforme o número de cópias de uma carta (só jogadores

@@ -1,6 +1,6 @@
 # Contratos entre as partes do programa
 
-> Atualizado em 09/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
+> Atualizado em 10/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
 > (COLLABORATION, seção 6). Formato do banco e de `dados_json`: [`DATA_MODEL.md`](DATA_MODEL.md).
 
 ## 1. Camadas (nomes usados nas conversas → módulos que existem)
@@ -102,6 +102,7 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `GET /api/qual-deck` | `qual_deck` | campeonatos.js | Taxa esperada contra o campo, pior confronto e equilíbrio do meta (tracker/estrategia.py). |
 | `GET /api/tendencia` | `tendencia` | campeonatos.js |  |
 | `GET /api/deck/<arq>` | `deck` | campeonatos.js |  |
+| `GET /api/deck/<arq>/listas` | `deck_listas` | campeonatos.js | Listas do deck (desde 2026.11.10-6): `{total, achadas, listas: [{torneio, torneio_nome, data, fonte, jogadores_torneio, jogador, posicao, v, d, e, link, cartas: [{carta, qtd, set, numero, carta_id, secao}], total_cartas}], cartas}`. Aceita os filtros de torneio (`fonte`, `epoca`, `torneios`), `com` (repetível) e `limite` (até 200). |
 | `GET /api/cartas` | `api_cartas` | biblioteca.js, campeonatos.js |  |
 | `GET /api/efeito-cartas` | `api_efeito_cartas` | campeonatos.js | Efeito de cada carta na chance de vencer, descontados os confrontos (regressão logística, tracker/regressao.py |
 | `GET /api/jogadores` | `jogadores_torneio` | campeonatos.js |  |

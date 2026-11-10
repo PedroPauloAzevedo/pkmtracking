@@ -9,6 +9,7 @@ Taxa de vitória = vitórias / (vitórias + derrotas + empates), como no Limitle
 Com poucas partidas a taxa engana, então mostramos também o intervalo de confiança de
 95% (método de Wilson): a faixa onde a taxa "verdadeira" provavelmente está.
 """
+import json
 import math
 from collections import Counter, defaultdict
 
@@ -821,3 +822,77 @@ def decisoes(nick, de=None, ate=None, deck=None, lista=None, adv=None, min_parti
         "perdeu_controle": [{"turno": t, "derrotas": q} for t, q in sorted(perdeu_controle.items())],
         "ritmo": resumo_ritmo(ritmo),
     }
+
+
+# ------------------------------------------------------------------ listas do deck (Perfil de deck > Listas)
+
+LABS_URL = "https://labs.limitlesstcg.com"
+PLAY_URL = "https://play.limitlesstcg.com"
+
+
+def _link_lista(t, labs_id):
+    """Página da lista no Limitless: Labs para os grandes eventos, play.limitlesstcg.com para os online."""
+    if (t.get("fonte") or "labs") == "online":
+        try:
+            api_id = (json.loads(t.get("info_json") or "{}") or {}).get("api_id")
+        except ValueError:
+            api_id = None
+        return f"{PLAY_URL}/tournament/{api_id}/player/{labs_id}/decklist" if api_id else ""
+    return f"{LABS_URL}/{t['id']}/player/{labs_id}/decklist"
+
+
+def listas_deck(arq, torneios=None, com=(), limite=20):
+    """Listas de torneio de um deck, da mais recente para a mais antiga (empate: melhor colocação), com todas as cartas.
+    com: nomes (ou pedaços de nome) de cartas que a lista precisa ter, todas ao mesmo tempo (ex.: ["Unfair Stamp", "Tapu Koko"]).
+    Devolve {total (listas do deck), achadas (com as cartas pedidas), listas [...limite], cartas (nomes para sugerir, das mais usadas)}."""
+    from . import cartas as cartas_mod
+    from .leitor import normalizar_nome_carta
+    if torneios is None:
+        torneios = torneios_da_fonte("todos")
+    if not torneios:
+        return {"total": 0, "achadas": 0, "listas": [], "cartas": []}
+    marcas = ",".join("?" * len(torneios))
+    tor = {r["id"]: r for r in banco.consultar(f"SELECT id, nome, data, fonte, info_json, jogadores FROM torneios WHERE id IN ({marcas})", tuple(torneios))}
+    jogs = {(r["torneio"], r["labs_id"]): r for r in banco.consultar(
+        f"SELECT torneio, labs_id, nome, posicao, v, d, e FROM t_jogadores WHERE arquetipo=? AND torneio IN ({marcas})", (arq, *torneios))}
+    por_lista = defaultdict(list)
+    for r in banco.consultar(
+            f"SELECT l.torneio, l.labs_id, l.carta, l.carta_base, l.set_code, l.numero, l.qtd, l.carta_id FROM t_listas l "
+            f"JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id WHERE j.arquetipo=? AND l.torneio IN ({marcas})",
+            (arq, *torneios)):
+        por_lista[(r["torneio"], r["labs_id"])].append(r)
+    termos = [normalizar_nome_carta(c).strip() for c in com if c and c.strip()]
+    uso = Counter()
+    for linhas in por_lista.values():
+        for c in {normalizar_nome_carta(l["carta_base"] or l["carta"]) for l in linhas}:
+            uso[c] += 1
+    nome_bonito = {}
+    for linhas in por_lista.values():
+        for l in linhas:
+            nome_bonito.setdefault(normalizar_nome_carta(l["carta_base"] or l["carta"]), l["carta_base"] or l["carta"])
+
+    def tem(linhas, termo):
+        return any(termo in normalizar_nome_carta(l["carta_base"] or l["carta"]) or termo in normalizar_nome_carta(l["carta"]) for l in linhas)
+
+    achadas = [k for k, linhas in por_lista.items() if k in jogs and all(tem(linhas, t) for t in termos)]
+    achadas.sort(key=lambda k: (tor.get(k[0], {}).get("data") or "", -(jogs[k]["posicao"] or 99999)), reverse=True)
+    ind = cartas_mod.indice()
+    secao = {"Pokemon": "Pokémon", "Trainer": "Treinador", "Energy": "Energia"}
+    saida = []
+    for k in achadas[:limite]:
+        t, j = tor.get(k[0], {"id": k[0]}), jogs[k]
+        itens = []
+        for l in por_lista[k]:
+            cat = (ind["cartas"].get(l["carta_id"]) or {}).get("categoria") if l["carta_id"] else ""
+            if not cat:
+                cat = "Energy" if l["carta"].endswith("Energy") else "Trainer"
+            itens.append({"carta": l["carta"], "qtd": l["qtd"] or 1, "set": l["set_code"] or "", "numero": l["numero"] or "",
+                          "carta_id": l["carta_id"] or "", "secao": secao.get(cat, "Treinador")})
+        ordem = {"Pokémon": 0, "Treinador": 1, "Energia": 2}
+        itens.sort(key=lambda x: (ordem[x["secao"]], -x["qtd"], x["carta"]))
+        saida.append({"torneio": k[0], "torneio_nome": t.get("nome") or k[0], "data": (t.get("data") or "")[:10],
+                      "fonte": t.get("fonte") or "labs", "jogadores_torneio": t.get("jogadores"),
+                      "jogador": j["nome"], "posicao": j["posicao"], "v": j["v"], "d": j["d"], "e": j["e"],
+                      "link": _link_lista(t, k[1]), "cartas": itens, "total_cartas": sum(x["qtd"] for x in itens)})
+    return {"total": len([k for k in por_lista if k in jogs]), "achadas": len(achadas), "listas": saida,
+            "cartas": [nome_bonito[c] for c, _ in uso.most_common(150)]}

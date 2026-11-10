@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.10-6 | 10/11/2026 | (ver `git log`: "v2026.11.10-6") | Listas completas no Perfil de deck |
 | 2026.11.10-5 | 10/11/2026 | (ver `git log`: "v2026.11.10-5") | Replay com melhores momentos |
 | 2026.11.10-4 | 10/11/2026 | (ver `git log`: "v2026.11.10-4") | Modo automático mais leve |
 | 2026.11.10-3 | 10/11/2026 | (ver `git log`: "v2026.11.10-3") | Coleção nova na biblioteca no mesmo dia |
@@ -40,6 +41,12 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.10-6 — 10/11/2026 (pedido do Pedro: listas dos últimos decks e busca por combinação de cartas)
+- `tracker/analises.py`: `listas_deck`, `_link_lista`; `app.py`: rota `/api/deck/<arq>/listas`.
+- `web/js/campeonatos.js`: `desenharListas`, `textoListaTCGLive` (seção "Listas" do Perfil de deck); `web/estilo.css`.
+- `teste_tracker.py`: listas, link e filtro por cartas. Conferido com os dados do Pedro: 56 listas de Mega Rayquaza, 2 com Unfair
+  Stamp e Tapu Koko ex (busca em 0,15 s).
 
 ## 2026.11.10-5 — 10/11/2026 (R5 da pesquisa de outros apps)
 - `web/js/replay.js`: `TIPOS_MOMENTO`, `momentosDo`, `irMomento`, botões ◆, "Só os melhores momentos", Shift + seta; `web/estilo.css`.

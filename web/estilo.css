@@ -442,3 +442,9 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 /* Replay: melhores momentos (ataques, nocautes, prêmios) */
 .rp-momentos { display: inline-flex; align-items: center; gap: 6px; }
 .rp-log div.momento { font-weight: 600; color: var(--ink); }
+/* Perfil de deck > Listas */
+.listas-deck { display: flex; flex-direction: column; gap: 6px; }
+.lista-deck { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--surface); }
+.lista-deck summary { cursor: pointer; }
+.lista-secoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.lista-linha { display: flex; align-items: center; gap: 6px; font-size: .86rem; padding: 2px 0; }

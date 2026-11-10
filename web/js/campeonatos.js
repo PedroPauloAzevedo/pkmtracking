@@ -152,12 +152,61 @@ async function renderDeck() {
         <table><tbody>${Object.entries(p.colocacoes).map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('')}</tbody></table>
       </section>
     </div>
+    <section class="panel" id="p-listas"></section>
     <section class="panel"><h2>Esqueleto da lista</h2>
       ${p.esqueleto.length ? tabelaCartas(p.esqueleto) : '<p class="muted">Nenhuma lista importada para este deck. Ao importar um torneio, escolha quantas listas do topo baixar.</p>'}
     </section>` : ''}`;
   ligarSeletor(renderDeck);
-  if (S.deck) desenharVariantes(S.deck);
+  if (S.deck) { desenharVariantes(S.deck); desenharListas(S.deck); }
   $('#p-deck').onchange = e => { S.deck = e.target.value; renderDeck(); };
+}
+
+// Perfil de deck > Listas: as listas de torneio mais recentes do deck, completas, com link do Limitless e "Copiar" no formato que o
+// TCG Live importa. Busca por cartas: só as listas que têm TODAS as cartas escolhidas (ex.: Mega Rayquaza com Unfair Stamp e Tapu
+// Koko ex). S.listasCom guarda as cartas escolhidas de cada deck.
+S.listasCom = S.listasCom || {};
+function textoListaTCGLive(l) {
+  const grupos = [['Pokémon', 'Pokémon'], ['Treinador', 'Trainer'], ['Energia', 'Energy']];
+  return grupos.map(([sec, rot]) => { const cs = l.cartas.filter(c => c.secao === sec); if (!cs.length) return '';
+    return `${rot}: ${cs.reduce((a, c) => a + c.qtd, 0)}\n` + cs.map(c => `${c.qtd} ${c.carta}${c.set ? ` ${c.set} ${c.numero}` : ''}`).join('\n'); })
+    .filter(Boolean).join('\n\n') + `\n\nTotal Cards: ${l.total_cartas}`;
+}
+async function desenharListas(arq, limite = 20) {
+  const el = $('#p-listas'); if (!el) return;
+  const com = S.listasCom[arq] || [];
+  el.innerHTML = '<h2>Listas</h2><p class="muted">Buscando as listas…</p>';
+  const qs = [qsTorneios(), ...com.map(c => 'com=' + encodeURIComponent(c)), 'limite=' + limite].join('&');
+  let r; try { r = await api(`/api/deck/${encodeURIComponent(arq)}/listas?${qs}`); } catch (e) { el.innerHTML = `<h2>Listas</h2><p class="aviso erro">${esc(e.message)}</p>`; return; }
+  if (S.deck !== arq || !$('#p-listas')) return;
+  const secoes = l => ['Pokémon', 'Treinador', 'Energia'].map(sec => { const cs = l.cartas.filter(c => c.secao === sec); if (!cs.length) return '';
+    return `<div><span class="label">${sec} · ${cs.reduce((a, c) => a + c.qtd, 0)}</span>${cs.map(c => `<div class="lista-linha"><b>${c.qtd}</b> <span class="cel-carta">${mini(c.carta, c.carta_id)}${esc(c.carta)}</span> <span class="muted">${esc(c.set)} ${esc(c.numero)}</span></div>`).join('')}</div>`; }).join('');
+  el.innerHTML = `<h2>Listas</h2>
+    <p class="sub">As listas de torneio deste deck, das mais recentes para as mais antigas, com todas as cartas. Para achar uma combinação, junte cartas abaixo: aparecem só as listas que têm todas elas.</p>
+    <div class="row" style="gap:8px">
+      <label class="label" for="l-carta">Com as cartas</label>
+      <input id="l-carta" list="l-sugestoes" placeholder="Digite uma carta e aperte Enter" style="width:260px" autocomplete="off">
+      <datalist id="l-sugestoes">${r.cartas.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+      <button id="l-add">Adicionar</button>
+      ${com.map((c, i) => `<button class="chip" data-tirar="${i}" title="Tirar esta carta da busca">${esc(c)} ✕</button>`).join('')}
+      ${com.length ? '<button id="l-limpar">Limpar</button>' : ''}
+    </div>
+    <p class="muted num">${com.length ? `<b>${r.achadas}</b> de ${r.total} listas têm ${com.map(esc).join(' + ')}.` : `${r.total} listas deste deck nos torneios escolhidos.`}</p>
+    ${r.listas.length ? `<div class="listas-deck">${r.listas.map((l, i) => `<details class="lista-deck">
+      <summary><span class="num">${fmtData(l.data)}</span> <b>${l.posicao ? l.posicao + 'º' : '–'}</b>${l.jogadores_torneio ? `<span class="muted"> de ${l.jogadores_torneio}</span>` : ''} · ${esc(l.jogador)} <span class="muted">· ${esc(l.torneio_nome)} · ${l.v ?? 0}–${l.d ?? 0}–${l.e ?? 0}</span></summary>
+      <div class="row" style="gap:8px;margin:8px 0"><button data-copiar="${i}">Copiar lista (TCG Live)</button>${l.link ? `<a class="btn" href="${esc(l.link)}" target="_blank" rel="noopener">Abrir no Limitless ↗</a>` : ''}</div>
+      <div class="lista-secoes">${secoes(l)}</div></details>`).join('')}</div>
+      ${r.achadas > r.listas.length ? `<div class="row"><button id="l-mais">Mostrar mais (${r.achadas - r.listas.length} restantes)</button></div>` : ''}`
+      : `<p class="muted">${com.length ? 'Nenhuma lista com essa combinação de cartas.' : 'Nenhuma lista importada deste deck. Ao importar um torneio, escolha quantas listas do topo baixar.'}</p>`}`;
+  const adicionar = () => { const v = el.querySelector('#l-carta').value.trim(); if (!v) return;
+    S.listasCom[arq] = [...com.filter(c => c.toLowerCase() !== v.toLowerCase()), v]; desenharListas(arq); };
+  el.querySelector('#l-add').onclick = adicionar;
+  el.querySelector('#l-carta').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); adicionar(); } };
+  el.querySelectorAll('[data-tirar]').forEach(b => b.onclick = () => { S.listasCom[arq] = com.filter((_, i) => i !== Number(b.dataset.tirar)); desenharListas(arq); });
+  if (el.querySelector('#l-limpar')) el.querySelector('#l-limpar').onclick = () => { S.listasCom[arq] = []; desenharListas(arq); };
+  if (el.querySelector('#l-mais')) el.querySelector('#l-mais').onclick = () => desenharListas(arq, limite + 30);
+  el.querySelectorAll('[data-copiar]').forEach(b => b.onclick = async () => {
+    try { await navigator.clipboard.writeText(textoListaTCGLive(r.listas[Number(b.dataset.copiar)])); toast('Lista copiada: no TCG Live, Decks > Importar'); }
+    catch (e) { toast('Não consegui copiar a lista'); } });
 }
 
 // Uso de cartas > Efeito de cada carta: regressão logística com o confronto como ponto de partida (tracker/regressao.py).
