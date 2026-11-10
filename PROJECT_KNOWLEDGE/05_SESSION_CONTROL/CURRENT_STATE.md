@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-> Atualizado em 09/11/2026 (depois da publicação da 2026.11.09-4). **Atualize este arquivo no fim de toda sessão**
+> Atualizado em 10/11/2026 (2026.11.10-1 a -5 prontas, sem publicar). **Atualize este arquivo no fim de toda sessão**
 > (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
@@ -15,6 +15,12 @@
 - **Achado de 09/11:** o Coletor do Pedro importa torneios online só com 256 jogadores ou mais; desde a Delta Reign só um passou.
   Sem listas dos decks novos, o NB2 chamou um Talonflame Dusknoir de "Tera Box" (partida de 09/11 às 20:12). Recomendado ao Pedro:
   Torneios > "com pelo menos 64 jogadores" > Verificar agora.
+
+- **Prontas, ainda não publicadas (10/11/2026):** 2026.11.10-1 a -5, da pesquisa de outros apps (`../03_DECISIONS/REFERENCE_TOOLS.md`):
+  códigos das cartas no log (D-049), nome provisório para deck sem listas (D-050), coleção nova pelo malie.io (D-051), modo
+  automático leve e replay com melhores momentos. Ramos encadeados (cada um contém os anteriores): `docs/ferramentas-referencia` →
+  `fix/codigos-cartas` → `feature/deck-provisorio` → `feature/cartas-malie` → `feature/automatico-esperto` → `feature/replay-momentos`.
+- Rotina mensal de verificação dos outros apps: tarefa agendada no computador do Pedro (dia 10, 19h; detalhes em `CLAUDE.local.md`).
 
 ## Ramos e pastas
 - `main` = o que está no GitHub. Tudo entra por Pull Request e só o Pedro junta (D-043); no computador dele, o "publicar" autoriza o
