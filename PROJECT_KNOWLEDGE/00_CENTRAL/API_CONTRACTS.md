@@ -36,7 +36,7 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `GET /api/status` | `status` | base.js, campeonatos.js, inicio.js, partidas.js, programa.js |  |
 | `GET /api/atalhos` | `ver_atalhos` | inicio.js, partidas.js, programa.js |  |
 | `POST /api/atalhos` | `mudar_atalhos` | inicio.js, partidas.js, programa.js | {"area": true} cria o atalho na Área de Trabalho; {"inicializar": false} tira do início do Windows. |
-| `GET /api/decisoes` | `api_decisoes` | decisoes.js |  |
+| `GET /api/decisoes` | `api_decisoes` | decisoes.js | Cada carta (aberturas e cartas jogadas) traz `n`, `v`, `d`, `taxa`, `taxa_sem`, `sem_n`, `sem_v` (desde 2026.11.07-1) e `diferenca`. |
 | `GET /api/regras-standard` | `regras_standard` | regras_standard.js |  |
 | `POST /api/regras-standard/atualizar` | `regras_standard_atualizar` | regras_standard.js |  |
 | `GET /api/novidades` | `ver_novidades` | inicio.js |  |
@@ -96,6 +96,7 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `DELETE /api/torneios/<tid>` | `apagar_torneio` | campeonatos.js |  |
 | `GET /api/resumo-geral` | `resumo_geral` | partidas.js | Números do Início ("Dados coletados", desde 2026.11.09-4): `partidas` (n, suas, amigos, de, ate, dias, automatico, area, manual), `torneios` (n, grandes, online, jogadores, listas, ultimo; só Standard), `decks_conhecidos`, `biblioteca` (cartas, colecoes), `epoca` (atual no TCG Live) e `proxima` (grandes eventos). Só leitura. |
 | `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas) e pela validade em torneio. |
+| `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): `live` (chegada ao TCG Live, suas partidas), `torneios` (validade nos grandes eventos) e `online` (lançamento, torneios online; desde 2026.11.09-1); `proxima` com as mesmas três chaves. As telas de Meta mandam `?epoca=<id>` às rotas de torneio (`_lista_torneios`: cada fonte com o seu começo, D-048). |
 | `GET /api/meta` | `meta` | campeonatos.js |  |
 | `GET /api/variantes/<arq>` | `variantes_deck` | campeonatos.js | Variantes do deck (listas agrupadas por semelhança) com a taxa de vitória de cada uma. |
 | `GET /api/qual-deck` | `qual_deck` | campeonatos.js | Taxa esperada contra o campo, pior confronto e equilíbrio do meta (tracker/estrategia.py). |

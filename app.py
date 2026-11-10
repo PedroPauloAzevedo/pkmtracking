@@ -755,13 +755,14 @@ def apagar_torneio(tid):
 
 def _lista_torneios():
     """Torneios escolhidos no painel; sem escolha, todos os Standard da fonte (grandes eventos, online ou todos).
-    ?de=&ate= (época do meta escolhida no painel) deixa só os torneios dessas datas."""
+    ?de=&ate= deixa só os torneios dessas datas; ?epoca=<coleção> (época escolhida no painel) deixa só os da época dessa
+    coleção, que começa num dia diferente nos grandes eventos e nos torneios online (D-048)."""
     a = request.args
-    de, ate = a.get("de") or None, a.get("ate") or None
+    de, ate, epoca = a.get("de") or None, a.get("ate") or None, a.get("epoca") or None
     t = [x for x in a.get("torneios", "").split(",") if x]
     if t:
-        return analises.torneios_da_fonte("todos", de, ate, ids=t) if (de or ate) else t
-    return analises.torneios_da_fonte(a.get("fonte", "grandes"), de, ate)
+        return analises.torneios_da_fonte("todos", de, ate, ids=t, epoca=epoca) if (de or ate or epoca) else t
+    return analises.torneios_da_fonte(a.get("fonte", "grandes"), de, ate, epoca=epoca)
 
 
 @app.get("/api/resumo-geral")
@@ -795,11 +796,12 @@ def resumo_geral():
 
 @app.get("/api/epocas")
 def epocas():
-    """Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas) e pela validade em torneio."""
+    """Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas), pela validade nos grandes eventos
+    (torneios) e pelo lançamento (torneios online)."""
     primeira = banco.consultar("SELECT MIN(capturada_em) AS d FROM partidas")[0]["d"]
     primeiro_t = banco.consultar("SELECT MIN(data) AS d FROM torneios WHERE COALESCE(formato, '') IN ('', 'standard')")[0]["d"]
-    return jsonify({"live": colecoes.epocas("live"), "torneios": colecoes.epocas("torneios"),
-                    "proxima": {"live": colecoes.proxima("live"), "torneios": colecoes.proxima("torneios")},
+    return jsonify({"live": colecoes.epocas("live"), "torneios": colecoes.epocas("torneios"), "online": colecoes.epocas("online"),
+                    "proxima": {t: colecoes.proxima(t) for t in ("live", "torneios", "online")},
                     "primeira_partida": (primeira or "")[:10], "primeiro_torneio": (primeiro_t or "")[:10]})
 
 

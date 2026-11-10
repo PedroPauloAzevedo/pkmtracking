@@ -11,20 +11,22 @@ async function renderDecisoes() {
   if (telaVelha(vez)) return;
   const decks = [...new Set(todos.partidas.map(l => l.meu_deck).filter(Boolean))].sort();
   const advs = [...new Set(todos.partidas.map(l => l.deck_adv).filter(Boolean))].sort();
+  // placar das partidas sem a carta (ex.: "sem ela: 2–0"): mostra de quantos jogos saiu a comparação
+  const semPlacar = c => `<span class="ic">sem ela: ${c.sem_v}–${c.sem_n - c.sem_v}</span>`;
   const dif = x => x == null ? '<span class="muted">–</span>' : `<b style="color:${x > 0 ? 'var(--good)' : x < 0 ? 'var(--bad)' : 'var(--muted)'}">${x > 0 ? '+' : ''}${fmt(x, 0)} p.p.</b>`;
   const tabelaCartas = (lista, vazio) => {
     const l = lista.filter(c => c.n >= f.min && c.sem_n > 0);
     if (!l.length) return `<p class="muted">${vazio}</p>`;
     return `<div class="tabela"><table><thead><tr><th>Carta</th><th class="n">Partidas</th><th class="n">V–D</th><th>Vitória quando jogou</th><th>Quando não jogou</th><th>Diferença</th></tr></thead><tbody>
       ${l.map(c => `<tr><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td><td class="n">${c.n}</td><td class="n">${c.v}–${c.d}</td><td>${taxaHtml(c)}</td>
-        <td>${pct(c.taxa_sem)} <span class="ic">${c.sem_n} partidas</span></td><td>${dif(c.diferenca)}</td></tr>`).join('')}</tbody></table></div>`;
+        <td>${pct(c.taxa_sem)} ${semPlacar(c)}</td><td>${dif(c.diferenca)}</td></tr>`).join('')}</tbody></table></div>`;
   };
   // versão compacta para as duas colunas (começando × indo em segundo)
   const tabelaCompacta = (lista, vazio) => {
     const l = lista.filter(c => c.n >= f.min && c.sem_n > 0);
     if (!l.length) return `<p class="muted" style="font-size:.85rem">${vazio}</p>`;
     return `<div class="tabela"><table><thead><tr><th>Carta</th><th class="n">Partidas</th><th>Vitória quando jogou</th><th>Diferença</th></tr></thead><tbody>
-      ${l.map(c => `<tr><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td><td class="n">${c.n}</td><td>${taxaHtml(c)}</td><td title="sem ela: ${pct(c.taxa_sem)} em ${c.sem_n} partidas">${dif(c.diferenca)}</td></tr>`).join('')}</tbody></table></div>`;
+      ${l.map(c => `<tr><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td><td class="n">${c.n}</td><td>${taxaHtml(c)}</td><td title="sem ela: ${pct(c.taxa_sem)} em ${c.sem_n} partidas">${dif(c.diferenca)} ${semPlacar(c)}</td></tr>`).join('')}</tbody></table></div>`;
   };
   const po = r.por_ordem || {};
   const ROT_ORDEM = { primeiro: 'Começando', segundo: 'Indo em segundo' };
@@ -66,7 +68,7 @@ async function renderDecisoes() {
       </section>
     </div>
     <section class="panel"><h2>${f.ordem ? `Aberturas ${ROT_ORDEM[f.ordem].toLowerCase()}` : 'Aberturas por quem começou'} <span class="muted" style="font-weight:400;font-size:.85rem">(seus 2 primeiros turnos)</span></h2>
-      <p class="muted" style="font-size:.85rem">Cartas que você jogou, ligou ou evoluiu nos seus dois primeiros turnos. Regra do Standard: quem começa não ataca nem joga Apoiador no 1º turno, e ninguém evolui no próprio 1º turno. Por isso a abertura de quem começa é outro jogo, e cada lado só compara partidas com a mesma ordem. Diferença = taxa quando jogou − taxa quando não jogou.</p>
+      <p class="muted" style="font-size:.85rem">Cartas que você jogou, ligou ou evoluiu nos seus dois primeiros turnos. Regra do Standard: quem começa não ataca nem joga Apoiador no 1º turno, e ninguém evolui no próprio 1º turno. Por isso a abertura de quem começa é outro jogo, e cada lado só compara partidas com a mesma ordem. Diferença = taxa quando jogou − taxa quando não jogou; "sem ela" mostra vitórias–derrotas das partidas sem a carta (com poucas partidas, a diferença é quase só sorte).</p>
       ${f.ordem ? tabelaCartas(r.aberturas, `Nenhuma carta de abertura com pelo menos ${f.min} partidas (e alguma partida sem ela).`)
         : `<div class="grid2">${colunaOrdem('primeiro')}${colunaOrdem('segundo')}</div>`}
       ${r.sem_ordem && !f.ordem ? `<p class="muted" style="font-size:.8rem">${r.sem_ordem} partida(s) sem a informação de quem começou ficaram fora da separação.</p>` : ''}</section>

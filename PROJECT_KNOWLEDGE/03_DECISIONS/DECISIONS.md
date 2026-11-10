@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 06/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 09/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -168,6 +168,14 @@
   `if sys.platform == ...`, sem mudar o comportamento no Windows (os amigos usam Windows); PR de plataforma diz em qual sistema foi
   testado. Não muda D-002 (continua nada para celular). Levantamento em `../00_CENTRAL/ARCHITECTURE.md` ("Windows × Mac") e lista em
   `../04_IMPLEMENTATIONS/BACKLOG.md` ("Paridade no Mac").
+- **D-048 · Torneios online: a época de uma coleção começa no dia do lançamento, não na validade dos grandes eventos**
+  (09/11/2026, v2026.11.09-1; pedido do Pedro; ajusta D-036). *Por quê:* os torneios online do Limitless são jogados no TCG Live e os
+  organizadores liberam a coleção assim que ela chega ao jogo. Em 06–08/11/2026 vários se chamavam "DELTA REIGN LEGAL" e, no maior
+  deles (494 jogadores, 07/11), o deck mais jogado foi o Mega Rayquaza (70), da coleção nova. Com a regra de D-036 esses torneios
+  ficavam na época anterior até 20/11, misturados com o meta antigo. O começo é o dia do lançamento nos EUA porque o Limitless dá a
+  data em UTC e a coleção chega ao jogo às 17h ou 18h UTC da véspera (D-036): os torneios da véspera, quase todos antes da chegada,
+  ficam na época anterior; os poucos do dia do lançamento que começaram antes da chegada (nenhum na Delta Reign) ficariam na nova.
+  Os grandes eventos continuam com a validade em torneio. Código: `colecoes.inicio_online`, `analises.torneios_da_fonte(epoca=)`.
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,

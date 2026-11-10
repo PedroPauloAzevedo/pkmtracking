@@ -249,6 +249,10 @@ assert (et[0]["nome"], et[0]["de"], et[0]["fim"], et[0]["ate"]) == ("30th Celebr
 assert (et[1]["nome"], et[1]["fim"], et[1]["ate"]) == ("Pitch Black", "2026-09-25", "2026-09-24"), et[1]
 assert colecoes.proxima("torneios", agora=agora) == {"nome": "Delta Reign", "de": "2026-11-20"}
 assert colecoes.proxima("live", agora=agora) is None
+# torneios online usam a coleção desde o lançamento (D-048): Delta Reign já é a época atual deles em 05/11 à noite
+eo = colecoes.epocas("online", agora="2026-11-06T12:00:00")
+assert (eo[0]["nome"], eo[0]["de"], eo[0]["fim"]) == ("Delta Reign", "2026-11-06", None) and eo[1]["ate"] == "2026-11-05", eo[:2]
+assert colecoes.proxima("online", agora="2026-11-06T12:00:00") is None
 # coleção nova que aparece na biblioteca de cartas (depois da última da tabela) entra sozinha; promo e coleção pequena, não
 novas = {"tC": ("Futura", "2027-01-29", 120), "tD": ("MEP Black Star Promos", "2027-02-05", 100), "tE": ("Mini", "2027-02-12", 20)}
 for sid, (nome, data, total) in novas.items():
@@ -260,7 +264,7 @@ for sid in novas:
 g = cli.get("/api/resumo-geral").get_json()  # números gerais do Início ("Dados coletados")
 assert g["partidas"]["n"] > 0 and g["partidas"]["n"] == g["partidas"]["suas"] + g["partidas"]["amigos"] and g["torneios"]["n"] > 0, g
 r = cli.get("/api/epocas").get_json()
-assert r["live"] and r["torneios"] and r["primeira_partida"] and r["primeiro_torneio"] and set(r["proxima"]) == {"live", "torneios"}, r
+assert r["live"] and r["torneios"] and r["online"] and r["primeira_partida"] and r["primeiro_torneio"] and set(r["proxima"]) == {"live", "torneios", "online"}, r
 # filtro de época nas suas partidas: de (com hora) e antes (fim da época, com hora, não incluído)
 n_total = lambda q: cli.get("/api/partidas" + q).get_json()["total"]["n"]
 assert n_total("?antes=2000-01-01T00:00:00") == 0 and n_total("?de=2000-01-01T10:00:00") == n_total("") > 0
@@ -271,6 +275,22 @@ dia = lambda d, n: (__import__("datetime").date.fromisoformat(d) + __import__("d
 jog = lambda q: cli.get("/api/meta?fonte=todos" + q).get_json()["jogadores_considerados"]
 assert jog("") > 0 and jog(f"&de={dt}") == jog("") and jog(f"&de={dia(dt, 1)}") == 0 and jog(f"&ate={dia(dt, -1)}") == 0
 assert jog(f"&torneios={tid}&de={dt}&ate={dt}") == jog("") and jog(f"&torneios={tid}&de={dia(dt, 1)}") == 0
+# ?epoca=<coleção>: cada fonte com o seu começo (D-048). O torneio sintético é um grande evento; marcado como online, passa a
+# seguir a época dos online (que começa no lançamento, antes da validade nos grandes eventos)
+e_t, e_o = colecoes.epoca_de(dt, "torneios"), colecoes.epoca_de(dt, "online")
+outra = next(e for e in colecoes.epocas("online") if e["id"] not in (e_t["id"], e_o["id"]))
+assert jog(f"&epoca={e_t['id']}") == jog("") and jog(f"&epoca={outra['id']}") == 0 and jog(f"&epoca={e_t['id']}&torneios={tid}") == jog("")
+assert cli.get(f"/api/meta?fonte=online&epoca={e_t['id']}").get_json()["jogadores_considerados"] == 0
+with banco.conectar() as con:
+    con.execute("UPDATE torneios SET fonte = 'online' WHERE id = ?", (tid,))
+banco.marcar_mudanca_torneios()
+try:
+    assert jog(f"&epoca={e_o['id']}") == jog("") > 0 and jog(f"&epoca={outra['id']}") == 0
+    assert cli.get(f"/api/meta?fonte=grandes&epoca={e_o['id']}").get_json()["jogadores_considerados"] == 0
+finally:
+    with banco.conectar() as con:
+        con.execute("UPDATE torneios SET fonte = 'labs' WHERE id = ?", (tid,))
+    banco.marcar_mudanca_torneios()
 print("épocas:", [(e["nome"], e["de"]) for e in colecoes.epocas("live", agora=agora)[:3]], f"| torneio {tid} em", dt)
 
 # 7) identificação do deck: a conta das listas dos torneios fica guardada até os torneios mudarem (antes: 2 minutos)

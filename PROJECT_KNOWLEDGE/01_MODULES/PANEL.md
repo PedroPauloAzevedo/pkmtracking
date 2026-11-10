@@ -29,6 +29,9 @@
   (`prefers-color-scheme`); Claro e Escuro ficam em `<html data-tema>` e valem por cima dele. A escolha fica no `localStorage`
   (`tema`), aplicada por um script curto no `<head>` do `index.html` (a tela não pisca) e pelos botões em `base.js` (`aplicarTema`).
   Cor nova no `estilo.css`: dar o valor escuro nos dois lugares (media query e `:root[data-tema="escuro"]`).
+- **Tabela de colunas iguais** (`table.matriz.iguais`, desde 2026.11.09-2; Cartas x matchups): `table-layout: fixed`, as 3
+  primeiras colunas com 80px e as de deck dividindo o resto por igual; o nome do deck quebra em linhas. A tabela tem `min-width` de
+  ~112px por deck (com muitos decks, rola para o lado).
 - **Largura e altura** (desde 2026.11.06-6): `main` vai até 2000px (antes 1240px, que deixava faixa vazia em telas largas); as
   listas `.tabela.alta` têm altura máxima `max(520px, 100vh − 300px)`, o log do replay `max(380px, 100vh − 420px)` e a coluna
   lateral do replay `clamp(300px, 22vw, 420px)`. Textos longos continuam com largura própria (`.sub` 70ch, `.rg-doc` 82ch).
