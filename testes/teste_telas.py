@@ -227,6 +227,12 @@ def tema_manual(pagina):
     fundo = lambda: pagina.evaluate("getComputedStyle(document.body).backgroundColor")
     claro, escuro = "rgb(238, 241, 245)", "rgb(15, 20, 32)"
     try:
+        # os botões ficam no Início, junto com "Hoje" e "Dados coletados" (2026.11.09-4)
+        pagina.evaluate("location.hash = '#x'; location.hash = '#painel'")
+        pagina.wait_for_selector("#tema [data-tema='escuro']", timeout=20000)
+        for parte in ("#in-hoje", "#in-dados"):
+            if not pagina.query_selector(parte):
+                problemas.append(f"Início sem {parte}")
         pagina.click("#tema [data-tema='escuro']")
         if fundo() != escuro:
             problemas.append(f"Escuro: fundo {fundo()}")

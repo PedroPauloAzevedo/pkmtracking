@@ -20,7 +20,12 @@
 - Visual: tema claro/escuro por `prefers-color-scheme`; tokens CSS em `:root` (acento amarelo `#E8B321`/`#F2C443`, azul `#2B63D9`);
   fontes Bricolage Grotesque e IBM Plex Sans/Mono. Textos curtos, em português simples, explicando o porquê ("provável entre",
   "diferença provável", "formato não confirmado"); avisos por toast e notificação do Windows.
-- **Tema** (desde 2026.11.09-3): botões Claro / Automático / Escuro no canto da navegação (`#tema`). Automático segue o Windows
+- **Início** (desde 2026.11.09-4; `renderPainel` em `partidas.js`): cabeçalho com o tema; "Hoje" (`contasHoje`/`painelHoje`:
+  placar do dia, sessão = partidas com menos de `SESSAO_MIN` = 60 min entre uma e outra, última partida, sequência atual, V–D dos
+  últimos 14 dias com partidas; segue o filtro Jogador); números gerais; últimas partidas; "Dados coletados" (`painelDados`, rota
+  `/api/resumo-geral`, contagens do banco inteiro); colar log à mão.
+- **Tema** (desde 2026.11.09-3; no Início desde 2026.11.09-4): botões Claro / Automático / Escuro no topo do Início (`#tema`,
+  `seletorTema`/`ligarTema` em `base.js`). Automático segue o Windows
   (`prefers-color-scheme`); Claro e Escuro ficam em `<html data-tema>` e valem por cima dele. A escolha fica no `localStorage`
   (`tema`), aplicada por um script curto no `<head>` do `index.html` (a tela não pisca) e pelos botões em `base.js` (`aplicarTema`).
   Cor nova no `estilo.css`: dar o valor escuro nos dois lugares (media query e `:root[data-tema="escuro"]`).

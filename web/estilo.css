@@ -39,10 +39,26 @@ nav a { color: var(--muted); text-decoration: none; padding: 7px 10px; border-ra
 nav a:hover { color: var(--ink); background: var(--sunken); }
 nav a.ativo { color: var(--ink); background: var(--sunken); box-shadow: inset 3px 0 0 var(--accent); }
 nav .grupo { font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); padding: 12px 10px 4px; font-weight: 600; }
-nav .tema { display: flex; gap: 2px; padding: 3px; margin: 0 10px 6px; background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; }
-nav .tema button { flex: 1; background: none; border: none; padding: 4px 6px; font-size: .74rem; font-weight: 500; color: var(--muted); border-radius: 6px; cursor: pointer; }
-nav .tema button:hover { color: var(--ink); }
-nav .tema button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
+.tema { display: inline-flex; gap: 2px; padding: 3px; background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; flex: none; }
+.tema button { background: none; border: none; padding: 4px 10px; font-size: .78rem; font-weight: 500; color: var(--muted); border-radius: 6px; cursor: pointer; }
+.tema button:hover { color: var(--ink); }
+.tema button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
+/* ---- Início: cabeçalho com o tema, "Hoje" (placar do dia, sessão e dias) e "Dados coletados" */
+.inicio-topo { display: flex; align-items: flex-start; gap: 16px; }
+.inicio-topo > header { flex: 1; min-width: 0; }
+.hoje-dias { display: flex; gap: 14px; align-items: flex-end; overflow-x: auto; padding: 4px 2px 2px; }
+.hoje-dia { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .74rem; color: var(--muted); flex: none; }
+.hoje-dia b { color: var(--ink); font: 600 .78rem var(--f-mono); }
+.hoje-col { width: 26px; display: flex; flex-direction: column-reverse; gap: 2px; }
+.hoje-col i { display: block; border-radius: 3px; }
+.hoje-col i.v { background: var(--good); } .hoje-col i.d { background: var(--bad); }
+.hoje-dia.hoje-atual b { color: var(--accent); }
+.legenda-vd { display: flex; gap: 14px; font-size: .78rem; color: var(--muted); }
+.legenda-vd span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.legenda-vd .v::before { background: var(--good); } .legenda-vd .d::before { background: var(--bad); }
+.dados-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px 18px; }
+.dado { display: flex; flex-direction: column; gap: 1px; padding: 8px 0; border-top: 1px solid var(--line); }
+.dado .label { font-size: .72rem; } .dado b { font: 700 1.05rem var(--f-display); } .dado small { color: var(--muted); font-size: .78rem; }
 nav .estado { margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; font-size: 0.8rem; color: var(--muted); }
 .luz { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
 .luz.on { background: var(--good); } .luz.off { background: var(--bad); } .luz.warn { background: var(--accent); }
@@ -314,7 +330,7 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
   .app { grid-template-columns: 1fr; background: none; }
   nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 16px; }
   nav .grupo, nav .estado { display: none; }
-  nav .tema { margin: 0 0 0 auto; }
+  .inicio-topo { flex-wrap: wrap; }
   nav details.programa { flex-basis: 100%; margin-top: 4px; }
   main { padding: 18px 16px 48px; }
   .grid2, .grid3 { grid-template-columns: 1fr; }
