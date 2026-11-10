@@ -1,6 +1,6 @@
 # Replay da partida
 
-> Atualizado em 05/11/2026. Código: `tracker/replay.py` (montagem), `tracker/decks.py` (`resolver_versoes`, `_limites_ps`),
+> Atualizado em 10/11/2026. Código: `tracker/replay.py` (montagem), `tracker/decks.py` (`resolver_versoes`, `_limites_ps`),
 > `web/js/replay.js` (desenho). Rota: `/api/partidas/<id>/replay`. Tela: `#replay-<id>`.
 > Regras do log: `../02_BUSINESS_RULES/BATTLE_LOG_FORMAT.md`. Decisões: D-010 a D-013, D-032, D-035, D-045 e D-046. Medições: `../03_DECISIONS/EVIDENCE.md`.
 
@@ -91,3 +91,13 @@ compatíveis; (3) a mais usada nas listas dos torneios; (4) a mais recente.
 - A mão do adversário só mostra o que o log revela; a ordem das cartas na mão não é a do jogo.
 - Prêmios do adversário e prêmios que ninguém pegou nunca aparecem (o log não os mostra). Se um dia aparecer no log uma carta que
   olha ou troca prêmios (nenhuma até 05/11/2026), a regra "desde o começo" precisa ser revista para ela.
+
+## Melhores momentos (desde 2026.11.10-5; ideia do Dead Draw)
+Na tela (`web/js/replay.js`): `momentosDo` lista os quadros de ataque, nocaute, prêmio e fim; os botões ◆ (e Shift + seta) pulam
+entre eles (`irMomento`); com "Só os melhores momentos", o Reproduzir passa só por eles. No log lateral, esses quadros ficam em negrito.
+
+## Comparação com o Dead Draw (10/11/2026)
+O Dead Draw passou a usar o texto do ataque/Habilidade para achar o alvo dos contadores e corrigiu o Adrena-Brain (Munkidori) que o
+log escreve com o dono errado. O nosso replay já trata esse defeito (`dono_dos_contadores`): num log público de 19 turnos com 26
+transferências de Adrena-Brain (Training Court, espelho Dragapult), as 26 caíram no Pokémon do adversário. Ler o texto das cartas
+(que o índice da biblioteca não guarda) fica para quando aparecer um caso que as regras atuais erram.

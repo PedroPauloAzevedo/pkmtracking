@@ -260,6 +260,23 @@ def tema_manual(pagina):
     return problemas
 
 
+def replay_momentos(pagina, destino):
+    """Replay: o botão de próximo momento pula para um ataque, nocaute ou prêmio (2026.11.10-5). Devolve os problemas."""
+    problemas = []
+    try:
+        pagina.evaluate("d => { location.hash = '#x'; location.hash = '#' + d; }", destino)
+        pagina.wait_for_selector("#rp-mom-prox", timeout=20000)
+        pagina.click("#rp-mom-prox")
+        r = pagina.evaluate("({ i: S.rp.i, tipo: S.rp.r.quadros[S.rp.i].destaque.tipo, n: S.rp.momentos.length })")
+        if r["n"] and (r["i"] == 0 or r["tipo"] not in ("ataque", "nocaute", "premio", "fim")):
+            problemas.append(f"próximo momento foi para o passo {r['i']} ({r['tipo']})")
+        if not r["n"]:
+            problemas.append("a partida de teste não tem nenhum momento (ataque, nocaute ou prêmio)")
+    except Exception as e:
+        problemas.append(str(e).splitlines()[0])
+    return problemas
+
+
 def main():
     from playwright.sync_api import sync_playwright
     preparar()
@@ -340,6 +357,13 @@ def main():
                   + ("" if not (erros or problemas) else "\n         " + "\n         ".join((problemas + erros)[:6])))
             if erros or problemas:
                 falhas.append("tema")
+            # replay: melhores momentos
+            erros.clear()
+            problemas = replay_momentos(pagina, com_id["replay"])
+            print(("ok    " if not (erros or problemas) else "FALHOU") + " replay: melhores momentos"
+                  + ("" if not (erros or problemas) else " | " + " | ".join((problemas + erros)[:6])))
+            if erros or problemas:
+                falhas.append("replay momentos")
             # busca rápida (Ctrl+K)
             pagina.keyboard.press("Control+K")
             if not pagina.wait_for_selector("#busca-q", timeout=5000):  # o campo da busca (não outro campo da tela)

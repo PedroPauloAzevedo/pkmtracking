@@ -1,5 +1,23 @@
 [
   {
+    "versao": "2026.11.10-5",
+    "data": "2026-11-10",
+    "titulo": "Replay com melhores momentos",
+    "mudancas": [
+      "No replay, os botões ◆ pulam direto para o ataque, nocaute ou prêmio anterior ou seguinte (também com Shift + seta). Marcando \"Só os melhores momentos\", o Reproduzir passa só por eles: dá para rever uma partida inteira em poucos segundos.",
+      "No log ao lado do tabuleiro, ataques, nocautes e prêmios aparecem em destaque."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.10-5\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se o replay parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.09-4",
     "data": "2026-11-09",
     "titulo": "Início novo: Hoje, tema e dados coletados",

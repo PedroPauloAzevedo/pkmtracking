@@ -63,6 +63,17 @@ function maoHtml(j, mao, anterior) {
     <div class="mao-cartas">${cartas || '<span class="mao-vazia">Sem cartas</span>'}</div></div>`;
 }
 
+// Melhores momentos (ideia do Dead Draw, desde 2026.11.10-5): ataques, nocautes, prêmios e o fim. Os botões ◆ pulam entre
+// eles (Shift + seta também) e, com "Só os melhores momentos" marcado, o Reproduzir passa só por eles.
+const TIPOS_MOMENTO = new Set(['ataque', 'nocaute', 'premio', 'fim']);
+const momentosDo = r => r.quadros.map((q, i) => TIPOS_MOMENTO.has(q.destaque.tipo) ? i : -1).filter(i => i >= 0);
+function irMomento(direcao) {
+  if (!S.rp) return;
+  const m = S.rp.momentos, i = S.rp.i;
+  const alvo = direcao > 0 ? m.find(x => x > i) : [...m].reverse().find(x => x < i);
+  if (alvo != null) { S.rp.i = alvo; desenharQuadro(); }
+}
+
 async function renderReplay(id) {
   const vez = novaTela();
   main.innerHTML = '<p class="vazio">Montando o replay…</p>';
@@ -71,7 +82,7 @@ async function renderReplay(id) {
   if (!r.quadros.length) { main.innerHTML = '<div class="aviso erro">Não consegui montar o replay desta partida.</div>'; return; }
   const eu = r.jogadores.includes(r.eu) ? r.eu : r.jogadores[0];
   const adv = r.jogadores.find(j => j !== eu) || '';
-  S.rp = { r, i: 0, eu, adv, timer: null, vel: S.rp?.vel || 900 };
+  S.rp = { r, i: 0, eu, adv, timer: null, vel: S.rp?.vel || 900, momentos: momentosDo(r), soMomentos: S.rp?.soMomentos || false };
   const turnos = r.quadros.map((q, i) => ({ q, i })).filter(x => x.q.destaque.tipo === 'turno' && x.q.vez);
   main.innerHTML = `
     <div class="row"><a class="btn" href="#partida-${id}">← Detalhes da partida</a></div>
@@ -80,6 +91,8 @@ async function renderReplay(id) {
       <button id="rp-ini" title="Início">⏮</button><button id="rp-ant" title="Anterior (←)">◀</button>
       <button id="rp-play" class="primary" title="Reproduzir (espaço)">▶ Reproduzir</button>
       <button id="rp-prox" title="Próximo (→)">▶</button><button id="rp-fim" title="Fim">⏭</button>
+      <span class="rp-momentos"><button id="rp-mom-ant" title="Momento anterior: ataque, nocaute ou prêmio (Shift + ←)">◆ ◀</button><button id="rp-mom-prox" title="Próximo momento: ataque, nocaute ou prêmio (Shift + →)">▶ ◆</button>
+        <label class="row" style="gap:5px;font-size:.82rem" title="O Reproduzir passa só pelos ataques, nocautes e prêmios"><input type="checkbox" id="rp-so-mom" ${S.rp.soMomentos ? 'checked' : ''}>Só os melhores momentos</label></span>
       <input type="range" id="rp-barra" min="0" max="${r.quadros.length - 1}" value="0" aria-label="Posição no replay">
       <select id="rp-turno" aria-label="Ir para o turno"><option value="">Ir para o turno…</option>${turnos.map((t, k) => `<option value="${t.i}">Turno ${k + 1} · ${esc(t.q.vez)}</option>`).join('')}</select>
       <select id="rp-vel" aria-label="Velocidade">${[[1600, 'Lento'], [900, 'Normal'], [450, 'Rápido']].map(([v, t]) => `<option value="${v}" ${S.rp.vel == v ? 'selected' : ''}>${t}</option>`).join('')}</select>
@@ -88,7 +101,7 @@ async function renderReplay(id) {
       <div class="mesa" id="rp-mesa"></div>
       <aside class="rp-lateral">
         <section class="panel" id="rp-destaque"></section>
-        <div class="rp-log" id="rp-log">${r.quadros.map((q, i) => `<div data-i="${i}" class="${q.destaque.tipo === 'turno' ? 'turno' : ''}">${q.destaque.tipo === 'turno' && q.vez ? `Turno ${turnos.findIndex(t => t.i === i) + 1} · ` : ''}${esc(q.texto)}</div>`).join('')}</div>
+        <div class="rp-log" id="rp-log">${r.quadros.map((q, i) => `<div data-i="${i}" class="${q.destaque.tipo === 'turno' ? 'turno' : TIPOS_MOMENTO.has(q.destaque.tipo) ? 'momento' : ''}">${q.destaque.tipo === 'turno' && q.vez ? `Turno ${turnos.findIndex(t => t.i === i) + 1} · ` : ''}${esc(q.texto)}</div>`).join('')}</div>
       </aside>
     </div>`;
   const ir = i => { S.rp.i = Math.max(0, Math.min(r.quadros.length - 1, i)); desenharQuadro(); };
@@ -98,6 +111,8 @@ async function renderReplay(id) {
   $('#rp-turno').onchange = e => { if (e.target.value !== '') ir(Number(e.target.value)); e.target.value = ''; };
   $('#rp-vel').onchange = e => { S.rp.vel = Number(e.target.value); if (S.rp.timer) { alternarPlay(); alternarPlay(); } };
   $('#rp-play').onclick = alternarPlay;
+  $('#rp-mom-ant').onclick = () => irMomento(-1); $('#rp-mom-prox').onclick = () => irMomento(1);
+  $('#rp-so-mom').onchange = e => { S.rp.soMomentos = e.target.checked; };
   $('#rp-log').onclick = e => { const d = e.target.closest('[data-i]'); if (d) ir(Number(d.dataset.i)); };
   desenharQuadro();
 }
@@ -106,7 +121,13 @@ function alternarPlay() {
   if (S.rp.timer) { clearInterval(S.rp.timer); S.rp.timer = null; }
   else {
     if (S.rp.i >= S.rp.r.quadros.length - 1) S.rp.i = 0;
+    if (S.rp.soMomentos && !S.rp.momentos.some(x => x > S.rp.i)) S.rp.i = 0;
     S.rp.timer = setInterval(() => {
+      if (S.rp.soMomentos) {  // só os melhores momentos: pula direto para o próximo
+        const prox = S.rp.momentos.find(x => x > S.rp.i);
+        if (prox == null) { alternarPlay(); return; }
+        S.rp.i = prox; desenharQuadro(); return;
+      }
       if (S.rp.i >= S.rp.r.quadros.length - 1) { alternarPlay(); return; }
       S.rp.i++; desenharQuadro();
     }, S.rp.vel);
@@ -143,6 +164,7 @@ function desenharQuadro() {
 }
 document.addEventListener('keydown', e => {
   if (aba() !== 'replay' || !S.rp || ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+  if (e.shiftKey && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { irMomento(e.key === 'ArrowRight' ? 1 : -1); e.preventDefault(); return; }
   if (e.key === 'ArrowRight') { S.rp.i = Math.min(S.rp.i + 1, S.rp.r.quadros.length - 1); desenharQuadro(); e.preventDefault(); }
   if (e.key === 'ArrowLeft') { S.rp.i = Math.max(S.rp.i - 1, 0); desenharQuadro(); e.preventDefault(); }
   if (e.key === ' ') { alternarPlay(); e.preventDefault(); }
