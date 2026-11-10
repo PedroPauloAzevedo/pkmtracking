@@ -1,6 +1,6 @@
 # Captura de partidas (área de transferência e modo automático)
 
-> Atualizado em 05/11/2026. Código: `tracker/coletor.py`, `tracker/auto_export.py`, `tracker/cobertura.py`, `tracker/avisos.py`,
+> Atualizado em 10/11/2026. Código: `tracker/coletor.py`, `tracker/auto_export.py`, `tracker/cobertura.py`, `tracker/avisos.py`,
 > `tracker/diagnostico.py`. Regras relacionadas: `../02_BUSINESS_RULES/PLAYERS_AND_OWNERSHIP.md`. Decisões: D-005, D-006, D-007, D-014, D-015, D-016.
 
 ## Como uma partida entra no programa
@@ -34,13 +34,19 @@ Não lê a memória nem os arquivos do jogo e não joga: só reconhece botões e
   padrão 0,85), confere na tela inteira no mesmo tamanho. O botão Battle Log é pequeno e na cópia reduzida passava raspando.
 - O processo usa coordenadas em pixels reais (`SetProcessDPIAware`), para tela com zoom de 125%, 150%...
 
+**Leve com o jogo fechado** (desde 2026.11.10-4; ideia do Full Bench): no Windows, antes de cada olhada, `estado_do_jogo()` procura
+a janela "Pokemon TCG Live". Fechada ou minimizada: nada de foto da tela, só nova conferência em 5 s (`ESPERA_SEM_JOGO`), status
+"esperando o jogo abrir"/"jogo minimizado". Medido em 10/11/2026 no computador do Pedro: cada olhada (foto da tela + redução) custa
+~120 ms a cada 2 s; a conferência da janela, ~7 ms. Fora do Windows, olha a tela como antes.
+
 **Como captura** (`_capturar`):
 1. Cobre o botão Continue com um quadro vermelho (`cobertura.py`, Win32 puro; clicar nele libera).
 2. **Põe o jogo na frente** se outra janela estiver ativa (tecla Alt + `SetForegroundWindow`): com outra janela ativa o clique
    caía no lugar errado ou só "acordava" o jogo.
 3. Clica em Battle Log, espera até ~10 s o botão de exportar aparecer e clica nele; espera o log chegar no coletor (até 4 s).
 4. Se não chegou, tenta mais uma vez. Se ainda não chegou: conta como **perdida**, avisa (notificação do Windows) e segura o
-   Continue mais 20 s para a pessoa copiar à mão.
+   Continue mais 20 s para a pessoa copiar à mão; se o log chegar nesse tempo, libera na hora e a partida deixa de contar como
+   perdida (desde 2026.11.10-4).
 5. Depois de tratar uma tela de resultado, só trata a próxima quando a tela some por 12 s.
 Cada tentativa fica no `dados/programa.log`: `[auto] tentativa N: jogo na frente=..., botão de exportar achado=... (nota ...), log chegou=...`.
 

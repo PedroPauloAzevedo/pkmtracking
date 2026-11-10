@@ -406,6 +406,8 @@ def identificar(vistas):
 def incerto(detalhe):
     """D-042: o deck saiu do NB2 com confiança abaixo de LIMIAR_INCERTO (a10). Ícones e palpite pelo dano não têm medida de
     confiança e não são marcados."""
+    if detalhe and detalhe.get("metodo") == "provisorio":  # D-050: nome provisório (deck sem listas) é sempre incerto
+        return True
     return bool(detalhe and detalhe.get("metodo") == "nb2" and (detalhe.get("confianca") or 0) < LIMIAR_INCERTO)
 
 
@@ -447,8 +449,24 @@ def palpite_deck(resumo, jogador):
     return palpite_deck_detalhe(resumo, jogador)["deck"]
 
 
+def carta_sem_listas(carta):
+    """A carta não aparece (em 5% ou mais das listas) em nenhum deck dos torneios importados: deck que o banco ainda não conhece
+    (ex.: coleção nova antes dos torneios). Sem listas importadas, não dá para saber: False."""
+    perfil, _, _ = _assinaturas()
+    if not perfil or not carta:
+        return False
+    c = normalizar_nome_carta(carta)
+    return all(p.get(c, 0) < 0.05 for p in perfil.values())
+
+
 def palpite_deck_detalhe(resumo, jogador):
-    """Como palpite_deck, com a confiança e o método (para a marca de "incerto", D-042)."""
+    """Como palpite_deck, com a confiança e o método (para a marca de "incerto", D-042).
+    D-050: se o Pokémon que mais causou dano (resumo.deck_palpite, à moda do Full Bench) não está em nenhuma lista de torneio, o
+    deck ainda não tem listas: o nome provisório é esse Pokémon (método "provisorio", sempre "incerto"), no lugar do palpite do
+    NB2, que só pode escolher entre decks conhecidos. Quando as listas chegarem, o NB2 volta a decidir sozinho."""
+    atacante = (resumo.get("deck_palpite") or {}).get(jogador, "")
+    if carta_sem_listas(atacante):
+        return {"deck": atacante, "confianca": None, "metodo": "provisorio"}
     d = identificar_detalhe((resumo.get("vistas") or {}).get(jogador) or {})
     if d["deck"]:
         return d
@@ -651,9 +669,18 @@ def resolver_versoes(rep, partida, eu):
       2. a versão que está na sua lista de "Meus decks" ligada à partida;
       3. a versão mais usada nas listas dos torneios para o deck do adversário (ou no geral);
       4. a versão mais recente.
+    Antes de tudo: se o log traz o código da carta ("(sv6_200) Dragapult ex"; leitor.CODIGO_CARTA), vale a versão do
+    código, desde que todos os códigos daquele nome do jogador apontem para a mesma versão.
     Devolve {jogador: {nome: id da arte básica}}.
     """
     ind = cartas.indice()
+    exatas = {}  # jogador -> nome normalizado -> {ids da arte básica} pelos códigos do log
+    for j, cods in ((partida.get("resumo") or {}).get("codigos") or {}).items():
+        for cod in cods:
+            cid = cartas.id_do_codigo(cod, ind)
+            c = ind["cartas"].get(cid) if cid else None
+            if c:
+                exatas.setdefault(j, {}).setdefault(cartas.normalizar(c["nome"]), set()).add(ind["basica"].get(c["chave"], cid))
     golpes = defaultdict(set)  # (jogador, nome) -> golpes usados
     for q in rep["quadros"]:
         d = q["destaque"]
@@ -677,6 +704,10 @@ def resolver_versoes(rep, partida, eu):
     for j, ns in nomes.items():
         saida[j] = {}
         for nome in ns:
+            pelo_codigo = exatas.get(j, {}).get(cartas.normalizar(nome))
+            if pelo_codigo and len(pelo_codigo) == 1:
+                saida[j][nome] = next(iter(pelo_codigo))
+                continue
             chaves = ind["por_nome"].get(cartas.normalizar(nome)) or []
             if len(chaves) <= 1:
                 continue  # só existe uma versão: o padrão já resolve

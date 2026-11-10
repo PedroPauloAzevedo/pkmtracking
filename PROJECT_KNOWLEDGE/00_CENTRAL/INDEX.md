@@ -1,6 +1,6 @@
 # Índice da documentação do projeto
 
-> Atualizado em 06/11/2026. Este repositório é a **fonte de verdade** do projeto: tudo o que uma sessão nova precisa saber
+> Atualizado em 09/11/2026. Este repositório é a **fonte de verdade** do projeto: tudo o que uma sessão nova precisa saber
 > está aqui ou no código. Conversas antigas do Claude Code e a memória automática do Claude **não** são fonte oficial.
 
 ## Como usar este índice
@@ -50,6 +50,7 @@
 | [`DECISIONS.md`](../03_DECISIONS/DECISIONS.md) | Registro numerado das decisões (e do que foi pesquisado e descartado) | Antes de propor mudança de rumo; ao registrar decisão nova |
 | [`EVIDENCE.md`](../03_DECISIONS/EVIDENCE.md) | Medições que sustentam as decisões (experimentos e1–e10, replay, mãos, modo automático) | Antes de trocar um algoritmo; para repetir uma medição |
 | [`MISSION_REPORT_2026-11-02.md`](../03_DECISIONS/MISSION_REPORT_2026-11-02.md) | Relatório completo da missão de 2/nov (pesquisas, matemática, medições, riscos) | Só ao mexer em análises/estatística a fundo |
+| [`REFERENCE_TOOLS.md`](../03_DECISIONS/REFERENCE_TOOLS.md) | Outros apps de Battle Log (Full Bench, PTCG Tools, Dead Draw, TrainerLog...): o que cada um ensina, Skills que eles têm e a rotina mensal de verificação | Antes de mexer em captura, leitor, replay ou biblioteca; na verificação mensal |
 | [`STATISTICAL_INVENTORY_2026-11-06.md`](../03_DECISIONS/STATISTICAL_INVENTORY_2026-11-06.md) | Inventário de cada método matemático/estatístico: fórmula, parâmetros, testes, experimentos refeitos em 06/11 e classificação (documentado → validado) | Antes de mexer, confiar ou propor troca de qualquer análise |
 | [`STATISTICAL_AUDIT_2026-11-06.md`](../03_DECISIONS/STATISTICAL_AUDIT_2026-11-06.md) | Auditoria do motor estatístico: 10 achados (comprovados, descartados, recomendações) | Antes de confiar numa tela de análise ou propor mudança nela |
 | [`STATISTICAL_HARDENING_2026-11-06.md`](../03_DECISIONS/STATISTICAL_HARDENING_2026-11-06.md) | Rodada de hardening da Skill: ponte só leitura, registro dos experimentos, revisão da independência e da identificação, calibração a fundo, avaliação A–H | Junto com a auditoria; antes de usar a ponte ou citar independência, identificação ou calibração |
