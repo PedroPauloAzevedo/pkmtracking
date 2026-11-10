@@ -94,7 +94,7 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `POST /api/limitless/importar` | `importar` | campeonatos.js |  |
 | `POST /api/sincronizar` | `sincronizar_agora` | campeonatos.js | Procura torneios novos agora, sem esperar o próximo horário. |
 | `DELETE /api/torneios/<tid>` | `apagar_torneio` | campeonatos.js |  |
-| `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas) e pela validade em torneio. |
+| `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): `live` (chegada ao TCG Live, suas partidas), `torneios` (validade nos grandes eventos) e `online` (lançamento, torneios online; desde 2026.11.09-1); `proxima` com as mesmas três chaves. As telas de Meta mandam `?epoca=<id>` às rotas de torneio (`_lista_torneios`: cada fonte com o seu começo, D-048). |
 | `GET /api/meta` | `meta` | campeonatos.js |  |
 | `GET /api/variantes/<arq>` | `variantes_deck` | campeonatos.js | Variantes do deck (listas agrupadas por semelhança) com a taxa de vitória de cada uma. |
 | `GET /api/qual-deck` | `qual_deck` | campeonatos.js | Taxa esperada contra o campo, pior confronto e equilíbrio do meta (tracker/estrategia.py). |

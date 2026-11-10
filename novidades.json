@@ -1,5 +1,24 @@
 [
   {
+    "versao": "2026.11.09-1",
+    "data": "2026-11-09",
+    "titulo": "Época da coleção nova nos torneios online",
+    "mudancas": [
+      "Em Meta e torneios, a Época dos torneios online agora começa no dia do lançamento da coleção, porque os torneios online do Limitless já usam a coleção assim que ela chega ao TCG Live. Antes eles só mudavam de época junto com os grandes eventos (na segunda sexta-feira depois do lançamento) e ficavam misturados com o meta anterior.",
+      "Com a fonte Todos, cada torneio segue a regra da sua fonte. Enquanto a coleção nova não vale nos grandes eventos, a tela avisa desde quando os torneios online já a usam.",
+      "Dica: para ver os decks novos antes dos grandes eventos, em Meta e torneios > Torneios deixe \"Importar também torneios online\" ligado, com pelo menos 64 jogadores, e clique em Verificar agora."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.09-1\" e confirme. O programa reinicia sozinho.",
+      "Se der erro: feche o Coletor (botão direito no ícone perto do relógio > Sair), abra de novo e tente outra vez."
+    ],
+    "passos": [
+      "Nada a fazer. Se a tela parecer igual, aperte F5 na janela do Coletor."
+    ]
+  },
+  {
     "versao": "2026.11.06-6",
     "data": "2026-11-06",
     "titulo": "Telas ocupam a janela inteira",

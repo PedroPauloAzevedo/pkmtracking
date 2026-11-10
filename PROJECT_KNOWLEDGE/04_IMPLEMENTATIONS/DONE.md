@@ -1,6 +1,6 @@
 # Concluído: histórico técnico por versão
 
-> Atualizado em 06/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
+> Atualizado em 09/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
 > `git log`. Aqui fica o que **não** está em nenhum dos dois: o porquê técnico, nomes no código e o que foi testado.
 > Mais recente primeiro. Versões publicadas na `main` de `PedroPauloAzevedo/pkmtracking`.
 
@@ -8,6 +8,7 @@
 |---|---|---|---|
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
+| 2026.11.09-1 | 09/11/2026 | (ver `git log`: "v2026.11.09-1") | Época da coleção nova nos torneios online |
 | 2026.11.06-6 | 06/11/2026 | (ver `git log`: "v2026.11.06-6") | Telas ocupam a janela inteira |
 | 2026.11.06-5 | 06/11/2026 | (ver `git log`: "v2026.11.06-5") | Replay: Energias no Pokémon certo (listas de descarte e ligações ambíguas) |
 | 2026.11.06-4 | 06/11/2026 | (ver `git log`: "v2026.11.06-4") | Log original de cada partida (copiar / baixar .txt) |
@@ -30,6 +31,14 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## 2026.11.09-1 — 09/11/2026 (pedido do Pedro: decks novos antes dos grandes eventos; D-048)
+- `tracker/colecoes.py`: tipo de época `online` (`inicio_online` = dia do lançamento) e `INICIO` com os três tipos.
+- `analises.torneios_da_fonte(..., epoca=)` e `app._lista_torneios` (`?epoca=`): cada fonte com o seu começo; `/api/epocas` com `online`.
+- `web/js/base.js`: `tipoMeta()`, `qsTorneios` manda `?epoca=`, seletor e aviso por fonte; `campeonatos.js`: linha da época nos
+  gráficos pela fonte.
+- `teste_tracker.py` (seção 6): épocas online e `?epoca=` com o torneio sintético como grande evento e como online. Os 4 testes OK;
+  conferido na tela numa cópia com os dados do Pedro e 7 torneios online de 05–08/11 (`EVIDENCE.md`).
 
 ## 2026.11.06-6 — 06/11/2026 (pedido do Pedro: espaço vazio na lateral)
 - `web/estilo.css`: `main` com `max-width: 2000px`; `.tabela.alta`, `.rp-log` e a coluna do replay acompanham a janela.
