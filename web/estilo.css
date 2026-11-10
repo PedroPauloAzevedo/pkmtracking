@@ -439,3 +439,6 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
   body.imprimindo .folha td.tira, body.imprimindo .folha .mais { display: none; }
   .folha th, .folha .marcas-std span, .folha th.sec { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+/* Replay: melhores momentos (ataques, nocautes, prêmios) */
+.rp-momentos { display: inline-flex; align-items: center; gap: 6px; }
+.rp-log div.momento { font-weight: 600; color: var(--ink); }
