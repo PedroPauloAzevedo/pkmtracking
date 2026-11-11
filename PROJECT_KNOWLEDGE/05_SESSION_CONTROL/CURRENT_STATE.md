@@ -1,6 +1,7 @@
 # Estado atual do projeto
 
-> Atualizado em 11/11/2026 (2026.11.11-2 publicada no PR #25; 2026.11.11-3, pontos da dispersão, no ramo `fix/dispersao-nomes`). **Atualize este arquivo no
+> Atualizado em 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
+> Lopunny Froslass, D-055). **Atualize este arquivo no
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão

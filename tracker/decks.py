@@ -110,8 +110,15 @@ def _em_dia(chave, segundos=3600):
     return len(x) < 3 or x[2] == banco.versao_torneios()
 
 
+# Nomes de exibição que o Pedro escolheu no lugar do nome do Limitless (só o nome muda; o slug, as contas e o ícone continuam).
+# Padrão: até 2 Pokémon no nome (11/11/2026: "Ogerpon Meganium Hydrapple" -> "Meganium Hydrapple").
+NOMES_EXIBICAO = {"ogerpon-meganium-hydrapple": "Meganium Hydrapple"}
+# Decks criados pelo Coletor (não existem no Limitless): nome e ícones (D-055).
+ARQUETIPOS_PROPRIOS = {"lopunny-froslass": {"nome": "Lopunny Froslass", "icones": ["lopunny-mega", "froslass-mega"]}}
+
+
 def arquetipos():
-    """slug -> {nome, icones, jogadores} (do cadastro + dos torneios importados)."""
+    """slug -> {nome, icones, jogadores} (do cadastro + dos torneios importados). NOMES_EXIBICAO vale por cima do cadastro."""
     if _em_dia("arq"):
         return _cache["arq"][1]
     versao = banco.versao_torneios()
@@ -122,6 +129,12 @@ def arquetipos():
         a = saida.setdefault(r["arquetipo"], {"slug": r["arquetipo"], "nome": nome_de_slug(r["arquetipo"]),
                                               "icones": [pokemon_id(nome_de_slug(r["arquetipo"]))], "jogadores": 0})
         a["jogadores"] = r["q"]
+    for slug, info in ARQUETIPOS_PROPRIOS.items():
+        a = saida.setdefault(slug, {"slug": slug, "jogadores": 0})
+        a.update(nome=info["nome"], icones=info["icones"])
+    for slug, nome in NOMES_EXIBICAO.items():
+        if slug in saida:
+            saida[slug]["nome"] = nome
     _cache["arq"] = (time.time(), saida, versao)
     return saida
 
@@ -391,10 +404,10 @@ def identificar_detalhe(vistas):
     if chave not in memoria:
         s, confianca = identificar_nb({normalizar_nome_carta(c) for c in vistas if not cartas.eh_energia_basica(c)})
         if s:
-            memoria[chave] = {"deck": regra_dragapult(s, vistas), "confianca": confianca, "metodo": "nb2"}
+            memoria[chave] = {"deck": regra_par(s, vistas), "confianca": confianca, "metodo": "nb2"}
         else:
             ic = _identificar_por_icones(vistas)
-            memoria[chave] = {"deck": regra_dragapult(ic, vistas), "confianca": None, "metodo": "icones" if ic else ""}
+            memoria[chave] = {"deck": regra_par(ic, vistas), "confianca": None, "metodo": "icones" if ic else ""}
     return memoria[chave]
 
 
@@ -405,6 +418,19 @@ def regra_dragapult(deck, vistas):
         return deck
     viu = any("unsparce" in normalizar_nome_carta(c) for c in (vistas or {}))
     return banco.PAR_DRAGAPULT[1] if viu else banco.PAR_DRAGAPULT[0]
+
+
+def regra_lopunny(deck, vistas):
+    """D-055: entre Lopunny Dudunsparce e Lopunny Froslass decide a Mega Froslass ex mostrada (não vista = Lopunny Dudunsparce)."""
+    if deck not in banco.PAR_LOPUNNY:
+        return deck
+    viu = any("mega froslass" in normalizar_nome_carta(c) for c in (vistas or {}))
+    return banco.PAR_LOPUNNY[1] if viu else banco.PAR_LOPUNNY[0]
+
+
+def regra_par(deck, vistas):
+    """Todas as regras próprias de nome de deck nas partidas (D-052 e D-055)."""
+    return regra_lopunny(regra_dragapult(deck, vistas), vistas)
 
 
 def identificar(vistas):

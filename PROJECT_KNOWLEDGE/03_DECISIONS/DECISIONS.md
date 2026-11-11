@@ -214,6 +214,16 @@
   Indigo Plateau. *Diferenças do Indigo:* o critério "a mudança chegou mais ao top 64" virou "fez mais pontos por partida" (só temos
   listas do topo); a energia básica tem o mesmo nome nas duas fontes ("Basic Fire Energy" = "Fire Energy"). Não escolhidos agora: taxa só
   no suíço, excluir variantes da mesma família, empate fora da conta.
+- **D-054 · Nome de exibição do deck pode ser diferente do Limitless** (11/11/2026, v2026.11.11-4; pedido do Pedro). `decks.NOMES_EXIBICAO`
+  troca só o nome mostrado (slug, contas e ícones continuam os do Limitless), aplicado em `decks.arquetipos()`, por onde passam todas
+  as telas. Padrão: até 2 Pokémon no nome. Primeiro caso: "Ogerpon Meganium Hydrapple" → "Meganium Hydrapple".
+- **D-055 · Lopunny Dudunsparce × Lopunny Froslass: decide a Mega Froslass ex** (11/11/2026, v2026.11.11-4; pedido do Pedro). Lista
+  de `lopunny-dudunsparce` com Mega Froslass ex vira `lopunny-froslass` (deck criado pelo Coletor, `decks.ARQUETIPOS_PROPRIOS`); sem
+  ela, volta a `lopunny-dudunsparce`. *Por quê:* análise de 152 listas (11/11) achou 4 montagens com esse nome; a de Mega Froslass ex
+  (25 listas) é outro deck: segundo atacante, Hero's Cape em 17 de 25 (as outras usam Enriching Energy), Mew ex em só 10 de 25 (contra
+  82% no resto). As outras montagens (Dudunsparce ex, Dudunsparce sem ex, Cacturne) ficaram juntas: resultados iguais dentro da
+  margem. Mesmo mecanismo do D-052 (`banco.REGRAS_PAR`; partidas por `decks.regra_par`). Limite: jogador sem lista fica com o nome
+  do Limitless.
 
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
