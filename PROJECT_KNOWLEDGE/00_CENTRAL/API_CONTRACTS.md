@@ -1,6 +1,6 @@
 # Contratos entre as partes do programa
 
-> Atualizado em 10/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
+> Atualizado em 11/11/2026. O que cada parte promete às outras. Mudou um contrato → atualizar aqui no mesmo PR
 > (COLLABORATION, seção 6). Formato do banco e de `dados_json`: [`DATA_MODEL.md`](DATA_MODEL.md).
 
 ## 1. Camadas (nomes usados nas conversas → módulos que existem)
@@ -97,7 +97,7 @@ mesmo caminho e métodos diferentes aparecem com os mesmos arquivos). Toda rota 
 | `GET /api/resumo-geral` | `resumo_geral` | partidas.js | Números do Início ("Dados coletados", desde 2026.11.09-4): `partidas` (n, suas, amigos, de, ate, dias, automatico, area, manual), `torneios` (n, grandes, online, jogadores, listas, ultimo; só Standard), `decks_conhecidos`, `biblioteca` (cartas, colecoes), `epoca` (atual no TCG Live) e `proxima` (grandes eventos). Só leitura. |
 | `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): pela chegada ao TCG Live (suas partidas) e pela validade em torneio. |
 | `GET /api/epocas` | `epocas` | base.js | Épocas do meta (uma por coleção): `live` (chegada ao TCG Live, suas partidas), `torneios` (validade nos grandes eventos) e `online` (lançamento, torneios online; desde 2026.11.09-1); `proxima` com as mesmas três chaves. As telas de Meta mandam `?epoca=<id>` às rotas de torneio (`_lista_torneios`: cada fonte com o seu começo, D-048). |
-| `GET /api/meta` | `meta` | campeonatos.js |  |
+| `GET /api/meta` | `meta` | campeonatos.js | cada item de `divisao` traz também `tipo` (tipo do Pokémon principal, ou "") e `pct_corte` (% dos jogadores do corte), desde 2026.11.11-1 |
 | `GET /api/variantes/<arq>` | `variantes_deck` | campeonatos.js | Variantes do deck (listas agrupadas por semelhança) com a taxa de vitória de cada uma. |
 | `GET /api/qual-deck` | `qual_deck` | campeonatos.js | Taxa esperada contra o campo, pior confronto e equilíbrio do meta (tracker/estrategia.py). |
 | `GET /api/tendencia` | `tendencia` | campeonatos.js |  |

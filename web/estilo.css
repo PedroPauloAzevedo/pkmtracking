@@ -64,7 +64,7 @@ nav .estado { margin-top: auto; display: flex; flex-direction: column; gap: 6px;
 .luz.on { background: var(--good); } .luz.off { background: var(--bad); } .luz.warn { background: var(--accent); }
 /* a área principal acompanha a janela (antes parava em 1240px e sobrava faixa vazia em telas largas); textos longos têm largura
    própria (.sub, .rg-doc) para continuarem fáceis de ler */
-main { padding: 24px 28px 64px; min-width: 0; display: flex; flex-direction: column; gap: 18px; max-width: 2000px; }
+main { padding: 24px 28px 64px; min-width: 0; display: flex; flex-direction: column; gap: 24px; max-width: 2000px; }
 /* tela que demora a abrir: a anterior fica apagada e aparece "Carregando…" (base.js, render) */
 body.carregando main { opacity: .45; pointer-events: none; transition: opacity .15s; }
 body.carregando::after { content: 'Carregando…'; position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 60;
@@ -73,7 +73,7 @@ body.carregando::after { content: 'Carregando…'; position: fixed; top: 14px; l
 h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
 h1 { font-size: 1.6rem; font-weight: 800; } h2 { font-size: 1.15rem; font-weight: 600; } h3 { font-size: 0.98rem; font-weight: 600; }
 .sub { color: var(--muted); margin: 2px 0 0; max-width: 70ch; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -92,7 +92,7 @@ button:disabled { opacity: 0.5; cursor: default; }
 input, select, textarea { font: 400 0.9rem var(--f-body); color: var(--ink); background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; min-width: 0; }
 textarea { font-family: var(--f-mono); font-size: 0.8rem; width: 100%; resize: vertical; }
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
 .kpi .v { font: 800 1.7rem var(--f-display); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .kpi .d { font-size: 0.8rem; color: var(--muted); }
 .tabela { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
@@ -121,8 +121,27 @@ nav details.programa a { display: block; padding-left: 34px; }
 .tag-sug { font-size: .74rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
 .tag-sug.ignorar { background: var(--sunken); color: var(--muted); border: 1px solid var(--line); } .tag-sug.regra { background: var(--accent); color: var(--on-accent); }
 .chips-periodo { display: inline-flex; gap: 4px; }
-.chips-periodo button { padding: 5px 10px; font-size: .8rem; }
-.chips-periodo button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+.chips-periodo { align-items: center; }
+.chips-periodo .label { margin-right: 4px; }
+.chips-periodo button { padding: 4px 12px; font-size: .8rem; border-radius: 999px; color: var(--muted); }
+.chips-periodo button[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: var(--ink); border-color: var(--accent); font-weight: 700; }
+/* visual inspirado no painel Indigo Plateau (v2026.11.11-1): cabeçalho de quadro com pílulas, explicação curta, dispersão e cartões */
+.cab-quadro { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.explica { color: var(--muted); font-size: .86rem; margin: 0; max-width: 100ch; }
+.dispersao { width: 100%; height: auto; display: block; }
+.dispersao text { fill: var(--ink); font-family: var(--f-body); }
+.dispersao .grade { stroke: var(--line); } .dispersao .rot { fill: var(--muted); font-size: 11px; }
+.dispersao .quad { fill: color-mix(in srgb, var(--good) 8%, transparent); }
+.dispersao .pt { cursor: pointer; } .dispersao .pt circle { stroke: var(--surface); stroke-width: 2; } .dispersao .pt:hover circle { stroke: var(--ink); }
+.dispersao .nome { pointer-events: none; font-size: 11px; font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.cartoes-deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.cartao-meta { background: var(--sunken); border: 1px solid var(--line); border-top: 4px solid var(--cor, var(--muted)); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
+.cartao-meta:hover { border-color: var(--muted); border-top-color: var(--cor, var(--muted)); }
+.cartao-meta .t { display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 0; }
+.cartao-meta .v { font: 800 1.55rem var(--f-display); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.cartao-meta .d { font-size: .78rem; color: var(--muted); }
+.legenda-calor { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--muted); }
+.legenda-calor .barra-cor { width: 180px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--bad), var(--sunken) 50%, var(--good)); }
 /* caixa de opções para marcar vários (filtro Jogador): o resumo parece um select; a lista abre por cima da tela */
 details.multi { position: relative; }
 details.multi > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font: 400 0.9rem var(--f-body); color: var(--ink);
