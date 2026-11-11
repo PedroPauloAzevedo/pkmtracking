@@ -1,5 +1,20 @@
 [
   {
+    "versao": "2026.11.11-3",
+    "data": "2026-11-11",
+    "titulo": "Gráfico \"Quem vale a pena jogar\" mais fácil de ler",
+    "mudancas": [
+      "Cada deck virou um círculo meio transparente na cor do tipo, com o Pokémon sempre do mesmo tamanho dentro dele.",
+      "O nome fica logo abaixo do círculo; só quando encostaria no nome de outro deck ele passa para logo acima do mesmo círculo.",
+      "O gráfico ficou mais alto, para os decks com números parecidos ficarem menos amontoados."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.11-3\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.11-2",
     "data": "2026-11-11",
     "titulo": "Aproveitamento no suíço, lista base, mudanças nas listas e tela Metodologia",

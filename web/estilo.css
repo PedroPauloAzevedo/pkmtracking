@@ -132,7 +132,7 @@ nav details.programa a { display: block; padding-left: 34px; }
 .dispersao text { fill: var(--ink); font-family: var(--f-body); }
 .dispersao .grade { stroke: var(--line); } .dispersao .rot { fill: var(--muted); font-size: 11px; }
 .dispersao .quad { fill: color-mix(in srgb, var(--good) 8%, transparent); }
-.dispersao .pt { cursor: pointer; } .dispersao .pt circle { stroke: var(--surface); stroke-width: 2; } .dispersao .pt:hover circle { stroke: var(--ink); }
+.dispersao .pt { cursor: pointer; } .dispersao .pt:hover circle { stroke: var(--ink); fill-opacity: .45; }
 .dispersao .nome { pointer-events: none; font-size: 11px; font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
 .cartoes-deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
 .cartao-meta { background: var(--sunken); border: 1px solid var(--line); border-top: 4px solid var(--cor, var(--muted)); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; cursor: pointer; }

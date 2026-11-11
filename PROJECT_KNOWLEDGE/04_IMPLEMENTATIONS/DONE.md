@@ -43,6 +43,12 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.11-3 — 11/11/2026 (pedido do Pedro: pontos da dispersão como no painel Indigo Plateau)
+- `web/js/campeonatos.js` (`quadroDispersao`): círculo com `fill-opacity` .28 e borda na cor do tipo, ícone recortado (`clipPath`)
+  com tamanho fixo, nome embaixo do círculo (acima só se encostar num nome já escrito); gráfico com 600 de altura (era 460).
+  Substitui a busca de lugar livre em 12 posições da 2026.11.11-2, que deixava nomes longe do ponto. `web/estilo.css`: borda do tipo
+  no lugar da borda da cor do fundo.
+
 ## 2026.11.11-2 — 11/11/2026 (pedido do Pedro: métodos do painel Indigo Plateau, etapa 2; D-053)
 - `tracker/evolucao_listas.py` (novo): `rodadas_suicas`, `aproveitamento_por_deck`, `lista_base`, `inovacoes`, `estabilidade`,
   `binomial_cauda_superior`, `_nome_carta`. `analises.meta()` ganha `aproveitamento`/`aprov_baixo`/`aprov_alto`/`jogadores_aprov`.
