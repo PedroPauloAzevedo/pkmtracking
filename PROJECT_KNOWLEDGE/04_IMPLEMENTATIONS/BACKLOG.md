@@ -13,7 +13,7 @@
 Etapa 1 (visual, primeiro): gráfico Metashare × Vitória com quadrantes e ícones, cartões por deck com a cor do tipo, mapa de
 calor de matchups (cor mais forte longe de 50%), botões em pílula acima de cada gráfico e parágrafo curto explicando cada gráfico,
 mais espaço entre blocos. **Feita na 2026.11.11-1** (ver `DONE.md`).
-Etapa 2 (metodologia; medir antes × depois, D-017):
+Etapa 2 (metodologia): **feita na 2026.11.11-2** (D-053; item 1 já era assim). Lista original:
 1. **Bye e W.O. não contam como partida** no importador do Limitless (conferir se já é assim).
 2. **Aproveitamento no suíço** = pontos (3V + E) / pontos possíveis, para comparar torneios de tamanhos diferentes.
 3. **Lista base pesada pelos pontos** (3V + E) de todas as listas, em vez de só as do topo (reduz o achado 1).

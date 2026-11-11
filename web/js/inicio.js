@@ -94,7 +94,7 @@ async function mostrarGuia() {
 /* ---------------- busca rápida (Ctrl+K) ---------------- */
 const TELAS_BUSCA = [['painel', 'Início'], ['partidas', 'Partidas'], ['desempenho', 'Desempenho'], ['decisoes', 'Decisões'],
   ['decks', 'Meus decks'], ['meta', 'Meta'], ['matchups', 'Matchups'], ['deck', 'Perfil de deck'], ['cartas', 'Uso de cartas'],
-  ['cartas-mu', 'Cartas x matchups'], ['torneios', 'Torneios'], ['regras-standard', 'Regras do Standard'],
+  ['cartas-mu', 'Cartas x matchups'], ['torneios', 'Torneios'], ['metodologia', 'Metodologia'], ['regras-standard', 'Regras do Standard'],
   ['ajustes', 'Ajustes e captura'], ['amigos', 'Amigos (trocar logs)'], ['biblioteca', 'Biblioteca de cartas'],
   ['revisao', 'Linhas não lidas'], ['regras', 'Regras de leitura']];
 async function abrirBusca() {
@@ -150,7 +150,7 @@ const ROTAS = { painel: renderPainel, partidas: renderPartidas, desempenho: rend
   regras: renderRegras, biblioteca: renderBiblioteca,
   decks: renderMeusDecks, partida: () => renderDetalhe(rota().id), replay: () => renderReplay(rota().id),
   meudeck: () => renderMeuDeck(rota().id), decisoes: renderDecisoes, amigos: renderAmigos, 'cartas-mu': renderCartasMatchups, revisao: renderRevisao,
-  'regras-standard': renderRegrasStandard, lista: () => renderListaOficial(rota().id) };
+  'regras-standard': renderRegrasStandard, metodologia: renderMetodologia, lista: () => renderListaOficial(rota().id) };
 
 /* ---------------- início ---------------- */
 (async () => {

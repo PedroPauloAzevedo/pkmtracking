@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 10/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 11/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -203,6 +203,18 @@
   ao abrir (`VERSAO_REGRAS_ARQ`). Partidas: `decks.regra_dragapult`, pelo que o adversário mostrou (não visto = Dragapult). Limite:
   jogador de torneio sem lista fica com o nome do Limitless (792 "Dragapult" no banco do Pedro), então o "Dragapult" ainda contém
   parte de Dudunsparce entre quem não tem lista.
+- **D-053 · Métodos trazidos do painel Indigo Plateau** (11/11/2026, v2026.11.11-2; escolhidos pelo Pedro). Novos, sem trocar nenhuma
+  conta existente (`tracker/evolucao_listas.py`): **aproveitamento no suíço** (pontos ÷ 3 × rodadas suíças; top cut achado de trás
+  para a frente pelas mesas 1, 2, 4, 8…; nos grandes eventos só o Dia 1, cortado onde as mesas caem mais de 40%; desistência = rodadas
+  perdidas; folgas não estão no banco); **lista base** pesada pelos pontos (3V + E; núcleo ≥ 75%, opções 10–75%, ≥ 5 listas);
+  **mudanças nas listas** (2 semanas × 4 semanas antes; ≥ 25 pontos de subida com binomial p < 0,005, ≥ 5 listas e aproveitamento por
+  partida maior com a mudança; pacotes por Jaccard ≥ 0,6, ordenados por a·ln(a/b)); **estabilidade** (meia soma de |Δ cópias| da lista
+  média menos o 95º percentil de 200 permutações, semente 42; < 1 carta = estável, ≥ 15 listas por período); tela **Metodologia**.
+  Bye e W.O. já eram descartados pelos três importadores (conferido, sem mudança). *Por quê:* o Pedro gostou dessas medidas no painel
+  Indigo Plateau. *Diferenças do Indigo:* o critério "a mudança chegou mais ao top 64" virou "fez mais pontos por partida" (só temos
+  listas do topo); a energia básica tem o mesmo nome nas duas fontes ("Basic Fire Energy" = "Fire Energy"). Não escolhidos agora: taxa só
+  no suíço, excluir variantes da mesma família, empate fora da conta.
+
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
   tem poucas dezenas de replays públicos, muitos fora do Standard. Aproveitado do Full Bench: impressão digital, validação do log,

@@ -9,6 +9,7 @@ Taxa de vitória = vitórias / (vitórias + derrotas + empates), como no Limitle
 Com poucas partidas a taxa engana, então mostramos também o intervalo de confiança de
 95% (método de Wilson): a faixa onde a taxa "verdadeira" provavelmente está.
 """
+import functools
 import json
 import math
 from collections import Counter, defaultdict
@@ -366,6 +367,7 @@ def _jogadores(torneios, top=0):
     return banco.consultar(sql, params)
 
 
+@functools.lru_cache(maxsize=4096)  # o tipo de um deck não muda durante o uso; sem isso a tela Meta refazia a busca a cada clique
 def tipo_deck(arq):
     """Tipo de energia do Pokémon principal do deck (pela biblioteca de cartas), só para a cor na tela; '' se não achar.
     Tenta o nome do deck, depois as palavras do slug, com e sem "ex" (ex.: dragapult-dusknoir -> Dragapult ex -> Dragon).
@@ -416,6 +418,8 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
     campo = Counter(j["arquetipo"] for j in todos if j["arquetipo"])
     mu = matchups_por_slug(torneios)
     dep = dependencia_torneios(torneios)  # D-041
+    from . import evolucao_listas
+    aprov = evolucao_listas.aproveitamento_por_deck(torneios if torneios is not None else torneios_da_fonte("todos"))  # D-053
 
     divisao = []
     for arq, qtd in cont.most_common():
@@ -433,6 +437,7 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
             "fator_conversao": round((no_corte.get(arq, 0) / total_corte) / pct_campo, 2) if pct_campo else None,
             "pct_corte": round(100 * no_corte.get(arq, 0) / total_corte, 1),
             "tipo": tipo_deck(arq),
+            **aprov.get(arq, {"aproveitamento": None, "jogadores_aprov": 0, "aprov_baixo": None, "aprov_alto": None}),
             **placar(geral["v"], geral["d"], geral["e"],
                      efeito=efeito_desenho(sum(geral.values()), dep["jog_deck"].get(arq), dep["icc"])),
         })
@@ -516,6 +521,13 @@ def perfil(arq, torneios=None):
         f"ON j.torneio=l.torneio AND j.labs_id=l.labs_id WHERE j.arquetipo=? {f.replace('torneio', 'l.torneio')}",
         (arq,) + params)
     esqueleto = _uso_cartas(listas, {(j["torneio"], j["labs_id"]): j for j in deles})
+    # carta da capa: o nome do deck nem sempre é uma carta ("Mega Rayquaza" é a carta "Mega Rayquaza ex"). Usa a carta mais jogada
+    # das listas cujo nome começa pelo nome do deck; senão, a que tem a primeira palavra do nome (ex.: "Dragapult Dusknoir").
+    nome_deck = nome_de_slug(arq).lower()
+    palavra = (nome_deck.split() or [""])[0].replace("'s", "")
+    capa = next((c for c in esqueleto if (c["carta"] or "").lower().startswith(nome_deck)), None) \
+        or next((c for c in esqueleto if palavra and palavra in (c["carta"] or "").lower().replace("'s", "")
+                 and "energy" not in (c["carta"] or "").lower()), None)
 
     return {
         "arquetipo": arq, "nome": nome_de_slug(arq), "jogadores": len(deles),
@@ -524,6 +536,7 @@ def perfil(arq, torneios=None):
         "spread": spread,
         "taxa_esperada": round(esperado_num / esperado_den, 1) if esperado_den else None,
         "listas": len({(l["torneio"], l["labs_id"]) for l in listas}), "esqueleto": esqueleto[:60],
+        "carta_capa": capa["carta"] if capa else None,
         "por_torneio": _participacao_por_torneio(arq, torneios),
     }
 

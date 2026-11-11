@@ -419,4 +419,20 @@ assert leitor.limpar_linha("Ana's (sv8-5_72_ph) Drakloak was Knocked Out!") == "
 ind_f = {"cartas": {"sv06-200": {}, "me02.5-158": {}, "sv08.5-072": {}}}
 assert [cartas.id_do_codigo(c, ind_f) for c in ("sv6_200", "me2-5_158", "sv8-5_72_ph", "swsh9_186")] == ["sv06-200", "me02.5-158", "sv08.5-072", None]
 print("códigos das cartas no log: ok,", carta_a)
+
+# 10) D-053 (métodos do painel Indigo Plateau): rodadas suíças, binomial, estabilidade e lista base com respostas conhecidas
+from tracker import evolucao_listas as ev
+assert ev.rodadas_suicas({1: 922, 2: 900, 8: 850, 9: 279, 10: 270, 11: 4, 12: 2, 13: 1}) == {1, 2, 8}       # Dia 1 sem o Dia 2 e o corte
+assert ev.rodadas_suicas({1: 66, 5: 39, 8: 18, 9: 10, 10: 9}, grande_evento=False) == {1, 5, 8, 9, 10}    # online: desistência não corta
+assert ev.rodadas_suicas({1: 61, 2: 57, 3: 4, 4: 2, 5: 1}, grande_evento=False) == {1, 2}                 # top 8 fora
+assert abs(ev.binomial_cauda_superior(8, 10, 0.5) - 56 / 1024) < 1e-12                                    # (45 + 10 + 1) / 2^10
+assert ev.binomial_cauda_superior(0, 5, 0.3) == 1.0
+lst = lambda cs: {"cartas": cs, "pontos": 9, "partidas": 4, "data": "2026-11-01", "chave": id(cs)}
+iguais = [lst({"A": 4, "B": 2}) for _ in range(20)]
+e0 = ev.estabilidade(iguais, [lst({"A": 4, "B": 2}) for _ in range(20)])
+assert e0["mudou"] == 0 and e0["estavel"], e0
+e1 = ev.estabilidade(iguais, [lst({"A": 4, "C": 2}) for _ in range(20)])                                  # trocou 2 B por 2 C
+assert e1["mudou"] == 2 and not e1["estavel"] and e1 == ev.estabilidade(iguais, [lst({"A": 4, "C": 2}) for _ in range(20)]), e1
+assert ev._nome_carta("Basic Fire Energy") == "Fire Energy" and ev._nome_carta("Fire Energy") == "Fire Energy"
+print("métodos D-053: ok")
 print("OK")

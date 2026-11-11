@@ -1,6 +1,6 @@
 # Evidências: medições que sustentam as decisões
 
-> Atualizado em 10/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
+> Atualizado em 11/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
 > Resultados completos dos experimentos 1 a 9 e da análise de ACE SPEC: `MISSION_REPORT_2026-11-02.md` (não repetidos aqui).
 
 ## Experimentos em `testes/experimentos/` (rodar numa cópia; os que gravam no banco, só com dados de teste)
@@ -196,3 +196,12 @@ Leitor de antes × de depois nas 137 partidas da cópia com os dados do Pedro (l
 `cmp_leitor.py` fora do repositório, comparando `ler_partida` campo a campo, sem `resumo.codigos`). Log público com códigos
 (Training Court, 19 turnos): os nomes saem limpos; 50 de 61 códigos acham a carta na biblioteca (os outros são reimpressões de
 coleções antigas, `sm`/`swsh`, que seguem pelo nome); o replay monta os 423 quadros e `resolver_versoes` usa os códigos.
+
+## Métodos do painel Indigo Plateau (11/11/2026, D-053)
+Cópia com os dados do Pedro (9 grandes eventos, 31 torneios online). Rodadas suíças: 0072 → 1–8 (Dia 2 de 279 mesas e top 8 fora),
+0071 → 1–8, 0077/0078 → 1–14 (sem queda de Dia 2); online on-6ada4… → 1–9 (top 8 de 4-2-1 mesas fora). Aproveitamento achado para
+96–99% dos jogadores de cada deck. Grandes: Dragapult Dudunsparce 66,8% [65,4; 68,2] (taxa 57,2%), Dragapult 31,4% (taxa 33,9%).
+Online: 23–38% (muitas desistências; taxa 48–58%). Lista base de Dragapult Dudunsparce (online): 429 listas, núcleo de 24 cartas.
+Mudanças: N's Zoroark (grandes) 2 pacotes (ex.: Ultra Ball ≥ 3, N's Castle, Meowth ex: 28–62% → 53–91%, p ≤ 0,0024);
+Dragapult (grandes) "está mudando" (2,68 cartas contra ruído de 1,62). Tempo: < 0,5 s o aproveitamento, < 1,6 s as mudanças por deck.
+Respostas conhecidas em `teste_tracker.py` (seção 10). Script de conferência fora do repositório (`conf_metodos.py`).

@@ -24,24 +24,24 @@ async function renderMeta() {
     </div>
     <section class="panel">
       <p class="muted num">${m.jogadores_considerados} jogadores com deck conhecido${m.sem_deck ? `, ${m.sem_deck} sem deck informado` : ''}.</p>
-      <div class="tabela alta"><table><thead><tr><th>Deck</th><th class="n">Jogadores</th><th>% do campo</th><th>Taxa de vitória</th><th class="n">V–D–E</th><th class="n">No Top ${m.corte}</th><th class="n">Conversão</th><th class="n" title="Participação no corte dividida pela participação no campo. Acima de 1 = converte melhor que a média.">Fator</th></tr></thead><tbody>
+      <div class="tabela alta"><table><thead><tr><th>Deck</th><th class="n">Jogadores</th><th>% do campo</th><th>Taxa de vitória</th><th class="n">V–D–E</th><th class="n">No Top ${m.corte}</th><th class="n">Conversão</th><th class="n" title="Pontos no suíço (3V + E) ÷ pontos possíveis; desistência conta como rodada perdida. Nos grandes eventos, só o Dia 1.">Aproveit.</th><th class="n" title="Participação no corte dividida pela participação no campo. Acima de 1 = converte melhor que a média.">Fator</th></tr></thead><tbody>
       ${m.divisao.map(d => `<tr class="clicavel" data-arq="${esc(d.arquetipo)}"><td><span class="cel-carta">${icones(d.arquetipo)}<b>${esc(d.nome)}</b></span></td><td class="n">${d.jogadores}</td>
         <td><div class="row" style="flex-wrap:nowrap"><div class="barra grow"><span style="width:${100 * d.pct / maxPct}%"></span></div><span class="num" style="width:52px;text-align:right">${pct(d.pct)}</span></div></td>
-        <td>${taxaHtml(d)}</td><td class="n">${d.v}–${d.d}–${d.e}</td><td class="n">${d.no_corte}</td><td class="n">${pct(d.conversao)}</td>
+        <td>${taxaHtml(d)}</td><td class="n">${d.v}–${d.d}–${d.e}</td><td class="n">${d.no_corte}</td><td class="n">${pct(d.conversao)}</td><td class="n" title="${d.jogadores_aprov} jogadores; faixa provável ${fmt(d.aprov_baixo, 0)}–${fmt(d.aprov_alto, 0)}%">${pct(d.aproveitamento)}</td>
         <td class="n" style="${d.fator_conversao != null ? corTaxa(50 + (d.fator_conversao - 1) * 30) : ''}">${d.fator_conversao != null ? fmt(d.fator_conversao, 2) : '–'}</td></tr>`).join('')}
       </tbody></table></div>
     </section>
-    <section class="panel"><h2>Tendência do meta</h2><p class="sub">Participação dos 8 decks mais jogados em cada torneio importado, em ordem de data.</p>
-      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5), marcas: marcasEpoca(tend.torneios.map(t => t.data || ''), tipoMeta()) }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
+    <section class="panel"><h2>Tendência do meta</h2><p class="explica">Participação dos 8 decks mais jogados em cada torneio importado, em ordem de data. O ícone à direita marca onde cada linha termina; passe o mouse numa linha ou num ícone para destacar só aquele deck.</p>
+      ${tend.torneios.length > 1 ? graficoLinhas(tend.series.map(s => ({ nome: s.nome, icone: (S.arq[s.arquetipo] ? S.arq[s.arquetipo].icones : [pokeId(s.arquetipo)])[0] || '', valores: tend.torneios.map(t => t.pct[s.arquetipo]) })), tend.torneios.map(t => (t.data || '').slice(5).split('-').reverse().join('/')), { max: Math.max(10, Math.ceil(Math.max(...tend.torneios.flatMap(t => Object.values(t.pct))) / 5) * 5), marcas: marcasEpoca(tend.torneios.map(t => t.data || ''), tipoMeta()) }) : '<p class="muted">Importe pelo menos dois torneios para ver a tendência.</p>'}
       ${tend.torneios.length > 1 && marcasEpoca(tend.torneios.map(t => t.data || ''), tipoMeta()).length ? `<p class="muted" style="font-size:.82rem">A linha tracejada marca onde uma coleção nova passou a valer ${S.fonte === 'grandes' ? 'nos grandes eventos' : 'nos torneios online'}: dali em diante o meta pode ser outro. Para ver uma época só, escolha em <b>Época</b>, acima.</p>` : ''}
     </section>
     <section class="panel" id="qual-deck"><h2>Qual deck jogar?</h2><p class="muted">Calculando…</p></section>`;
-  ligarSeletor(renderMeta);
+  ligarSeletor(render);
   desenharQualDeck();
-  $('#m-top').onchange = e => { S.top = Number(e.target.value); renderMeta(); };
-  $('#m-corte').onchange = e => { S.corte = Number(e.target.value); renderMeta(); };
+  $('#m-top').onchange = e => { S.top = Number(e.target.value); render(); };
+  $('#m-corte').onchange = e => { S.corte = Number(e.target.value); render(); };
   document.querySelectorAll('tr[data-arq], [data-arq].pt, .cartao-meta[data-arq]').forEach(el => el.onclick = () => { S.deck = el.dataset.arq; location.hash = 'deck'; });
-  document.querySelectorAll('[data-eixo]').forEach(b => b.onclick = () => { S.metaEixo = b.dataset.eixo; renderMeta(); });
+  document.querySelectorAll('[data-eixo]').forEach(b => b.onclick = () => { S.metaEixo = b.dataset.eixo; render(); });
 }
 
 // ---- Visual inspirado no painel Indigo Plateau (v2026.11.11-1): cor de cada deck pelo tipo do Pokémon principal
@@ -51,22 +51,36 @@ const COR_TIPO = { Grass: '#4BA14B', Fire: '#E0703A', Water: '#3A86D0', Lightnin
 const corDeck = d => COR_TIPO[d.tipo] || 'var(--muted)';
 const DECKS_QUADRO = 15;
 
-// Cada deck é um ponto: x = % do campo (escala logarítmica, para separar os pequenos), y = taxa de vitória sem mirrors ou conversão
-// para o corte. Linha vertical = mediana do % do campo dos decks mostrados; horizontal = 50% (taxa) ou a conversão média do campo.
-// Entram só decks com 20 partidas (taxa) ou 20 jogadores (conversão): menos que isso a posição do ponto é quase só sorte.
+// Cada deck é um ponto: x = % do campo (escala logarítmica, para separar os pequenos), y = a métrica escolhida: taxa de vitória sem
+// mirrors, conversão para o corte ou aproveitamento no suíço (D-053). Linha vertical = mediana do % do campo dos decks mostrados;
+// horizontal = a média do campo naquela métrica. Entram só decks com 20 partidas (taxa) ou 20 jogadores (conversão e aproveitamento):
+// menos que isso a posição do ponto é quase só sorte.
+const METRICAS_META = {
+  taxa: { rotulo: 'Taxa de vitória', y: d => d.taxa, ok: d => d.taxa != null && d.n >= 20, minimo: '20 partidas',
+    sobe: 'vence mais (sem contar mirrors)',
+    media: (m) => { const v = m.divisao.reduce((a, d) => a + d.v, 0), n = m.divisao.reduce((a, d) => a + d.n, 0); return n ? 100 * v / n : 50; },
+    textoMedia: r => `a taxa média do campo (${fmt(r, 1)}%; fica abaixo de 50% porque empate conta como não-vitória)`,
+    dica: d => `Taxa de vitória: ${pct(d.taxa)}, faixa provável ${fmt(d.ic_baixo, 0)}–${fmt(d.ic_alto, 0)}%\n${d.v}–${d.d}–${d.e} em ${d.n} partidas, sem mirrors` },
+  conversao: { rotulo: m => `Conversão para o Top ${m.corte}`, y: d => d.conversao, ok: d => d.conversao != null && d.jogadores >= 20, minimo: '20 jogadores',
+    sobe: 'converte mais para o corte',
+    media: (m) => { const c = m.divisao.reduce((a, d) => a + d.no_corte, 0), j = m.divisao.reduce((a, d) => a + d.jogadores, 0); return j ? 100 * c / j : 0; },
+    textoMedia: r => `a conversão média do campo (${pct(r)})`,
+    dica: (d, m) => `Conversão para o Top ${m.corte}: ${pct(d.conversao)} (${d.no_corte} jogadores)` },
+  aprov: { rotulo: 'Aproveitamento no suíço', y: d => d.aproveitamento, ok: d => d.aproveitamento != null && d.jogadores_aprov >= 20, minimo: '20 jogadores',
+    sobe: 'faz mais pontos no suíço',
+    media: (m) => { let s = 0, n = 0; m.divisao.forEach(d => { if (d.aproveitamento != null) { s += d.aproveitamento * d.jogadores_aprov; n += d.jogadores_aprov; } }); return n ? s / n : 0; },
+    textoMedia: r => `o aproveitamento médio do campo (${fmt(r, 1)}%)`,
+    dica: d => `Aproveitamento no suíço: ${pct(d.aproveitamento)}, faixa provável ${fmt(d.aprov_baixo, 0)}–${fmt(d.aprov_alto, 0)}%\n${d.jogadores_aprov} jogadores (desistência conta como rodada perdida)` },
+};
 function quadroDispersao(m) {
-  const conv = S.metaEixo === 'conversao';
-  const decks = m.divisao.slice(0, DECKS_QUADRO).filter(d => conv ? d.conversao != null && d.jogadores >= 20 : d.taxa != null && d.n >= 20);
+  const chave = METRICAS_META[S.metaEixo] ? S.metaEixo : 'taxa', mt = METRICAS_META[chave];
+  const rot = x => typeof x.rotulo === 'function' ? x.rotulo(m) : x.rotulo;
+  const decks = m.divisao.slice(0, DECKS_QUADRO).filter(mt.ok);
   const pilulas = `<div class="chips-periodo" role="group" aria-label="Métrica"><span class="label">Métrica</span>
-    <button data-eixo="taxa" aria-pressed="${!conv}">Taxa de vitória</button><button data-eixo="conversao" aria-pressed="${conv}">Conversão para o Top ${m.corte}</button></div>`;
+    ${Object.entries(METRICAS_META).map(([k, x]) => `<button data-eixo="${k}" aria-pressed="${k === chave}">${rot(x)}</button>`).join('')}</div>`;
   const cab = `<div class="cab-quadro"><h2>Quem vale a pena jogar</h2>${pilulas}</div>`;
-  if (decks.length < 3) return `<section class="panel">${cab}<p class="muted">Poucos decks com ${conv ? '20 jogadores' : '20 partidas'} ou mais nesta seleção para desenhar o gráfico.</p></section>`;
-  const yv = d => conv ? d.conversao : d.taxa;
-  const totCorte = m.divisao.reduce((a, d) => a + d.no_corte, 0), totJog = m.divisao.reduce((a, d) => a + d.jogadores, 0);
-  // linha horizontal = média do campo. Na taxa não é 50%: empates contam como não-vitória (como no Limitless) e os mirrors ficam
-  // fora, então o deck "médio" fica abaixo de 50% (ex.: ~47% com os grandes eventos, que têm ~13% de empates).
-  const somaV = m.divisao.reduce((a, d) => a + d.v, 0), somaN = m.divisao.reduce((a, d) => a + d.n, 0);
-  const refY = conv ? (totJog ? 100 * totCorte / totJog : 0) : (somaN ? 100 * somaV / somaN : 50);
+  if (decks.length < 3) return `<section class="panel">${cab}<p class="muted">Poucos decks com ${mt.minimo} ou mais nesta seleção para desenhar o gráfico.</p></section>`;
+  const yv = mt.y, refY = mt.media(m);
   const ps = decks.map(d => d.pct).sort((a, b) => a - b), med = ps[Math.floor(ps.length / 2)];
   const W = 1000, H = 460, L = 56, R = 24, T = 24, B = 48;
   const xMin = Math.log(Math.max(0.3, Math.min(...ps) * 0.8)), xMax = Math.log(Math.max(...ps) * 1.25);
@@ -81,28 +95,39 @@ function quadroDispersao(m) {
   g += `<text class="rot" x="${(W + L) / 2}" y="${H - 8}" text-anchor="middle">% do campo (escala logarítmica)</text>`;
   g += `<text x="${W - R - 10}" y="${T + 18}" text-anchor="end" style="fill:var(--good);font-size:12px;font-weight:700">Boas escolhas: populares e acima da média</text>`;
   g += `<text x="${L + 10}" y="${T + 18}" style="fill:var(--muted);font-size:12px;font-weight:700">Apostas: menos jogados, acima da média</text>`;
-  // nomes: embaixo do ponto; se encostar num nome já escrito, tenta em cima e depois mais abaixo (pontos próximos não se cobrem)
+  // nomes: cada nome procura um lugar livre ao redor do seu ponto (embaixo, em cima, à direita, à esquerda, mais longe), sem
+  // encostar em outro nome nem em outra bolinha; se nenhum estiver livre, fica onde cobre menos. Os decks maiores escolhem primeiro.
   let nomes = '';
-  const usados = [], largura = s => s.length * 6.2;
+  const caixas = decks.map(d => ({ x: x(d.pct), y: y(yv(d)), w: 34, h: 34 }));   // as bolinhas também são obstáculos
+  const sobra = (a, b) => Math.max(0, (a.w + b.w) / 2 - Math.abs(a.x - b.x)) * Math.max(0, (a.h + b.h) / 2 - Math.abs(a.y - b.y));
   const lugarNome = (cx, cy, nome) => {
-    for (const dy of [31, -22, 45, -36, 59]) {
-      const ly = cy + dy, w = largura(nome);
-      if (!usados.some(u => Math.abs(u.y - ly) < 13 && Math.abs(u.x - cx) < (u.w + w) / 2 + 4)) { usados.push({ x: cx, y: ly, w }); return ly; }
+    const w = nome.length * 6.6 + 6, h = 15;
+    const opcoes = [[0, 28], [0, -26], [w / 2 + 20, 0], [-w / 2 - 20, 0], [0, 42], [0, -40], [w / 2 + 20, 16], [-w / 2 - 20, 16],
+      [w / 2 + 20, -16], [-w / 2 - 20, -16], [0, 56], [0, -54]];
+    let melhor = null;
+    for (const [dx, dy] of opcoes) {
+      const c = { x: cx + dx, y: cy + dy, w, h };
+      if (c.x - w / 2 < L || c.x + w / 2 > W - R || c.y - h < T || c.y > H - B) continue;   // não sai da área do gráfico
+      const custo = caixas.reduce((a, o) => a + (Math.abs(o.x - cx) < .5 && Math.abs(o.y - cy) < .5 && o.w === 34 ? 0 : sobra(c, o)), 0);
+      if (!melhor || custo < melhor.custo) melhor = { ...c, custo };
+      if (!custo) break;
     }
-    return cy + 31;
+    melhor = melhor || { x: cx, y: cy + 28, w, h };
+    caixas.push(melhor);
+    return melhor;
   };
   [...decks].sort((a, b) => b.pct - a.pct).forEach(d => {
-    const cx = x(d.pct), cy = y(yv(d)), ny = lugarNome(cx, cy, d.nome), ic = (S.arq[d.arquetipo] ? S.arq[d.arquetipo].icones : [pokeId(d.arquetipo)])[0];
-    const dica = `${d.nome}\n% do campo: ${pct(d.pct)} (${d.jogadores} jogadores)\n` + (conv ? `Conversão para o Top ${m.corte}: ${pct(d.conversao)} (${d.no_corte} jogadores)`
-      : `Taxa de vitória: ${pct(d.taxa)}, faixa provável ${fmt(d.ic_baixo, 0)}–${fmt(d.ic_alto, 0)}%\n${d.v}–${d.d}–${d.e} em ${d.n} partidas, sem mirrors`);
+    const cx = x(d.pct), cy = y(yv(d)), ln = lugarNome(cx, cy, d.nome), ic = (S.arq[d.arquetipo] ? S.arq[d.arquetipo].icones : [pokeId(d.arquetipo)])[0];
+    const dica = `${d.nome}\n% do campo: ${pct(d.pct)} (${d.jogadores} jogadores)\n` + mt.dica(d, m);
     g += `<g class="pt" data-arq="${esc(d.arquetipo)}"><title>${esc(dica)}</title><circle cx="${cx}" cy="${cy}" r="16" fill="${corDeck(d)}"/>
       ${ic ? `<image href="/icone/${encodeURIComponent(ic)}" x="${cx - 13}" y="${cy - 13}" width="26" height="26"/>` : ''}</g>`;
-    nomes += `<text class="nome" x="${cx}" y="${ny}" text-anchor="middle">${esc(d.nome)}</text>`;
+    nomes += `<text class="nome" x="${ln.x}" y="${ln.y + 4}" text-anchor="middle">${esc(d.nome)}</text>`;
   });
   g += nomes;  // nomes por último: ficam por cima dos pontos
+  const extra = chave === 'aprov' ? ' Aproveitamento = pontos no suíço (3 por vitória, 1 por empate) ÷ pontos possíveis; quem desistiu perde as rodadas que faltaram, por isso nos torneios online (com muitas desistências) ele fica bem abaixo da taxa. Nos grandes eventos conta só o Dia 1, que todos jogam.' : '';
   return `<section class="panel">${cab}
-    <p class="explica">Cada ponto é um deck: mais para a direita, mais jogado; mais para cima, ${conv ? 'converte mais para o corte' : 'vence mais (sem contar mirrors)'}. A linha tracejada vertical é o % do campo mediano destes decks; a horizontal, ${conv ? `a conversão média do campo (${pct(refY)})` : `a taxa média do campo (${fmt(refY, 1)}%; fica abaixo de 50% porque empate conta como não-vitória)`}. Em cima à direita ficam as <b>boas escolhas</b> (muito testados e indo bem); em cima à esquerda, as <b>apostas</b> (vão bem, mas com pouca amostra). Passe o mouse num deck para ver os números${conv ? '' : ' e a faixa provável'}; clique para abrir o perfil. Só entram decks com ${conv ? '20 jogadores' : '20 partidas'} ou mais.</p>
-    <svg class="dispersao" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de % do campo por ${conv ? 'conversão' : 'taxa de vitória'}">${g}</svg></section>`;
+    <p class="explica">Cada ponto é um deck: mais para a direita, mais jogado; mais para cima, ${mt.sobe}. A linha tracejada vertical é o % do campo mediano destes decks; a horizontal, ${mt.textoMedia(refY)}. Em cima à direita ficam as <b>boas escolhas</b> (muito testados e indo bem); em cima à esquerda, as <b>apostas</b> (vão bem, mas com pouca amostra). Passe o mouse num deck para ver os números; clique para abrir o perfil. Só entram decks com ${mt.minimo} ou mais.${extra}</p>
+    <svg class="dispersao" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de % do campo por ${esc(rot(mt).toLowerCase())}">${g}</svg></section>`;
 }
 
 // Cartões de participação: % do campo grande e, embaixo, a participação entre os jogadores do corte (▲ quando é maior: o deck converte bem).
@@ -189,10 +214,10 @@ async function renderMatchups() {
           : c.pouco || !c.n ? `<td class="pouco" title="${esc(l.nome)} contra ${esc(m.colunas[i].nome)}: ${c.n ? `${pct(c.taxa)}, ${c.v}-${c.d}-${c.e}` : 'sem partidas'} (${c.n} partidas: poucas para confiar)">—<small>${c.n || ''}</small></td>`
           : `<td style="${corCalor(c.taxa)}" title="${esc(l.nome)} contra ${esc(m.colunas[i].nome)}: ${c.v}-${c.d}-${c.e} (${c.n} partidas); faixa provável ${fmt(c.ic_baixo, 0)}–${fmt(c.ic_alto, 0)}%">${pct(c.taxa)}<small>${c.n}</small></td>`).join('')}</tr>`).join('')}</tbody>
     </table></div></section>`;
-  ligarSeletor(renderMatchups);
-  $('#mu-k').onchange = e => { S.k = Number(e.target.value); renderMatchups(); };
-  $('#mu-min').onchange = e => { S.minMu = Number(e.target.value); renderMatchups(); };
-  document.querySelectorAll('[data-mu]').forEach(b => b.onclick = () => { S.muTipo = b.dataset.mu; renderMatchups(); });
+  ligarSeletor(render);
+  $('#mu-k').onchange = e => { S.k = Number(e.target.value); render(); };
+  $('#mu-min').onchange = e => { S.minMu = Number(e.target.value); render(); };
+  document.querySelectorAll('[data-mu]').forEach(b => b.onclick = () => { S.muTipo = b.dataset.mu; render(); });
 }
 // Mapa de calor: mais forte quanto mais longe de 50% (satura em 25 pontos de distância), mais intenso que o corTaxa das tabelas.
 function corCalor(taxa) {
@@ -217,7 +242,7 @@ async function renderDeck() {
       <select id="p-deck">${m.divisao.map(d => `<option value="${esc(d.arquetipo)}" ${d.arquetipo === S.deck ? 'selected' : ''}>${esc(d.nome)} (${pct(d.pct)})</option>`).join('')}</select></div>
     ${p ? `
     <div class="row perfil-topo" style="align-items:flex-start;gap:16px;flex-wrap:nowrap">
-    <img src="${imgNome(p.nome, true)}" alt="${esc(p.nome)}" style="width:150px;border-radius:9px;flex:none" onerror="this.hidden=true">
+    <img src="${imgNome(p.carta_capa || p.nome, true)}" alt="${esc(p.nome)}" style="width:150px;border-radius:9px;flex:none" onerror="this.hidden=true">
     <div class="kpis grow" style="grid-template-columns:repeat(2,minmax(0,1fr))">
       <div class="kpi"><span class="label">Jogadores</span><span class="v">${p.jogadores}</span><span class="d">${pct(p.pct)} do campo</span></div>
       <div class="kpi"><span class="label">Taxa esperada contra o campo</span><span class="v">${pct(p.taxa_esperada)}</span><span class="d">matchups ponderados pela presença de cada deck</span></div>
@@ -238,13 +263,58 @@ async function renderDeck() {
         <table><tbody>${Object.entries(p.colocacoes).map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('')}</tbody></table>
       </section>
     </div>
+    <section class="panel" id="p-base"></section>
+    <section class="panel" id="p-inov"></section>
     <section class="panel" id="p-listas"></section>
     <section class="panel"><h2>Esqueleto da lista</h2>
       ${p.esqueleto.length ? tabelaCartas(p.esqueleto) : '<p class="muted">Nenhuma lista importada para este deck. Ao importar um torneio, escolha quantas listas do topo baixar.</p>'}
     </section>` : ''}`;
-  ligarSeletor(renderDeck);
-  if (S.deck) { desenharVariantes(S.deck); desenharListas(S.deck); }
-  $('#p-deck').onchange = e => { S.deck = e.target.value; renderDeck(); };
+  ligarSeletor(render);
+  if (S.deck) { desenharVariantes(S.deck); desenharListas(S.deck); desenharListaBase(S.deck); desenharInovacoes(S.deck); }
+  $('#p-deck').onchange = e => { S.deck = e.target.value; render(); };
+}
+
+// Perfil de deck > Lista base (D-053): cada lista pesa os pontos do jogador (3V + E), então quem foi mais longe pesa mais.
+async function desenharListaBase(arq) {
+  const el = $('#p-base'); if (!el) return;
+  el.innerHTML = '<h2>Lista base</h2><p class="muted">Calculando…</p>';
+  let b; try { b = await api(`/api/lista-base/${encodeURIComponent(arq)}?${qsTorneios()}`); } catch (e) { el.innerHTML = `<h2>Lista base</h2><p class="aviso erro">${esc(e.message)}</p>`; return; }
+  if (S.deck !== arq || !document.body.contains(el)) return;
+  const tab = (xs, vazio) => xs.length ? `<div class="tabela"><table><thead><tr><th class="n">Cópias</th><th>Carta</th><th>Peso</th><th class="n">Listas</th></tr></thead><tbody>
+    ${xs.map(c => `<tr><td class="n"><b>${c.copias}</b></td><td><span class="cel-carta">${mini(c.carta)}${esc(c.carta)}</span></td>
+      <td><div class="row" style="flex-wrap:nowrap"><div class="barra grow"><span style="width:${c.peso}%"></span></div><span class="num" style="width:52px;text-align:right">${pct(c.peso)}</span></div></td><td class="n">${c.listas}</td></tr>`).join('')}</tbody></table></div>` : `<p class="muted">${vazio}</p>`;
+  const total = b.nucleo.reduce((a, c) => a + c.copias, 0);
+  el.innerHTML = `<div class="cab-quadro"><h2>Lista base</h2><span class="muted" style="font-size:.85rem">${b.listas} listas</span></div>
+    <p class="explica">Cada lista pesa os pontos que o jogador fez no torneio (3 por vitória, 1 por empate): uma 10-3-1 pesa quase o dobro de uma 5-4-0, e lista sem pontos não pesa. <b>Núcleo</b> = carta em pelo menos 75% do peso; <b>opções</b> = de 10% a 75%. Cópias = a quantidade mais comum (pesada) entre as listas que usam a carta; versões diferentes da mesma carta contam juntas. São só as listas do topo de cada torneio (as que o Limitless publica e o Coletor baixa).</p>
+    ${b.listas < b.minimo ? `<p class="muted">Precisa de pelo menos ${b.minimo} listas deste deck na seleção.</p>` : `<div class="grid2">
+      <div><h3>Núcleo <span class="muted" style="font-weight:400">(${total} cartas)</span></h3>${tab(b.nucleo, 'Nenhuma carta em 75% do peso.')}</div>
+      <div><h3>Opções</h3>${tab(b.opcoes, 'Nenhuma carta entre 10% e 75% do peso.')}</div></div>`}`;
+}
+
+// Perfil de deck > Mudanças nas listas (D-053): inovações (últimas 2 semanas × 4 semanas antes) e estabilidade da lista média.
+async function desenharInovacoes(arq) {
+  const el = $('#p-inov'); if (!el) return;
+  el.innerHTML = '<h2>Mudanças nas listas</h2><p class="muted">Comparando os períodos…</p>';
+  let r; try { r = await api(`/api/inovacoes/${encodeURIComponent(arq)}?${qsTorneios()}`); } catch (e) { el.innerHTML = `<h2>Mudanças nas listas</h2><p class="aviso erro">${esc(e.message)}</p>`; return; }
+  if (S.deck !== arq || !document.body.contains(el)) return;
+  const dm = s => s ? s.slice(8, 10) + '/' + s.slice(5, 7) : '';
+  const per = r.periodos, est = r.estabilidade;
+  const estHtml = !est ? `<p class="muted" style="font-size:.85rem">Estabilidade: precisa de 15 listas em cada período.</p>`
+    : `<div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="kpi"><span class="label">Lista média mudou</span><span class="v">${fmt(est.mudou, 1)}</span><span class="d">cartas entre os dois períodos</span></div>
+        <div class="kpi"><span class="label">Variação natural</span><span class="v">${fmt(est.ruido, 1)}</span><span class="d">o que muda só por serem jogadores diferentes</span></div>
+        <div class="kpi"><span class="label">Além do ruído</span><span class="v" style="color:${est.estavel ? 'var(--good)' : 'var(--accent)'}">${fmt(Math.max(0, est.alem_do_ruido), 1)}</span><span class="d">${est.estavel ? 'lista <b>estável</b> (menos de 1 carta)' : 'a lista <b>está mudando</b>'}</span></div></div>`;
+  const pac = p => `<div class="panel" style="padding:12px;gap:6px;background:var(--sunken)">
+      <div class="row"><b class="grow">${p.mudancas.length > 1 ? `Pacote de ${p.mudancas.length} mudanças` : 'Mudança'}</b><span class="muted" style="font-size:.85rem">${p.listas} listas recentes com tudo junto</span></div>
+      ${p.mudancas.map(x => `<div class="row" style="gap:8px"><span class="cel-carta">${mini(x.carta)}<b>${esc(x.carta)}</b></span>
+        <span>${x.op === '<' ? `cortou para menos de ${x.k}` : `${x.k}+ cópias`} <span class="muted">(${x.de} → ${x.para})</span></span>
+        <span class="grow"></span><span class="num">${pct(x.antes)} → <b>${pct(x.agora)}</b> das listas</span>
+        <span class="num muted" title="Aproveitamento por partida das listas recentes com a mudança × sem ela">aprov. ${pct(x.aprov_com)} × ${pct(x.aprov_sem)}</span></div>`).join('')}</div>`;
+  el.innerHTML = `<div class="cab-quadro"><h2>Mudanças nas listas</h2>${per ? `<span class="muted" style="font-size:.85rem">${dm(per.recente_de)}–${dm(per.recente_ate)} (${r.listas_recentes} listas) × ${dm(per.antes_de)}–${dm(per.antes_ate)} (${r.listas_antes} listas)</span>` : ''}</div>
+    <p class="explica">Compara as listas das últimas 2 semanas da seleção com as das 4 semanas antes. Uma mudança aparece quando: ficou pelo menos 25 pontos mais comum, com teste rigoroso (cada deck testa centenas de cartas e contagens, então só passa o que dificilmente é acaso); as listas com ela fizeram mais pontos por partida do que as sem ela (deu resultado, não é só moda); e pelo menos 5 listas a têm. Mudanças que aparecem nas mesmas listas formam um pacote. A estabilidade diz quantas cartas a lista média mudou além do que muda só por serem jogadores diferentes (sorteio das listas, 200 vezes).</p>
+    ${estHtml}
+    ${r.motivo ? `<p class="muted">Sem comparação: ${esc(r.motivo)}.</p>` : r.pacotes.length ? r.pacotes.map(pac).join('') : '<p class="muted">Nenhuma mudança passou nos critérios: a lista do deck está parecida com a das semanas anteriores.</p>'}
+    <p class="muted" style="font-size:.8rem">São só as listas do topo de cada torneio: mostram o que quem foi bem mudou, não o deck inteiro.</p>`;
 }
 
 // Perfil de deck > Listas: as listas de torneio mais recentes do deck, completas, com link do Limitless e "Copiar" no formato que o
@@ -350,8 +420,8 @@ async function renderCartas() {
         <div class="row"><select id="cmp-tb">${com.map(t => `<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select><select id="cmp-ib" class="grow"></select></div>
       </div><div class="row"><button class="primary" id="cmp-ir">Comparar</button></div><div id="cmp-out"></div>` : '<p class="muted">Importe listas para comparar.</p>'}
     </section>`;
-  ligarSeletor(renderCartas);
-  $('#c-deck').onchange = e => { S.deckCartas = e.target.value; renderCartas(); };
+  ligarSeletor(render);
+  $('#c-deck').onchange = e => { S.deckCartas = e.target.value; render(); };
   if (S.deckCartas) desenharEfeitoCartas(S.deckCartas);
   if (com.length) {
     const preencher = async lado => {
@@ -399,10 +469,10 @@ async function renderCartasMatchups() {
         ${l.celulas.map((c, i) => `<td class="${c.pouco ? 'pouco' : ''}" style="${c.n ? corTaxa(c.taxa) : ''}" title="${l.copias}× contra ${esc(r.colunas[i].nome)}: ${c.v}-${c.d}-${c.e}">${c.n ? pct(c.taxa) : '–'}<small>${c.n || ''}</small></td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : '<p class="muted">Sem partidas suficientes para esta combinação.</p>'}
       </section></div>` : '<p class="muted">Importe torneios com listas (Listas do topo maior que zero) para usar esta análise.</p>'}`;
-  ligarSeletor(renderCartasMatchups);
-  $('#cmu-deck').onchange = e => { S.cmuDeck = e.target.value; S.cmuCarta = ''; renderCartasMatchups(); };
-  $('#cmu-carta').onchange = e => { S.cmuCarta = e.target.value; renderCartasMatchups(); };
-  $('#cmu-min').onchange = e => { S.minMu = Number(e.target.value); renderCartasMatchups(); };
+  ligarSeletor(render);
+  $('#cmu-deck').onchange = e => { S.cmuDeck = e.target.value; S.cmuCarta = ''; render(); };
+  $('#cmu-carta').onchange = e => { S.cmuCarta = e.target.value; render(); };
+  $('#cmu-min').onchange = e => { S.minMu = Number(e.target.value); render(); };
 }
 
 function seloFormato(t) {
@@ -517,4 +587,48 @@ function atualizarProgresso(imp) {
   $('#t-etapa').textContent = imp.etapa || ''; $('#t-pct').textContent = (imp.pct || 0) + '%';
   $('#t-barra').style.width = (imp.pct || 0) + '%'; $('#t-msg').textContent = imp.resumo || '';
   $('#t-erro').hidden = !imp.erro; $('#t-erro').textContent = imp.erro || '';
+}
+
+// ---- Metodologia (D-053): como cada número das telas de torneio é calculado, em linguagem simples. Fonte: PROJECT_KNOWLEDGE/
+// 02_BUSINESS_RULES/STATISTICS.md e tracker/evolucao_listas.py. Mudou uma conta? Atualize aqui no mesmo PR.
+const METODOLOGIA = [
+  ['Fontes', `<ul>
+    <li><b>Grandes eventos:</b> Limitless Labs (classificação, rodadas e listas) e RK9 (rodadas). Só a divisão Masters e só o formato Standard.</li>
+    <li><b>Torneios online:</b> play.limitlesstcg.com (classificação, mesas e listas publicadas).</li>
+    <li><b>Listas:</b> o Coletor baixa as listas do topo de cada torneio (64 por padrão). Por isso as contas de cartas descrevem quem foi bem, não o deck inteiro.</li>
+    <li><b>Nome do deck:</b> o que o Limitless dá à lista; Dragapult com Dunsparce vira Dragapult Dudunsparce (D-052).</li>
+    <li><b>Época:</b> cada coleção nova começa uma época: nos grandes eventos, no dia em que passa a valer em torneio; nos online, no lançamento.</li></ul>`],
+  ['O que conta como partida', `<ul>
+    <li>Folga (bye), atraso e derrota dupla (W.O., quando ninguém aparece) <b>não</b> são partidas: os importadores descartam.</li>
+    <li>Entram todas as rodadas importadas, inclusive as do corte final (top cut). Os grandes eventos são melhor de 3; o ladder do TCG Live é jogo único: compare com cuidado.</li></ul>`],
+  ['Taxas', `<ul>
+    <li><b>Taxa de vitória</b> = vitórias ÷ (vitórias + derrotas + empates), como no Limitless: empate conta como não-vitória. Por isso o deck médio fica um pouco abaixo de 50%.</li>
+    <li>"Contra o campo" deixa de fora os mirrors (o deck contra ele mesmo).</li>
+    <li><b>Faixa provável de 95%</b> (método de Wilson): onde a taxa verdadeira provavelmente está. Com poucas partidas ela é larga. Nas telas de torneio a faixa considera que as várias partidas de um mesmo jogador andam juntas (D-041).</li>
+    <li><b>Mínimos:</b> no gráfico "Quem vale a pena jogar", 20 partidas (taxa) ou 20 jogadores (conversão e aproveitamento); na tabela de matchups, o mínimo que você escolher.</li></ul>`],
+  ['Participação, conversão e aproveitamento', `<ul>
+    <li><b>% do campo</b> = jogadores do deck ÷ jogadores com deck conhecido.</li>
+    <li><b>Conversão</b> = jogadores do deck que terminaram no Top escolhido ÷ jogadores do deck. <b>Fator</b> = participação no corte ÷ participação no campo (acima de 1 = converte melhor que a média).</li>
+    <li><b>Aproveitamento no suíço</b> = pontos (3 por vitória, 1 por empate) ÷ pontos possíveis (3 × rodadas suíças). Quem desistiu perde as rodadas que faltaram. O top cut fica fora (reconhecido pelas mesas que caem pela metade no fim) e, nos grandes eventos, só conta o Dia 1, que todos jogam. Folgas não estão no banco: quem teve folga perde 3 pontos possíveis.</li></ul>`],
+  ['Matchups e "qual deck jogar"', `<ul>
+    <li><b>Taxa real:</b> o resultado do confronto. <b>Ajustada:</b> com poucos jogos, o confronto é completado pela força geral de cada deck (como se houvesse 24 jogos "imaginários" com a força geral); prevê os torneios seguintes melhor que a real (testado).</li>
+    <li><b>Força dos decks:</b> modelo de Bradley-Terry (chance de A vencer B = força de A ÷ (força de A + força de B)).</li>
+    <li><b>Esperada contra o campo:</b> média dos confrontos ajustados, pesada pela presença de cada adversário. <b>Equilíbrio:</b> mistura de decks que nenhum outro consegue explorar (teoria dos jogos).</li></ul>`],
+  ['Listas', `<ul>
+    <li><b>Esqueleto e Uso de cartas:</b> % das listas que usam cada carta e a taxa de vitória com e sem ela (associação, não causa).</li>
+    <li><b>Lista base:</b> cada lista pesa os pontos finais do jogador (3V + E). Núcleo = carta em ≥ 75% do peso; opções = 10% a 75%; cópias = a quantidade mais comum (pesada). Precisa de 5 listas.</li>
+    <li><b>Mudanças nas listas:</b> últimas 2 semanas × 4 semanas antes. Cada contagem vira "pelo menos k cópias" (e "menos de k" para cartas que eram padrão). Conta como mudança quando fica ≥ 25 pontos mais comum com teste binomial p &lt; 0,005, as listas com ela fazem mais pontos por partida que as sem ela, e ≥ 5 listas a têm. Mudanças nas mesmas listas formam um pacote, ordenado por a · ln(a ÷ b) (comum agora, rara antes).</li>
+    <li><b>Estabilidade:</b> quantas cartas a lista média mudou entre os dois períodos, menos a variação natural (listas sorteadas 200 vezes entre os períodos; 95º percentil). Menos de 1 carta além disso = estável. Precisa de 15 listas em cada período.</li>
+    <li><b>Versões pela ACE SPEC</b> e <b>efeito de cada carta</b> (regressão com freio): ver a ajuda de cada tela.</li></ul>`],
+  ['Identificação do deck do adversário (suas partidas)', `<ul>
+    <li>Modelo Naive Bayes sobre as cartas que o adversário mostrou, treinado nas listas de torneio. Com poucas cartas ou cartas de vários decks, o palpite é marcado como <b>incerto</b> (acerta cerca de 1 em 3).</li></ul>`],
+  ['Limites', `<ul>
+    <li>Os números descrevem o que aconteceu; não provam causa. Uma carta pode aparecer mais nas vitórias porque só é jogada quando a partida já está boa.</li>
+    <li>Listas só do topo (puxam as taxas de cartas e versões para cima); torneios melhor de 3 × ladder de jogo único; nomes de deck dependem do Limitless.</li>
+    <li>Toda conta nova é comparada com a atual nos mesmos dados antes de mudar (D-017).</li></ul>`],
+];
+function renderMetodologia() {
+  novaTela();
+  main.innerHTML = `${trilha()}<header><h1>Metodologia</h1><p class="sub">Como cada número das telas de Meta e torneios é calculado. Detalhes técnicos no repositório: <span class="mono">PROJECT_KNOWLEDGE/02_BUSINESS_RULES/STATISTICS.md</span>.</p></header>
+    ${METODOLOGIA.map(([t, h]) => `<section class="panel metodologia"><h2>${t}</h2>${h}</section>`).join('')}`;
 }

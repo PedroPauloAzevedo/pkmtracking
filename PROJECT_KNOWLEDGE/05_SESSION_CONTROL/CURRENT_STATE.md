@@ -1,12 +1,12 @@
 # Estado atual do projeto
 
-> Atualizado em 11/11/2026 (2026.11.11-1 pronta no ramo `feature/visual-meta`, esperando "publicar"). **Atualize este arquivo no
+> Atualizado em 11/11/2026 (2026.11.11-2 pronta no ramo `feature/metodos-indigo`, esperando "publicar"). **Atualize este arquivo no
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
-- **11/11/2026:** na `main` está a 2026.11.10-7. A **2026.11.11-1** (visual novo em Meta e Matchups, inspirado no painel Indigo
-  Plateau: gráfico "Quem vale a pena jogar", cartões por deck com a cor do tipo, mapa de calor, pílulas, mais espaço) está pronta e
-  testada no ramo `feature/visual-meta`. A etapa 2 (métodos) está em `BACKLOG.md`.
+- **11/11/2026:** a **2026.11.11-2** (D-053: aproveitamento no suíço, lista base pesada pelos pontos, mudanças nas listas,
+  estabilidade e tela Metodologia) está pronta no ramo `feature/metodos-indigo`. Na `main`: a **2026.11.11-1** (visual novo em Meta e Matchups, inspirado no painel Indigo
+  Plateau: gráfico "Quem vale a pena jogar", cartões por deck com a cor do tipo, mapa de calor, pílulas, mais espaço) (PR #24).
 - **No GitHub (`main`): 2026.11.09-4** (09/11/2026), publicada junto com as anteriores que esperavam: 2026.11.07-1 (Decisões mostra
   "sem ela: V–D"), 2026.11.09-1 (época dos torneios online começa no lançamento da coleção; D-048), 2026.11.09-2 (Cartas x matchups
   com colunas iguais), 2026.11.09-3 (tema claro/escuro/automático) e 2026.11.09-4 (Início novo: Hoje, tema, Dados coletados;
