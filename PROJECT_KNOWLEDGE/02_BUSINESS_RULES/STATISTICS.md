@@ -1,6 +1,6 @@
 # Estatísticas e análises: fórmulas, limites e números
 
-> Atualizado em 06/11/2026 (v2026.11.06-2: D-040, D-041, D-042). Cada número aqui foi escolhido por medição (`../03_DECISIONS/EVIDENCE.md`); mudar exige medir de novo (D-017).
+> Atualizado em 11/11/2026 (v2026.11.11-2: D-053; antes v2026.11.06-2: D-040, D-041, D-042). Cada número aqui foi escolhido por medição (`../03_DECISIONS/EVIDENCE.md`); mudar exige medir de novo (D-017).
 > Código: `tracker/analises.py`, `tracker/estrategia.py`, `tracker/decks.py`, `tracker/variantes.py`, `tracker/regressao.py`,
 > `tracker/probabilidades.py`.
 
@@ -20,6 +20,17 @@
 - **Taxa esperada contra o campo:** média dos confrontos ajustados, pesada pela presença de cada deck.
 - **Equilíbrio do meta:** mistura de decks que nenhum outro explora (jogo de soma zero), por *fictitious play*.
 - **Tendência:** participação por torneio; agrupa por semana quando há mais de 20 torneios.
+
+## Evolução das listas e aproveitamento (`evolucao_listas.py`, D-053; tela Metodologia resume tudo)
+- **Aproveitamento no suíço** = (3V + E no suíço) / (3 × rodadas suíças). Top cut fora (de trás para a frente: rodada com ≤ 1, 2, 4, 8,
+  16 mesas); grandes eventos só até a queda de mais de 40% nas mesas (Dia 1). Média dos jogadores do deck com faixa de 1,96 × erro
+  padrão; no gráfico, só decks com 20 jogadores. Jogador sem nenhuma partida achada fica fora.
+- **Lista base:** peso = 3V + E; núcleo ≥ 75% do peso, opções 10–75%; cópias = moda pesada; ≥ 5 listas.
+- **Mudanças nas listas:** últimas 14 dias × 28 dias antes; característica "≥ k cópias" (e "< k" para carta em ≥ 75% das listas antes);
+  subida ≥ 25 pontos, binomial unilateral p < 0,005 com p0 = fração antes (limitada a 1–99%), ≥ 5 listas, aproveitamento por partida
+  com > sem; uma característica por carta; pacotes por Jaccard ≥ 0,6; ordem a·ln(a / max(b, 0,01)).
+- **Estabilidade:** ½ Σ |média de cópias recente − anterior|; ruído = 95º percentil de 200 permutações (semente 42); estável se a
+  diferença for < 1 carta; ≥ 15 listas por período.
 
 ## Identificação do deck pelas cartas reveladas (`decks.py`, D-019)
 1. **NB2** (Naive Bayes sobre as cartas das listas dos torneios): decide **sempre** que houver pelo menos **200 listas** de torneio

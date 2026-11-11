@@ -1,5 +1,26 @@
 [
   {
+    "versao": "2026.11.11-2",
+    "data": "2026-11-11",
+    "titulo": "Aproveitamento no suíço, lista base, mudanças nas listas e tela Metodologia",
+    "mudancas": [
+      "Meta: nova medida \"Aproveitamento no suíço\" (pontos feitos ÷ pontos possíveis; quem desistiu perde as rodadas que faltaram). Aparece como coluna na tabela e como terceira opção do gráfico \"Quem vale a pena jogar\". Nos grandes eventos conta só o Dia 1, que todos jogam.",
+      "Perfil de deck: \"Lista base\", em que cada lista pesa os pontos que o jogador fez (quem foi mais longe pesa mais). Mostra o núcleo (cartas em 75% ou mais do peso) e as opções (10% a 75%).",
+      "Perfil de deck: \"Mudanças nas listas\" compara as últimas 2 semanas com as 4 anteriores. Mostra as cartas que ficaram bem mais comuns e deram resultado (com teste rigoroso) e se a lista média está estável ou mudando.",
+      "Nova aba \"Metodologia\" em Meta e torneios: como cada número é calculado, em linguagem simples.",
+      "Conferido: folga (bye) e derrota dupla (W.O.) já não contavam como partida; nada muda nas taxas.",
+      "Tendência do meta: o ícone de cada deck aparece à direita, ligado ao fim da sua linha, e passar o mouse numa linha ou num ícone apaga as outras.",
+      "Gráfico \"Quem vale a pena jogar\": os nomes dos decks não ficam mais um em cima do outro nem em cima das bolinhas.",
+      "Trocar a métrica, o deck ou um filtro nas telas de torneio mostra o aviso \"Carregando…\" enquanto a conta é feita.",
+      "Perfil de deck: a imagem usa a carta certa do deck (ex.: Mega Rayquaza ex), tirada das listas."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.11-2\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.11-1",
     "data": "2026-11-11",
     "titulo": "Meta e Matchups com visual novo",

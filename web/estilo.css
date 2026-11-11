@@ -467,3 +467,10 @@ img.mini { width: 28px; height: 39px; object-fit: cover; object-position: top; b
 .lista-deck summary { cursor: pointer; }
 .lista-secoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .lista-linha { display: flex; align-items: center; gap: 6px; font-size: .86rem; padding: 2px 0; }
+/* tela Metodologia (D-053) */
+.metodologia ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 110ch; }
+/* linhas com destaque: passar o mouse numa série apaga as outras (Tendência do meta) */
+.chart svg:has(.serie:hover) .serie { opacity: .18; transition: opacity .12s; }
+.chart svg:has(.serie:hover) .serie:hover { opacity: 1; }
+.chart .serie { cursor: default; }
+.legenda .ico { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; margin-right: 2px; }

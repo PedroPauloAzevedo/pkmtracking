@@ -820,6 +820,20 @@ def meta():
     return jsonify(m)
 
 
+@app.get("/api/lista-base/<arq>")
+def lista_base_deck(arq):
+    """Lista base do deck: cada lista pesa os pontos do jogador (3V + E); núcleo ≥ 75% do peso, opções 10–75% (D-053)."""
+    from tracker import evolucao_listas
+    return jsonify(evolucao_listas.lista_base(arq, _lista_torneios() or []))
+
+
+@app.get("/api/inovacoes/<arq>")
+def inovacoes_deck(arq):
+    """Mudanças nas listas do deck (últimas 2 semanas × 4 semanas antes) e estabilidade da lista média (D-053)."""
+    from tracker import evolucao_listas
+    return jsonify(evolucao_listas.inovacoes(arq, _lista_torneios() or []))
+
+
 @app.get("/api/variantes/<arq>")
 def variantes_deck(arq):
     """Variantes do deck (listas agrupadas por semelhança) com a taxa de vitória de cada uma."""

@@ -43,6 +43,21 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.11-2 — 11/11/2026 (pedido do Pedro: métodos do painel Indigo Plateau, etapa 2; D-053)
+- `tracker/evolucao_listas.py` (novo): `rodadas_suicas`, `aproveitamento_por_deck`, `lista_base`, `inovacoes`, `estabilidade`,
+  `binomial_cauda_superior`, `_nome_carta`. `analises.meta()` ganha `aproveitamento`/`aprov_baixo`/`aprov_alto`/`jogadores_aprov`.
+- `app.py`: `/api/lista-base/<arq>` e `/api/inovacoes/<arq>`.
+- `web/js/campeonatos.js`: `METRICAS_META` (pílula "Aproveitamento no suíço" no gráfico), coluna "Aproveit." no Meta, seções
+  "Lista base" e "Mudanças nas listas" no Perfil de deck, tela `renderMetodologia` (aba nova em Meta e torneios; rota em
+  `base.js`/`inicio.js`). `web/estilo.css`: `.metodologia`.
+- Bye e W.O.: já descartados pelos três importadores (conferido no código: `limitless.py`).
+- `teste_tracker.py` seção 10 (respostas conhecidas); conferido na cópia com os dados do Pedro; 4 testes de entrega OK.
+- Ajustes pedidos pelo Pedro antes de publicar: `graficoLinhas` aceita `icone` por série (ícone à direita do fim da linha, afastados
+  na vertical, traço até o último ponto; destaque ao passar o mouse por CSS `:has`); nomes da dispersão desviam de nomes e
+  bolinhas (12 posições, a de menor sobreposição); filtros e pílulas das telas de torneio chamam `render()` (mostra "Carregando…");
+  `perfil()` devolve `carta_capa` (carta das listas que começa pelo nome do deck); `tipo_deck` com `lru_cache` e
+  `aproveitamento_por_deck` guardado enquanto os torneios não mudam.
+
 ## 2026.11.11-1 — 11/11/2026 (pedido do Pedro: visual inspirado no painel Indigo Plateau, etapa 1)
 - `web/js/campeonatos.js`: Meta com `quadroDispersao` (x = % do campo em escala log, y = taxa sem mirrors ou conversão; linha
   vertical = mediana do % do campo; horizontal = média do campo, não 50%, porque empate conta como não-vitória; só decks com 20

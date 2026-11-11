@@ -55,8 +55,11 @@ function tabelaGrupos(lista, titulo, extra, formato) {
       ${extra ? `<td>${g.meta_taxa != null ? `${pct(g.meta_taxa)} <span class="ic">${g.meta_n} partidas</span>` : '<span class="muted">–</span>'}</td>` : ''}</tr>`).join('')}
   </tbody></table></div>`;
 }
+// series[k].icone (opcional): ícone do deck desenhado à direita do fim da linha, na cor da linha; os ícones se afastam uns dos
+// outros na vertical para não se cobrirem, e um traço liga cada um ao último ponto da sua linha (Tendência do meta).
 function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', altura = 240, marcas = [] } = {}) {
-  const W = 640, H = altura, m = { l: 40, r: 14, t: 12, b: 34 };
+  const comIcones = series.some(s => s.icone !== undefined);
+  const W = comIcones ? 680 : 640, H = altura, m = { l: 40, r: comIcones ? 54 : 14, t: 12, b: 34 };
   const n = Math.max(rotulosX.length - 1, 1);
   const x = i => m.l + (rotulosX.length === 1 ? (W - m.l - m.r) / 2 : (i / n) * (W - m.l - m.r));
   const y = v => H - m.b - ((v - min) / (max - min || 1)) * (H - m.t - m.b);
@@ -68,16 +71,33 @@ function graficoLinhas(series, rotulosX, { min = 0, max = 100, sufixo = '%', alt
   // separador de época: linha tracejada onde começa a época de uma coleção nova (marcas = [{i, rotulo}], ver marcasEpoca)
   marcas.forEach(mk => { const xm = (x(mk.i - 1) + x(mk.i)) / 2, perto_do_fim = xm > W * 0.7;  // nome à esquerda da linha no fim
     g += `<line class="marca-epoca" x1="${xm}" x2="${xm}" y1="${m.t}" y2="${H - m.b}"/><text class="marca-epoca" x="${perto_do_fim ? xm - 4 : xm + 4}" y="${m.t + 10}" text-anchor="${perto_do_fim ? 'end' : 'start'}">${esc(mk.rotulo)}</text>`; });
+  const fins = [];
   const linhas = series.map((s, k) => {
     const pts = s.valores.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
     if (!pts.length) return '';
     const cor = s.cor || CORES[k % CORES.length];
     const ultimo = pts[pts.length - 1];
-    return `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round"/>
-      <circle cx="${ultimo[0]}" cy="${ultimo[1]}" r="3.5" fill="${cor}"/>`;
-  }).join('');
-  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${g}${linhas}</svg></div>
-    <div class="legenda">${series.map((s, k) => `<span><i style="background:${s.cor || CORES[k % CORES.length]}"></i>${esc(s.nome)}</span>`).join('')}</div>`;
+    const ultimoV = [...s.valores].reverse().find(v => v != null);
+    const f = { s, cor, x: ultimo[0], y: ultimo[1], v: ultimoV, icone: '' };
+    if (comIcones) fins.push(f);
+    return () => `<g class="serie"><title>${esc(s.nome)}: ${fmt(ultimoV)}${sufixo} no último torneio</title>
+      <polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="${ultimo[0]}" cy="${ultimo[1]}" r="3.5" fill="${cor}"/>${f.icone}</g>`;
+  });
+  if (fins.length) {
+    const R = 11, passo = 2 * R + 3;
+    fins.sort((a, b) => a.y - b.y);
+    fins.forEach((f, i) => { f.iy = Math.max(f.y, i ? fins[i - 1].iy + passo : m.t + R); });
+    const excesso = fins[fins.length - 1].iy - (H - m.b + R);  // passou do fundo: empurra todos para cima
+    if (excesso > 0) for (let i = fins.length - 1; i >= 0; i--) fins[i].iy = Math.min(fins[i].iy - excesso, i < fins.length - 1 ? fins[i + 1].iy - passo : Infinity);
+    const ix = W - m.r + R + 8;
+    fins.forEach(f => { f.icone = `
+      <line x1="${f.x}" y1="${f.y}" x2="${ix - R}" y2="${f.iy}" stroke="${f.cor}" stroke-width="1" stroke-dasharray="2 2"/>
+      <circle cx="${ix}" cy="${f.iy}" r="${R}" fill="var(--surface)" stroke="${f.cor}" stroke-width="2.2"/>
+      ${f.s.icone ? `<image href="/icone/${encodeURIComponent(f.s.icone)}" x="${ix - 9}" y="${f.iy - 9}" width="18" height="18"/>` : `<circle cx="${ix}" cy="${f.iy}" r="4" fill="${f.cor}"/>`}`; });
+  }
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${g}${linhas.map(l => typeof l === 'function' ? l() : l).join('')}</svg></div>
+    <div class="legenda">${series.map((s, k) => `<span><i style="background:${s.cor || CORES[k % CORES.length]}"></i>${s.icone ? `<img class="ico" src="/icone/${encodeURIComponent(s.icone)}" alt="" loading="lazy">` : ''}${esc(s.nome)}</span>`).join('')}</div>`;
 }
 // Fonte dos dados de campeonato: grandes eventos (Limitless Labs), torneios online (play.limitlesstcg.com) ou todos.
 // Só entram torneios Standard: os que o Limitless marca com outro formato ficam de fora das contas.
@@ -257,11 +277,11 @@ async function atualizarStatus() {
 // Cada tela pertence a uma seção do menu; as seções com várias telas mostram abas no topo (trilha()).
 const SECAO = { painel: 'inicio', partidas: 'partidas', desempenho: 'partidas', decisoes: 'partidas', partida: 'partidas', replay: 'partidas',
   decks: 'decks', meudeck: 'decks', lista: 'decks',
-  meta: 'meta', matchups: 'meta', deck: 'meta', cartas: 'meta', 'cartas-mu': 'meta', torneios: 'meta' };
+  meta: 'meta', matchups: 'meta', deck: 'meta', cartas: 'meta', 'cartas-mu': 'meta', torneios: 'meta', metodologia: 'meta' };
 const NOME_SECAO = { partidas: 'Minhas partidas', decks: 'Meus decks', meta: 'Meta e torneios', programa: 'Programa' };
 const ABAS = {
   partidas: [['partidas', 'Partidas'], ['desempenho', 'Desempenho'], ['decisoes', 'Decisões']],
-  meta: [['meta', 'Meta'], ['matchups', 'Matchups'], ['deck', 'Perfil de deck'], ['cartas', 'Uso de cartas'], ['cartas-mu', 'Cartas x matchups'], ['torneios', 'Torneios']],
+  meta: [['meta', 'Meta'], ['matchups', 'Matchups'], ['deck', 'Perfil de deck'], ['cartas', 'Uso de cartas'], ['cartas-mu', 'Cartas x matchups'], ['torneios', 'Torneios'], ['metodologia', 'Metodologia']],
 };
 function rota() {
   const h = location.hash.slice(1);
