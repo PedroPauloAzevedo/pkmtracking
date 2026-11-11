@@ -385,6 +385,31 @@ finally:
 assert decks.regra_dragapult("dragapult-ex", {"Dudunsparce": 1}) == "dragapult-dudunsparce"
 assert decks.regra_dragapult("dragapult-dudunsparce", {"Dreepy": 2}) == "dragapult-ex"
 assert decks.regra_dragapult("dragapult-dusknoir", {"Dunsparce": 1}) == "dragapult-dusknoir"
+# D-055: Lopunny Dudunsparce com Mega Froslass ex vira Lopunny Froslass (torneio e partida), e volta sem ela
+with banco.conectar() as con:
+    con.execute("INSERT INTO t_jogadores (torneio, labs_id, nome, nome_norm, arquetipo) VALUES ('0999','lopteste','Bia Teste','bia teste','lopunny-dudunsparce')")
+    con.execute("INSERT INTO t_listas (torneio, labs_id, carta, qtd) VALUES ('0999','lopteste','Mega Froslass ex',2), ('0999','lopteste','Buneary',3)")
+    con.execute("INSERT INTO t_partidas VALUES ('0999', 98, '1', 'outro', 'bia teste', 'L', 'x', 'lopunny-dudunsparce')")
+try:
+    assert banco.separar_arquetipos("0999") >= 1
+    assert banco.consultar("SELECT arquetipo FROM t_jogadores WHERE labs_id='lopteste'")[0]["arquetipo"] == "lopunny-froslass"
+    assert banco.consultar("SELECT arq2 FROM t_partidas WHERE rodada=98 AND torneio='0999'")[0]["arq2"] == "lopunny-froslass"
+    assert decks.arquetipos()["lopunny-froslass"]["nome"] == "Lopunny Froslass"
+    with banco.conectar() as con:
+        con.execute("DELETE FROM t_listas WHERE labs_id='lopteste' AND carta='Mega Froslass ex'")
+    banco.separar_arquetipos("0999")
+    assert banco.consultar("SELECT arquetipo FROM t_jogadores WHERE labs_id='lopteste'")[0]["arquetipo"] == "lopunny-dudunsparce"
+finally:
+    with banco.conectar() as con:
+        for tab in ("t_jogadores", "t_listas"):
+            con.execute(f"DELETE FROM {tab} WHERE labs_id='lopteste'")
+        con.execute("DELETE FROM t_partidas WHERE rodada=98 AND torneio='0999'")
+    banco.marcar_mudanca_torneios()
+assert decks.regra_par("lopunny-dudunsparce", {"Mega Froslass ex": 1, "Buneary": 1}) == "lopunny-froslass"
+assert decks.regra_par("lopunny-froslass", {"Buneary": 1}) == "lopunny-dudunsparce"
+assert decks.regra_par("lopunny-dusknoir", {"Mega Froslass ex": 1}) == "lopunny-dusknoir"
+assert decks.regra_par("dragapult-ex", {"Dunsparce": 1}) == "dragapult-dudunsparce"
+print("D-055 (Lopunny Froslass): ok")
 # Perfil de deck > Listas: listas completas do deck, com link do Limitless e busca por cartas (todas ao mesmo tempo)
 arq_l = banco.consultar("SELECT j.arquetipo AS a FROM t_listas l JOIN t_jogadores j ON j.torneio=l.torneio AND j.labs_id=l.labs_id "
                         "WHERE j.arquetipo != '' GROUP BY j.arquetipo ORDER BY COUNT(*) DESC LIMIT 1")[0]["a"]

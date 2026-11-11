@@ -215,10 +215,15 @@ async function renderMatchups() {
   document.querySelectorAll('[data-mu]').forEach(b => b.onclick = () => { S.muTipo = b.dataset.mu; render(); });
 }
 // Mapa de calor: mais forte quanto mais longe de 50% (satura em 25 pontos de distância), mais intenso que o corTaxa das tabelas.
+// Lado ruim (pedido do Pedro, 11/11/2026): o pior é o vermelho mais ESCURO. Perto de 50% o vermelho é claro e vai escurecendo
+// até --bad-escuro; a letra fica branca nas células mais escuras para continuar legível.
 function corCalor(taxa) {
   if (taxa == null) return '';
   const d = Math.max(-25, Math.min(25, taxa - 50)) / 25;
-  return `background: color-mix(in srgb, ${d >= 0 ? 'var(--good)' : 'var(--bad)'} ${Math.round(8 + Math.abs(d) * 67)}%, var(--surface)); font-weight: 600;`;
+  if (d >= 0) return `background: color-mix(in srgb, var(--good) ${Math.round(8 + d * 67)}%, var(--surface)); font-weight: 600;`;
+  const t = -d;
+  if (t <= .5) return `background: color-mix(in srgb, var(--bad) ${Math.round(8 + t * 2 * 67)}%, var(--surface)); font-weight: 600;`;
+  return `background: color-mix(in srgb, var(--bad-escuro) ${Math.round((t - .5) * 2 * 100)}%, color-mix(in srgb, var(--bad) 75%, var(--surface))); font-weight: 600;${t > .7 ? ' color: #fff;' : ''}`;
 }
 
 async function renderDeck() {

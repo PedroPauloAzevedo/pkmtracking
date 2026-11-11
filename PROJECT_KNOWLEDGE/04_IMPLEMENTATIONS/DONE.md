@@ -43,6 +43,16 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.11-4 — 11/11/2026 (pedido do Pedro)
+- `web/js/campeonatos.js` (`corCalor`): lado ruim vai de vermelho claro (perto de 50%) a `--bad-escuro` (pior), letra branca nas
+  células mais escuras; `web/estilo.css`: `--bad-escuro` e legenda com o escuro à esquerda.
+- `tracker/decks.py`: `NOMES_EXIBICAO` (nome de exibição por cima do cadastro do Limitless): `ogerpon-meganium-hydrapple` →
+  "Meganium Hydrapple" (padrão de até 2 Pokémon no nome). Só o nome muda.
+- D-055: `tracker/banco.py` `PAR_LOPUNNY`, `REGRAS_PAR` (separar_arquetipos roda as duas regras), `VERSAO_REGRAS_ARQ = 2`;
+  `tracker/decks.py` `regra_lopunny`, `regra_par` (usada na identificação) e `ARQUETIPOS_PROPRIOS` (nome e ícones de
+  `lopunny-froslass`). `teste_tracker.py`: jogador sintético com e sem Mega Froslass ex. Banco do Pedro: Lopunny Dudunsparce
+  240 → 215 jogadores + Lopunny Froslass 25 (189 confrontos); Dragapult sem mudança.
+
 ## 2026.11.11-3 — 11/11/2026 (pedido do Pedro: pontos da dispersão como no painel Indigo Plateau)
 - `web/js/campeonatos.js` (`quadroDispersao`): círculo com `fill-opacity` .28 e borda na cor do tipo, ícone recortado (`clipPath`)
   com tamanho fixo, nome embaixo do círculo (acima só se encostar num nome já escrito); gráfico com 600 de altura (era 460).

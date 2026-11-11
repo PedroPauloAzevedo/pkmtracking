@@ -1,5 +1,20 @@
 [
   {
+    "versao": "2026.11.11-4",
+    "data": "2026-11-11",
+    "titulo": "Lopunny Froslass separado, mapa de confrontos com o pior em vermelho escuro e \"Meganium Hydrapple\"",
+    "mudancas": [
+      "Mapa de confrontos: quanto pior o confronto, mais escuro o vermelho (antes o pior era o vermelho mais vivo). A legenda acompanha.",
+      "O deck \"Ogerpon Meganium Hydrapple\" passa a se chamar \"Meganium Hydrapple\" em todo o Coletor (só o nome muda; as contas são as mesmas).",
+      "Novo deck \"Lopunny Froslass\": lista de Lopunny Dudunsparce com Mega Froslass ex passa a contar como um deck próprio (é outra montagem: segundo atacante, quase sempre Hero's Cape). Nas suas partidas, vale se o adversário mostrou Mega Froslass ex. Os torneios já importados são reorganizados sozinhos ao abrir (cerca de 1 segundo)."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.11-4\" e confirme. O programa reinicia sozinho e reorganiza os torneios já importados."
+    ]
+  },
+  {
     "versao": "2026.11.11-3",
     "data": "2026-11-11",
     "titulo": "Gráfico \"Quem vale a pena jogar\" mais fácil de ler",
