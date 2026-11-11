@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-> Atualizado em 11/11/2026 (2026.11.11-2 pronta no ramo `feature/metodos-indigo`, esperando "publicar"). **Atualize este arquivo no
+> Atualizado em 11/11/2026 (2026.11.11-2 publicada no PR #25; 2026.11.11-3, pontos da dispersão, no ramo `fix/dispersao-nomes`). **Atualize este arquivo no
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão

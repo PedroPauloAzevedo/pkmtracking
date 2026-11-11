@@ -82,7 +82,7 @@ function quadroDispersao(m) {
   if (decks.length < 3) return `<section class="panel">${cab}<p class="muted">Poucos decks com ${mt.minimo} ou mais nesta seleção para desenhar o gráfico.</p></section>`;
   const yv = mt.y, refY = mt.media(m);
   const ps = decks.map(d => d.pct).sort((a, b) => a - b), med = ps[Math.floor(ps.length / 2)];
-  const W = 1000, H = 460, L = 56, R = 24, T = 24, B = 48;
+  const W = 1000, H = 600, L = 56, R = 24, T = 30, B = 48;
   const xMin = Math.log(Math.max(0.3, Math.min(...ps) * 0.8)), xMax = Math.log(Math.max(...ps) * 1.25);
   const ys = decks.map(yv).concat(refY), yMin = Math.floor((Math.min(...ys) - 2) / 2) * 2, yMax = Math.ceil((Math.max(...ys) + 2) / 2) * 2;
   const x = v => L + (Math.log(v) - xMin) / (xMax - xMin) * (W - L - R), y = v => T + (yMax - v) / (yMax - yMin) * (H - T - B);
@@ -95,35 +95,30 @@ function quadroDispersao(m) {
   g += `<text class="rot" x="${(W + L) / 2}" y="${H - 8}" text-anchor="middle">% do campo (escala logarítmica)</text>`;
   g += `<text x="${W - R - 10}" y="${T + 18}" text-anchor="end" style="fill:var(--good);font-size:12px;font-weight:700">Boas escolhas: populares e acima da média</text>`;
   g += `<text x="${L + 10}" y="${T + 18}" style="fill:var(--muted);font-size:12px;font-weight:700">Apostas: menos jogados, acima da média</text>`;
-  // nomes: cada nome procura um lugar livre ao redor do seu ponto (embaixo, em cima, à direita, à esquerda, mais longe), sem
-  // encostar em outro nome nem em outra bolinha; se nenhum estiver livre, fica onde cobre menos. Os decks maiores escolhem primeiro.
+  // Cada deck: círculo meio transparente na cor do tipo, o Pokémon recortado no círculo sempre do mesmo tamanho e o nome logo
+  // abaixo, centralizado (como no painel Indigo Plateau). Os decks menores são desenhados por último e ficam por cima.
   let nomes = '';
-  const caixas = decks.map(d => ({ x: x(d.pct), y: y(yv(d)), w: 34, h: 34 }));   // as bolinhas também são obstáculos
-  const sobra = (a, b) => Math.max(0, (a.w + b.w) / 2 - Math.abs(a.x - b.x)) * Math.max(0, (a.h + b.h) / 2 - Math.abs(a.y - b.y));
-  const lugarNome = (cx, cy, nome) => {
-    const w = nome.length * 6.6 + 6, h = 15;
-    const opcoes = [[0, 28], [0, -26], [w / 2 + 20, 0], [-w / 2 - 20, 0], [0, 42], [0, -40], [w / 2 + 20, 16], [-w / 2 - 20, 16],
-      [w / 2 + 20, -16], [-w / 2 - 20, -16], [0, 56], [0, -54]];
-    let melhor = null;
-    for (const [dx, dy] of opcoes) {
-      const c = { x: cx + dx, y: cy + dy, w, h };
-      if (c.x - w / 2 < L || c.x + w / 2 > W - R || c.y - h < T || c.y > H - B) continue;   // não sai da área do gráfico
-      const custo = caixas.reduce((a, o) => a + (Math.abs(o.x - cx) < .5 && Math.abs(o.y - cy) < .5 && o.w === 34 ? 0 : sobra(c, o)), 0);
-      if (!melhor || custo < melhor.custo) melhor = { ...c, custo };
-      if (!custo) break;
-    }
-    melhor = melhor || { x: cx, y: cy + 28, w, h };
-    caixas.push(melhor);
-    return melhor;
+  const RP = 18, usados = [];
+  // nome embaixo do círculo; só se encostar num nome já escrito vai para logo acima do mesmo círculo (continua colado nele)
+  const yNome = (cx, cy, nome) => {
+    const w = nome.length * 6.4 + 6;
+    const bate = ly => usados.some(u => Math.abs(u.y - ly) < 14 && Math.abs(u.x - cx) < (u.w + w) / 2);
+    const ly = !bate(cy + RP + 14) || bate(cy - RP - 6) ? cy + RP + 14 : cy - RP - 6;
+    usados.push({ x: cx, y: ly, w });
+    return ly;
   };
-  [...decks].sort((a, b) => b.pct - a.pct).forEach(d => {
-    const cx = x(d.pct), cy = y(yv(d)), ln = lugarNome(cx, cy, d.nome), ic = (S.arq[d.arquetipo] ? S.arq[d.arquetipo].icones : [pokeId(d.arquetipo)])[0];
+  [...decks].sort((a, b) => b.pct - a.pct).forEach((d, i) => {
+    const cx = x(d.pct), cy = y(yv(d)), ic = (S.arq[d.arquetipo] ? S.arq[d.arquetipo].icones : [pokeId(d.arquetipo)])[0];
     const dica = `${d.nome}\n% do campo: ${pct(d.pct)} (${d.jogadores} jogadores)\n` + mt.dica(d, m);
-    g += `<g class="pt" data-arq="${esc(d.arquetipo)}"><title>${esc(dica)}</title><circle cx="${cx}" cy="${cy}" r="16" fill="${corDeck(d)}"/>
-      ${ic ? `<image href="/icone/${encodeURIComponent(ic)}" x="${cx - 13}" y="${cy - 13}" width="26" height="26"/>` : ''}</g>`;
-    nomes += `<text class="nome" x="${ln.x}" y="${ln.y + 4}" text-anchor="middle">${esc(d.nome)}</text>`;
+    const cor = corDeck(d), clip = `rec-${i}`;
+    g += `<g class="pt" data-arq="${esc(d.arquetipo)}"><title>${esc(dica)}</title>
+      <clipPath id="${clip}"><circle cx="${cx}" cy="${cy}" r="${RP - 2}"/></clipPath>
+      <circle cx="${cx}" cy="${cy}" r="${RP}" fill="${cor}" fill-opacity=".28" stroke="${cor}" stroke-width="2"/>
+      ${ic ? `<image href="/icone/${encodeURIComponent(ic)}" x="${cx - RP + 3}" y="${cy - RP + 3}" width="${2 * RP - 6}" height="${2 * RP - 6}" preserveAspectRatio="xMidYMid meet" clip-path="url(#${clip})"/>` : ''}
+    </g>`;
+    nomes += `<text class="nome" x="${cx}" y="${yNome(cx, cy, d.nome)}" text-anchor="middle">${esc(d.nome)}</text>`;
   });
-  g += nomes;  // nomes por último: ficam por cima dos pontos
+  g += nomes;  // nomes por último: nenhum círculo cobre um nome
   const extra = chave === 'aprov' ? ' Aproveitamento = pontos no suíço (3 por vitória, 1 por empate) ÷ pontos possíveis; quem desistiu perde as rodadas que faltaram, por isso nos torneios online (com muitas desistências) ele fica bem abaixo da taxa. Nos grandes eventos conta só o Dia 1, que todos jogam.' : '';
   return `<section class="panel">${cab}
     <p class="explica">Cada ponto é um deck: mais para a direita, mais jogado; mais para cima, ${mt.sobe}. A linha tracejada vertical é o % do campo mediano destes decks; a horizontal, ${mt.textoMedia(refY)}. Em cima à direita ficam as <b>boas escolhas</b> (muito testados e indo bem); em cima à esquerda, as <b>apostas</b> (vão bem, mas com pouca amostra). Passe o mouse num deck para ver os números; clique para abrir o perfil. Só entram decks com ${mt.minimo} ou mais.${extra}</p>
