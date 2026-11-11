@@ -366,6 +366,43 @@ def _jogadores(torneios, top=0):
     return banco.consultar(sql, params)
 
 
+def tipo_deck(arq):
+    """Tipo de energia do Pokémon principal do deck (pela biblioteca de cartas), só para a cor na tela; '' se não achar.
+    Tenta o nome do deck, depois as palavras do slug, com e sem "ex" (ex.: dragapult-dusknoir -> Dragapult ex -> Dragon).
+    Lê o índice direto (não usa cartas.por_nome, que anota cada nome não achado no diagnóstico de cartas não encontradas).
+    Por último aceita um nome que termine na palavra (Teal Mask Ogerpon ex, N's Zoroark ex)."""
+    from . import cartas
+    try:
+        ind = cartas.indice()
+        por_nome = ind["por_nome"]
+    except Exception:
+        return ""
+    palavras = [p for p in (arq or "").split("-") if p not in ("ex", "box")]
+    nome_deck = cartas.normalizar(nome_de_slug(arq))
+    tentativas = [nome_deck + " ex", nome_deck]
+    for n in range(len(palavras), 0, -1):
+        base = cartas.normalizar(" ".join(palavras[:n]))
+        tentativas += [base + " ex", base]
+
+    def tipo(chaves):
+        for ch in chaves:
+            e = ind["cartas"].get(ind["basica"].get(ch, ch)) or {}
+            if e.get("tipos"):
+                return e["tipos"][0]
+        return ""
+
+    for t in tentativas:
+        if por_nome.get(t) and tipo(por_nome[t]):
+            return tipo(por_nome[t])
+    for ultima in [cartas.normalizar(p) for p in palavras if len(p) > 2][:2]:
+        for nome, chaves in por_nome.items():
+            if nome.endswith(" " + ultima + " ex") or nome.endswith(" " + ultima):
+                achou = tipo(chaves)
+                if achou:
+                    return achou
+    return ""
+
+
 def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
     """Divisão do meta, taxa de vitória, conversão e matriz de matchups."""
     jogadores = _jogadores(torneios, top)
@@ -394,6 +431,8 @@ def meta(torneios=None, top=0, corte=32, k=12, min_partidas=10):
             "no_corte": no_corte.get(arq, 0),
             "conversao": round(100 * no_corte.get(arq, 0) / campo[arq], 1) if campo[arq] else None,
             "fator_conversao": round((no_corte.get(arq, 0) / total_corte) / pct_campo, 2) if pct_campo else None,
+            "pct_corte": round(100 * no_corte.get(arq, 0) / total_corte, 1),
+            "tipo": tipo_deck(arq),
             **placar(geral["v"], geral["d"], geral["e"],
                      efeito=efeito_desenho(sum(geral.values()), dep["jog_deck"].get(arq), dep["icc"])),
         })

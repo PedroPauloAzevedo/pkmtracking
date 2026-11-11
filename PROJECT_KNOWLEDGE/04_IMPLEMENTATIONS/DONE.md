@@ -43,6 +43,17 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.11-1 — 11/11/2026 (pedido do Pedro: visual inspirado no painel Indigo Plateau, etapa 1)
+- `web/js/campeonatos.js`: Meta com `quadroDispersao` (x = % do campo em escala log, y = taxa sem mirrors ou conversão; linha
+  vertical = mediana do % do campo; horizontal = média do campo, não 50%, porque empate conta como não-vitória; só decks com 20
+  partidas ou 20 jogadores; nomes desviam uns dos outros) e `quadroCartoes` (15 decks + "Outros"); Matchups com pílulas Real/Ajustada,
+  `corCalor` (mais forte que `corTaxa`, satura a 25 pontos de 50%) e "—" nas células com menos partidas que o mínimo.
+- `tracker/analises.py`: `tipo_deck` (tipo do Pokémon principal pela biblioteca, só para a cor; lê o índice direto para não sujar
+  "cartas não encontradas") e os campos `tipo` e `pct_corte` em `meta()`.
+- `web/estilo.css`: mais espaço (`main` 24px, `.panel` 14px de canto e 20px de margem), pílulas em `.chips-periodo` (todas as telas),
+  `.cab-quadro`, `.explica`, `.dispersao`, `.cartao-meta` (nome novo: `.cartao-deck` já é de Meus decks), `.legenda-calor`.
+- Conferido numa cópia com os dados do Pedro (temas claro e escuro, taxa e conversão); 4 testes de entrega OK.
+
 ## 2026.11.10-7 — 10/11/2026 (pedido do Pedro; D-052)
 - `tracker/banco.py`: `PAR_DRAGAPULT`, `separar_arquetipos`, `VERSAO_REGRAS_ARQ` (roda uma vez em `iniciar` e a cada torneio salvo).
 - `tracker/decks.py`: `regra_dragapult` no resultado de `identificar_detalhe`.

@@ -1,5 +1,21 @@
 [
   {
+    "versao": "2026.11.11-1",
+    "data": "2026-11-11",
+    "titulo": "Meta e Matchups com visual novo",
+    "mudancas": [
+      "Meta ganhou o gráfico \"Quem vale a pena jogar\": cada deck é um ponto (mais para a direita, mais jogado; mais para cima, vence mais). Em cima à direita ficam as boas escolhas; em cima à esquerda, as apostas. Dá para trocar para a conversão para o corte. Passe o mouse para ver os números e a faixa provável; clique para abrir o perfil do deck.",
+      "Meta ganhou cartões de participação: o % do campo de cada deck e, embaixo, quanto ele ocupa do corte (▲ quando chega ao corte mais do que o tamanho sugere). A cor de cada cartão segue o tipo do Pokémon principal.",
+      "Matchups virou um mapa de calor: quanto mais longe de 50%, mais forte a cor. Confrontos com poucas partidas aparecem como \"—\" (o mouse ainda mostra o resultado).",
+      "Botões em pílula, uma explicação curta em cada gráfico e mais espaço entre os blocos em todas as telas. Nenhuma conta mudou."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.11-1\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.10-7",
     "data": "2026-11-10",
     "titulo": "Dragapult e Dragapult Dudunsparce separados pelo Dunsparce",

@@ -1,6 +1,6 @@
 # Backlog: ideias e pendências
 
-> Atualizado em 09/11/2026. Em ordem de prioridade dentro de cada grupo. Ao começar um item, mova para `IN_PROGRESS.md`;
+> Atualizado em 11/11/2026. Em ordem de prioridade dentro de cada grupo. Ao começar um item, mova para `IN_PROGRESS.md`;
 > ao terminar, registre em `DONE.md`. Sempre pergunte ao Pedro antes de começar algo grande.
 
 ## Prioridade alta
@@ -8,6 +8,20 @@
    curtos), das mãos (tamanho real no Judge/Lillie's/Unfair Stamp), dos prêmios (versão publicada × nova) e a simulação do
    modo automático (`EVIDENCE.md`). Hoje estão só no computador do Pedro. É código de teste (não muda o programa): pedir
    autorização.
+
+## Ideias do painel Indigo Plateau (11/11/2026; escolhidas pelo Pedro)
+Etapa 1 (visual, primeiro): gráfico Metashare × Vitória com quadrantes e ícones, cartões por deck com a cor do tipo, mapa de
+calor de matchups (cor mais forte longe de 50%), botões em pílula acima de cada gráfico e parágrafo curto explicando cada gráfico,
+mais espaço entre blocos. **Feita na 2026.11.11-1** (ver `DONE.md`).
+Etapa 2 (metodologia; medir antes × depois, D-017):
+1. **Bye e W.O. não contam como partida** no importador do Limitless (conferir se já é assim).
+2. **Aproveitamento no suíço** = pontos (3V + E) / pontos possíveis, para comparar torneios de tamanhos diferentes.
+3. **Lista base pesada pelos pontos** (3V + E) de todas as listas, em vez de só as do topo (reduz o achado 1).
+4. **Inovações nas listas:** contagem de carta que ficou mais comum e mais vencedora (teste rigoroso, várias comparações),
+   agrupada em pacotes; seção nova no Perfil de deck.
+5. **Estabilidade da lista:** cartas que a lista média mudou entre épocas além do ruído (teste de permutação).
+6. **Tela "Metodologia"** no programa, em linguagem simples, a partir de `02_BUSINESS_RULES/STATISTICS.md`.
+Não escolhidos agora: taxa só no suíço (sem top cut), excluir variantes da mesma família, empates fora da conta.
 
 ## Paridade no Mac (prioridade do segundo desenvolvedor; D-044)
 Levantado no código em 06/11/2026, sem teste num Mac (tabela "Windows × Mac" em `../00_CENTRAL/ARCHITECTURE.md`). Cada item é um PR
