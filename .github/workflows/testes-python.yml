@@ -2,43 +2,57 @@ name: Testes Python
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
   testes:
-    name: Replay e coletor
+    name: ${{ matrix.suite }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - Replay
+          - Coletor
     steps:
-      - name: Obter o código
+      - name: Checkout
         uses: actions/checkout@v6
         with:
           persist-credentials: false
 
-      - name: Preparar o Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      - name: Instalar dependências no executor
+      - name: Instalar dependências
         run: python -m pip install -r requirements.txt
 
-      - name: Testar replay e coletor em cópias separadas
+      - name: Executar testes
         shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
         run: |
-          export HOME="$(mktemp -d "$RUNNER_TEMP/pkmtracking-home.XXXXXX")"
-          for suite in replay tracker; do
-            copia="$(mktemp -d "$RUNNER_TEMP/pkmtracking-$suite.XXXXXX")"
-            git archive HEAD | tar -x -C "$copia"
-            (
-              cd "$copia"
-              if [[ "$suite" == replay ]]; then
-                python -I testes/teste_replay.py "$copia"
-              else
-                python -I testes/teste_tracker.py "$copia" testes/leitor-tcg-live.html
-              fi
-            )
-          done
+          set -euo pipefail
+          HOME="$(mktemp -d)"
+          export HOME
+          copia="$(mktemp -d)"
+          git archive HEAD | tar -x -C "$copia"
+          cd "$copia"
+          case "$SUITE" in
+            Replay)
+              python -I testes/teste_replay.py "$copia"
+              ;;
+            Coletor)
+              python -I testes/teste_tracker.py "$copia" testes/leitor-tcg-live.html
+              ;;
+            *)
+              echo "Suite desconhecida: $SUITE" >&2
+              exit 1
+              ;;
+          esac
