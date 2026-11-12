@@ -1,0 +1,44 @@
+name: Testes Python
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    name: Replay e coletor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Obter o código
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Preparar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependências no executor
+        run: python -m pip install -r requirements.txt
+
+      - name: Testar replay e coletor em cópias separadas
+        shell: bash
+        run: |
+          export HOME="$(mktemp -d "$RUNNER_TEMP/pkmtracking-home.XXXXXX")"
+          for suite in replay tracker; do
+            copia="$(mktemp -d "$RUNNER_TEMP/pkmtracking-$suite.XXXXXX")"
+            git archive HEAD | tar -x -C "$copia"
+            (
+              cd "$copia"
+              if [[ "$suite" == replay ]]; then
+                python -I testes/teste_replay.py "$copia"
+              else
+                python -I testes/teste_tracker.py "$copia" testes/leitor-tcg-live.html
+              fi
+            )
+          done
