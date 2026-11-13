@@ -1,6 +1,6 @@
 # Índice da documentação do projeto
 
-> Atualizado em 09/11/2026. Este repositório é a **fonte de verdade** do projeto: tudo o que uma sessão nova precisa saber
+> Atualizado em 13/11/2026. Este repositório é a **fonte de verdade** do projeto: tudo o que uma sessão nova precisa saber
 > está aqui ou no código. Conversas antigas do Claude Code e a memória automática do Claude **não** são fonte oficial.
 
 ## Como usar este índice
@@ -75,6 +75,8 @@
 | `web/LEIA-ME.md` | Como o painel está dividido em arquivos (`web/js/*.js`) |
 | `modelos/LEIA-ME.txt` | Imagens dos botões do modo automático |
 | `docs/regras-standard.md` | Base de regras do Standard. **É lida pelo programa**: não mudar de lugar nem o formato da tabela de marcas |
+| `docs/README.md` | Mapa por assunto (arquitetura, regras, testes, decisões, problemas, próximos passos) apontando para estes documentos |
+| `.github/workflows/testes-python.yml` | CI: roda `teste_replay.py` e `teste_tracker.py` em todo Pull Request para a `main` (PRs #28 e #29) |
 | `novidades.json` | O que mudou em cada versão, do ponto de vista de quem usa (o programa mostra na tela) |
 | `testes/`, `testes/experimentos/` | Testes de regressão, segurança, replay e telas; experimentos de medição |
 | `.github/` | Modelo de Pull Request e `CODEOWNERS` (ver `COLLABORATION.md`) |
