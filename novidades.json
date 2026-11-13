@@ -1,5 +1,18 @@
 [
   {
+    "versao": "2026.11.13-1",
+    "data": "2026-11-13",
+    "titulo": "Meus decks: cartas iguais juntas na lista",
+    "mudancas": [
+      "Na lista do deck, reimpressões da mesma carta (ex.: 2 Duskull de uma coleção e 1 de outra) aparecem num quadrinho só, com a quantidade somada. Cartas diferentes com o mesmo nome (ex.: Dunsparce de Journey Together e de Temporal Forces) continuam separadas, lado a lado. Passe o mouse para ver cada versão."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.13-1\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.11-4",
     "data": "2026-11-11",
     "titulo": "Lopunny Froslass separado, mapa de confrontos com o pior em vermelho escuro e \"Meganium Hydrapple\"",
