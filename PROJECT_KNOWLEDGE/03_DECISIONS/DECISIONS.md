@@ -1,6 +1,6 @@
 # Registro de decisões
 
-> Atualizado em 11/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
+> Atualizado em 13/11/2026. Decisões técnicas e de produto, numeradas. **Não reaproveite números**; para mudar uma decisão,
 > crie outra que diga qual substitui e por quê. Rever uma decisão firme exige justificativa (e, se for algoritmo, medição).
 > Datas "até 02/11" = decisões tomadas nas primeiras versões (out–nov/2026), registradas na consolidação de 02/11/2026.
 
@@ -224,6 +224,12 @@
   82% no resto). As outras montagens (Dudunsparce ex, Dudunsparce sem ex, Cacturne) ficaram juntas: resultados iguais dentro da
   margem. Mesmo mecanismo do D-052 (`banco.REGRAS_PAR`; partidas por `decks.regra_par`). Limite: jogador sem lista fica com o nome
   do Limitless.
+
+- **D-056 · O Codex trabalha com as mesmas regras do Claude Code** (13/11/2026; o Pedro confirmou que usa o Codex). `AGENTS.md`
+  (lido pelo Codex) repete o `CLAUDE.md` adaptado; `.agents/skills/statistical-analyst/SKILL.md` repete o `SKILL.md` da Skill e
+  aponta para os arquivos dela em `.claude/skills/statistical-analyst/` (sem duplicar knowledge, tools, testes e experimentos).
+  *Por quê:* um guia por assistente, sem duas cópias de 120 arquivos que iriam divergir. Regra: mudou um guia ou o `SKILL.md`, mude
+  o outro no mesmo PR. O `CLAUDE.local.md` de cada computador vale para os dois.
 
 ## Pesquisado e descartado (não refazer sem motivo novo)
 - **Logs de outros jogadores como fonte:** o Full Bench guarda logs privados (só estatísticas somadas públicas, sem API) e o Dead Draw
