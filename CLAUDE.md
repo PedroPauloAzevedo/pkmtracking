@@ -12,6 +12,9 @@ Code. O `CLAUDE.local.md` de cada computador diz com quem você está falando (f
 entra na `main` por Pull Request e **só o Pedro junta** — no computador dele, quando ele pede "publicar", o próprio Claude abre o PR
 e junta (D-047). Regras: `PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md`.
 
+**Codex:** o Pedro também usa o Codex, que lê o `AGENTS.md` (cópia destas regras) e a Skill em `.agents/skills/`. Mudou uma
+regra aqui, mude lá no mesmo PR (D-056).
+
 ## Em resumo
 - **Tecnologias:** Python 3.11+ (Flask, requests, BeautifulSoup; pystray/Pillow no Windows), SQLite em `dados/`, painel em
   HTML/CSS/JS puro (`web/`). Integrações: TCGdex, Limitless, malie.io e pasta do Google Drive dos amigos.
