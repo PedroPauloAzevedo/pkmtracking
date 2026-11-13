@@ -12,6 +12,18 @@ Code. O `CLAUDE.local.md` de cada computador diz com quem você está falando (f
 entra na `main` por Pull Request e **só o Pedro junta** — no computador dele, quando ele pede "publicar", o próprio Claude abre o PR
 e junta (D-047). Regras: `PROJECT_KNOWLEDGE/00_CENTRAL/COLLABORATION.md`.
 
+## Em resumo
+- **Tecnologias:** Python 3.11+ (Flask, requests, BeautifulSoup; pystray/Pillow no Windows), SQLite em `dados/`, painel em
+  HTML/CSS/JS puro (`web/`). Integrações: TCGdex, Limitless, malie.io e pasta do Google Drive dos amigos.
+- **Arquitetura:** `app.py` (servidor local + rotas `/api`) → `tracker/` (captura → `leitor.py` → `banco.py` → análises e replay)
+  → `web/` (painel). Detalhes: `PROJECT_KNOWLEDGE/00_CENTRAL/ARCHITECTURE.md`.
+- **Instalar:** `instalar_windows.bat` (cria `.venv` e instala `requirements.txt`) ou `bash instalar_mac.command`.
+- **Executar:** `.venv\Scripts\python.exe app.py --janela` (painel em `http://127.0.0.1:<porta de dados/config.json>`).
+- **Testar:** os 4 testes de "Antes de entregar" abaixo; a CI (`.github/workflows/testes-python.yml`) roda Replay e Coletor em
+  todo PR para a `main`.
+- **Onde está cada assunto** (arquitetura, regras de negócio, decisões, algoritmos, testes, problemas, próximos passos):
+  `docs/README.md` e `PROJECT_KNOWLEDGE/00_CENTRAL/INDEX.md`.
+
 ## Protocolo de toda sessão
 **Início**
 1. Ler `PROJECT_KNOWLEDGE/05_SESSION_CONTROL/CURRENT_STATE.md` e `NEXT_STEPS.md`.

@@ -1,10 +1,17 @@
 # Estado atual do projeto
 
-> Atualizado em 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
+> Atualizado em 13/11/2026 (versão e CI conferidas no GitHub; ver primeiro item de "Versão"). Antes: 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
 > Lopunny Froslass, D-055). **Atualize este arquivo no
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
+- **13/11/2026 (conferido no GitHub): a `main` está na 2026.11.13-1** (Meus decks junta as reimpressões da mesma carta; PR #30).
+  Antes dela entraram a 2026.11.11-2 (PR #25), -3 (PR #26) e -4 (PR #27). Os itens abaixo de 11/11 e 10/11 ficam como histórico:
+  "pronta no ramo" e "No GitHub: 2026.11.09-4" já não valem.
+- **CI (PRs #28 e #29, juntados em 12/11):** `.github/workflows/testes-python.yml` roda `teste_replay.py` e `teste_tracker.py`
+  (jobs "Replay" e "Coletor") em todo PR para a `main`. Última execução: PR #30, as duas OK. `teste_seguranca.py` e
+  `teste_telas.py` continuam só locais.
+- **Mapa da documentação por assunto:** `docs/README.md` (só aponta para estes documentos).
 - **11/11/2026:** a **2026.11.11-2** (D-053: aproveitamento no suíço, lista base pesada pelos pontos, mudanças nas listas,
   estabilidade e tela Metodologia) está pronta no ramo `feature/metodos-indigo`. Na `main`: a **2026.11.11-1** (visual novo em Meta e Matchups, inspirado no painel Indigo
   Plateau: gráfico "Quem vale a pena jogar", cartões por deck com a cor do tipo, mapa de calor, pílulas, mais espaço) (PR #24).
