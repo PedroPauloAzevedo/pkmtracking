@@ -1,11 +1,12 @@
 # Concluído: histórico técnico por versão
 
-> Atualizado em 10/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
+> Atualizado em 13/11/2026. O lado de quem usa (o que mudou na tela e o passo a passo) está em `novidades.json`; os commits estão no
 > `git log`. Aqui fica o que **não** está em nenhum dos dois: o porquê técnico, nomes no código e o que foi testado.
 > Mais recente primeiro. Versões publicadas na `main` de `PedroPauloAzevedo/pkmtracking`.
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| (confirmação) | 13/11/2026 | — | Modo automático confirmado numa partida real (versão 2026.11.11-4) |
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
 | 2026.11.10-7 | 10/11/2026 | (ver `git log`: "v2026.11.10-7") | Dragapult e Dragapult Dudunsparce separados pelo Dunsparce |
@@ -42,6 +43,10 @@
 | (instalador) | 02/11/2026 | `9a23c1a` | Desinstalar fecha só o Coletor da própria pasta |
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
+
+## Modo automático confirmado no jogo real — 13/11/2026 (sem versão nova)
+- Publicado na 2026.11.05-1 (D-015) e testado só em simulação até aqui; em 06/11 falhou porque o jogo não estava na frente.
+- **Jogo real (13/11/2026, versão 2026.11.11-4):** primeira partida real com o modo automático completo. Registro: `[auto] tentativa 1: jogo na frente=True, botão de exportar achado=True (nota 0.96), log chegou=True` → partida #207 gravada às 18:35 com origem `automatico` (conferido no banco, só leitura). Deu certo na primeira tentativa. Evidência em `../03_DECISIONS/EVIDENCE.md`, seção "Modo automático".
 
 ## 2026.11.13-1 — 13/11/2026 (pedido do Pedro)
 - `web/js/deck_detalhe.js`: `juntarIguais` junta as reimpressões da mesma carta (mesmo `carta_id`, que vem da chave funcional:
