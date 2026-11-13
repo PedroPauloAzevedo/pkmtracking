@@ -43,6 +43,11 @@
 | 2026.11.02-2 | 02/11/2026 | `36a1d67` | Reúne 2026.11.01-1 a 2026.11.02-2 (ícone, menu, torneios online, só Standard, segurança, consistência, qual deck jogar, ACE SPEC) |
 | 2026.10.29-4 a -9 | 29/10/2026 | `05780c6` … `f18f808` | Biblioteca rebusca coleções; Decisões; boas-vindas; vários jogadores; pasta do Drive; Amigos sem travar |
 
+## 2026.11.13-1 — 13/11/2026 (pedido do Pedro)
+- `web/js/deck_detalhe.js`: `juntarIguais` junta as reimpressões da mesma carta (mesmo `carta_id`, que vem da chave funcional:
+  nome, PS, habilidades e ataques) num quadrinho; cartas diferentes de mesmo nome (Dunsparce JTG × TEF) ficam separadas, lado a lado. Quantidade
+  somada, imagem da versão com mais cópias, título com cada versão. A lista oficial (PDF) e as contas continuam por versão.
+
 ## 2026.11.11-4 — 11/11/2026 (pedido do Pedro)
 - `web/js/campeonatos.js` (`corCalor`): lado ruim vai de vermelho claro (perto de 50%) a `--bad-escuro` (pior), letra branca nas
   células mais escuras; `web/estilo.css`: `--bad-escuro` e legenda com o escuro à esquerda.

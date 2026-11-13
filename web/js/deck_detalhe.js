@@ -9,6 +9,26 @@ function conferenciaStandard(v, compacta) {
   </div>`;
 }
 
+// Lista do deck: reimpressões da MESMA carta (ex.: 2 Duskull de Shrouded Fable + 1 de Prismatic Evolutions) viram um quadrinho só,
+// com a quantidade somada; o mouse mostra cada versão. "Mesma carta" = mesmo carta_id (a biblioteca dá o mesmo id às reimpressões,
+// pela chave funcional: nome, PS, habilidades e ataques). Cartas diferentes com o mesmo nome (ex.: Dunsparce de Journey Together
+// e de Temporal Forces) continuam separadas, lado a lado. Sem carta_id (carta fora da biblioteca), junta pelo nome + coleção + número.
+function juntarIguais(cartas) {
+  const por = new Map();
+  for (const c of cartas) {
+    const k = c.carta_id || `${(c.nome || '').trim().toLowerCase()}|${c.set_code}|${c.numero}`;
+    const g = por.get(k) || por.set(k, { ...c, qtd: 0, versoes: [] }).get(k);
+    g.versoes.push(c);
+    g.qtd += c.qtd;
+    const maior = g.versoes.reduce((a, b) => (b.qtd > a.qtd ? b : a));
+    g.set_code = maior.set_code; g.numero = maior.numero;
+  }
+  // cartas de mesmo nome (mas diferentes) ficam vizinhas, na ordem em que o nome aparece pela primeira vez
+  const grupos = [...por.values()], primeiro = new Map();
+  grupos.forEach((g, i) => { const n = (g.nome || '').trim().toLowerCase(); if (!primeiro.has(n)) primeiro.set(n, i); });
+  return grupos.map((g, i) => [primeiro.get((g.nome || '').trim().toLowerCase()), i, g]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[2]);
+}
+
 async function renderMeuDeck(id) {
   const vez = novaTela();
   const d = await api('/api/decks/' + id);
@@ -16,7 +36,7 @@ async function renderMeuDeck(id) {
   const a = d.analise, t = a.total;
   const ordem = Object.fromEntries(a.ordem.map(g => [g.grupo, g]));
   const minhas = a.partidas.filter(l => l.deck_id === id);
-  const secoes = ['Pokémon', 'Trainer', 'Energy'].map(s => [s, d.cartas.filter(c => c.secao === s)]).filter(([, cs]) => cs.length);
+  const secoes = ['Pokémon', 'Trainer', 'Energy'].map(s => [s, juntarIguais(d.cartas.filter(c => c.secao === s))]).filter(([, cs]) => cs.length);
   main.innerHTML = `
     <div class="row"><a class="btn" href="#decks">← Meus decks</a></div>
     ${trilha()}<header class="row" style="gap:10px"><span class="cel-carta">${(d.icones || []).map(i => `<img class="ico" src="/icone/${encodeURIComponent(i)}" alt="">`).join('')}</span><div><h1>${esc(d.nome)}</h1>
@@ -32,7 +52,7 @@ async function renderMeuDeck(id) {
     </div>
     <section class="panel"><h2>Contra cada deck</h2>${tabelaGrupos(a.por_adversario, 'Deck do adversário', true, deckHtml)}</section>
     <section class="panel"><h2>Lista (${d.cartas.reduce((s, c) => s + c.qtd, 0)} cartas)</h2>
-      ${secoes.map(([s, cs]) => `<h3>${s} (${cs.reduce((x, c) => x + c.qtd, 0)})</h3><div class="deck-cards">${cs.map(c => `<figure title="${esc(c.nome)} ${esc(c.set_code)} ${esc(c.numero)}"><img src="${imgId(c.carta_id, c.nome)}" alt="${esc(c.nome)}" loading="lazy"><span class="qtd">${c.qtd}</span><figcaption>${esc(c.nome)}</figcaption></figure>`).join('')}</div>`).join('')}
+      ${secoes.map(([s, cs]) => `<h3>${s} (${cs.reduce((x, c) => x + c.qtd, 0)})</h3><div class="deck-cards">${cs.map(c => `<figure title="${esc(c.nome)}: ${c.versoes.map(v => `${v.qtd}× ${esc(v.set_code)} ${esc(v.numero)}`).join(' + ')}"><img src="${imgId(c.carta_id, c.nome)}" alt="${esc(c.nome)}" loading="lazy"><span class="qtd">${c.qtd}</span><figcaption>${esc(c.nome)}</figcaption></figure>`).join('')}</div>`).join('')}
     </section>
     <section class="panel" id="consistencia"><h2>Consistência</h2><p class="muted">Calculando…</p></section>
     <section class="panel"><h2>Partidas com esta lista</h2>${minhas.length ? tabelaPartidas(minhas) : '<p class="muted">Nenhuma partida ligada ainda. Elas são ligadas sozinhas quando as cartas reveladas batem com a lista, ou escolha a lista na tela da partida.</p>'}</section>`;
