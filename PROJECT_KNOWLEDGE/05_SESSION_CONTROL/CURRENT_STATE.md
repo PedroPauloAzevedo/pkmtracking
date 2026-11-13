@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-> Atualizado em 13/11/2026 (versão e CI conferidas no GitHub; ver primeiro item de "Versão"). Antes: 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
+> Atualizado em 13/11/2026 (versão e CI conferidas no GitHub; modo automático confirmado no jogo real). Antes: 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
 > Lopunny Froslass, D-055). **Atualize este arquivo no
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
@@ -44,6 +44,8 @@
 
 ## O que está funcionando (verificado)
 - Captura pela área de transferência no computador do Pedro.
+- **Modo automático no jogo real (13/11/2026, versão 2026.11.11-4):** exportou sozinho na primeira tentativa; partida #207
+  gravada com origem `automatico` (`../03_DECISIONS/EVIDENCE.md`).
 - Os 4 testes de entrega OK na 2026.11.06-3 (numa cópia de teste).
 - Replay: Risky Ruins com o dono certo (55 de 145 linhas tinham o dono trocado no log; estados impossíveis 1742 → 1660); descartes de
   carta presa 182/182; prêmios 253/253; mãos 109/109 (`../03_DECISIONS/EVIDENCE.md`).
@@ -52,8 +54,6 @@
 - Skill: ponte só leitura com trava na execução (`test_ponte.py`, `test_sa_tools.py`, `test_referencias.py` OK).
 
 ## O que falta confirmar
-- **Modo automático com o jogo real** (`../04_IMPLEMENTATIONS/IN_PROGRESS.md`): em 06/11 00:04 ele reconheceu a tela de resultado,
-  mas o jogo não estava na frente.
 - A hora em que o TCG Live libera uma coleção (10h do Pacífico, na véspera do lançamento) veio de anúncios de coleções anteriores;
   a validade em torneio da 30th Celebration (25/09/2026) foi calculada pela regra, sem anúncio oficial (D-036).
 - A 2026.11.05-4 não foi testada contra uma falha real do TCGdex (só com o TCGdex falso do teste).

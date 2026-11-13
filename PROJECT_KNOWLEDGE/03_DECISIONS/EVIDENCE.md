@@ -120,7 +120,8 @@ que o log não mostra ligando (habilidades, cartas que aceleram) ou de custos re
 | Tela cheia 1920×1080 | não achou (0,43) | achou (0,91) |
 | Janela 1280×720 | não achou (0,42) | achou (0,88) |
   Custo: ~0,1 s a cada 2 s na vigia normal; busca ampla ~0,5 s (a cada 30 s com tamanho conhecido); confirmação em tela inteira
-  só no tamanho que chegou perto. → D-015. **Falta confirmar com o jogo real.**
+  só no tamanho que chegou perto. → D-015. Confirmado no jogo real em 13/11 (abaixo).
+- **Jogo real (13/11/2026, versão 2026.11.11-4):** primeira partida real com o modo automático completo. Registro: `[auto] tentativa 1: jogo na frente=True, botão de exportar achado=True (nota 0.96), log chegou=True` → partida #207 gravada às 18:35 com origem `automatico` (conferido no banco, só leitura). Deu certo na primeira tentativa.
 
 ## Auditoria estatística (06/11/2026, código `76a2005`)
 Cópia de teste com os dados do Pedro (33 torneios, 44.651 partidas, 5.695 listas). Scripts em
