@@ -1,6 +1,6 @@
 # Evidências: medições que sustentam as decisões
 
-> Atualizado em 11/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
+> Atualizado em 13/11/2026. Antes de trocar um algoritmo, repita a medição correspondente e compare (D-017).
 > Resultados completos dos experimentos 1 a 9 e da análise de ACE SPEC: `MISSION_REPORT_2026-11-02.md` (não repetidos aqui).
 
 ## Experimentos em `testes/experimentos/` (rodar numa cópia; os que gravam no banco, só com dados de teste)
@@ -122,6 +122,23 @@ que o log não mostra ligando (habilidades, cartas que aceleram) ou de custos re
   Custo: ~0,1 s a cada 2 s na vigia normal; busca ampla ~0,5 s (a cada 30 s com tamanho conhecido); confirmação em tela inteira
   só no tamanho que chegou perto. → D-015. Confirmado no jogo real em 13/11 (abaixo).
 - **Jogo real (13/11/2026, versão 2026.11.11-4):** primeira partida real com o modo automático completo. Registro: `[auto] tentativa 1: jogo na frente=True, botão de exportar achado=True (nota 0.96), log chegou=True` → partida #207 gravada às 18:35 com origem `automatico` (conferido no banco, só leitura). Deu certo na primeira tentativa.
+- **Falhas no registro real (02 a 13/11/2026, levantado em 13/11):** em 43 de 76 partidas a 1ª tentativa não achou o botão de
+  exportar (nota 0,62–0,75; nas que dão certo, 0,96), e a 2ª tentativa nunca salvou a partida. Ela repete a mesma nota da 1ª:
+  a tela não mudou, ou seja, o clique em Battle Log não abriu o log. O tamanho do log não explica a falha (mediana de 8.800 caracteres nas
+  automáticas × 7.000 nas copiadas à mão). A busca (`TM_CCOEFF_NORMED`) ignora o brilho: o botão escurecido a 50% ou 30% dá a
+  mesma nota (1,00), então um aviso do jogo por cima da tela de resultado não impede o reconhecimento, mas engole o clique
+  (hipótese mais provável; não há imagem do momento, D-016). Também: 3 vezes o exportar foi clicado, a cópia não chegou em 4 s e a
+  2ª tentativa clicou de novo em Battle Log com o log aberto (o log fechou); e a janela do jogo "sumia" por um instante (dezenas de
+  linhas "tela/janela do jogo mudou"), o que apagava os tamanhos aprendidos (o do exportar nunca ficou guardado).
+- **Simulação da correção (13/11/2026; jogo falso 1600×900 com os botões reais, `_loop` de verdade):**
+| Cenário | Antes (2026.11.11-4) | Depois |
+|---|---|---|
+| Normal | salvou na 1ª | salvou na 1ª |
+| Aviso escurecendo a tela por 90 s | perdeu a partida | salvou na "nova tentativa 1", quando o aviso sumiu |
+| Cópia demorando 7 s | 2ª tentativa fechou o log | 2ª tentativa só clicou em exportar de novo |
+| Janela do jogo some 1 em cada 3 conferências | apagou os tamanhos 4 vezes | manteve os tamanhos |
+  O registro agora mostra o brilho do botão Battle Log no clique (na simulação: 55 normal × 22 com o aviso) para confirmar a
+  hipótese no jogo real.
 
 ## Auditoria estatística (06/11/2026, código `76a2005`)
 Cópia de teste com os dados do Pedro (33 torneios, 44.651 partidas, 5.695 listas). Scripts em

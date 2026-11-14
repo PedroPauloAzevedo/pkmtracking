@@ -6,6 +6,7 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| 2026.11.13-2 | 13/11/2026 | (ver `git log`: "v2026.11.13-2") | Modo automático perde menos partidas |
 | (confirmação) | 13/11/2026 | — | Modo automático confirmado numa partida real (versão 2026.11.11-4) |
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
 | (Skill) | 06/11/2026 | `49664da` | Skill "Statistical Analyst": inventário, auditoria e ferramentas estatísticas (sem versão nova do programa) |
@@ -47,6 +48,17 @@
 ## Modo automático confirmado no jogo real — 13/11/2026 (sem versão nova)
 - Publicado na 2026.11.05-1 (D-015) e testado só em simulação até aqui; em 06/11 falhou porque o jogo não estava na frente.
 - **Jogo real (13/11/2026, versão 2026.11.11-4):** primeira partida real com o modo automático completo. Registro: `[auto] tentativa 1: jogo na frente=True, botão de exportar achado=True (nota 0.96), log chegou=True` → partida #207 gravada às 18:35 com origem `automatico` (conferido no banco, só leitura). Deu certo na primeira tentativa. Evidência em `../03_DECISIONS/EVIDENCE.md`, seção "Modo automático".
+
+## 2026.11.13-2 — 13/11/2026 (pedido do Pedro: "o coletor está dando erro em salvar algumas partidas")
+- Diagnóstico pelo `programa.log` real (só leitura): 43 de 76 primeiras tentativas sem achar o exportar, 2ª tentativa sempre com a
+  mesma nota (o clique em Battle Log não abriu o log). Medições e simulação em `../03_DECISIONS/EVIDENCE.md` (Modo automático).
+- `tracker/auto_export.py`: `_tentar_copiar` (uma tentativa; procura o exportar antes e, com o log aberto, não clica em Battle Log;
+  registra o brilho do Battle Log no clique), `_repetir` + `ESPERA_REPETIR`/`MAX_REPETIR` no `_loop` (novas tentativas a cada 5 s, até
+  12, só com o jogo na frente, enquanto a tela de resultado continua aberta; param quando o log chega ou a tela some); `_capturar`
+  devolve se o log chegou; `_achar`/`_candidatas` usam o tamanho de janela guardado quando `tamanho_jogo()` falha por um instante.
+- `tracker/coletor.py`: mesmo log copiado de novo (contador do Windows mudou) atualiza `visto_em` sem gravar outra vez.
+- Testado: simulação do `_loop` com jogo falso (4 cenários, antes × depois) e os 4 testes de entrega (OK). Falta: confirmar no jogo
+  real (linhas "nova tentativa" e brilho no `programa.log`).
 
 ## 2026.11.13-1 — 13/11/2026 (pedido do Pedro)
 - `web/js/deck_detalhe.js`: `juntarIguais` junta as reimpressões da mesma carta (mesmo `carta_id`, que vem da chave funcional:

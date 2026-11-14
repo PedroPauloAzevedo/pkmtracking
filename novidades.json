@@ -1,5 +1,21 @@
 [
   {
+    "versao": "2026.11.13-2",
+    "data": "2026-11-13",
+    "titulo": "Modo automático perde menos partidas",
+    "mudancas": [
+      "Quando o modo automático não consegue copiar o Battle Log (por exemplo, porque um aviso do jogo estava por cima da tela de resultado), ele tenta de novo sozinho a cada 5 segundos enquanto a tela de resultado continuar aberta. Só clica com o jogo na frente; se você estiver em outra janela, ele espera você voltar.",
+      "Se o log já estiver aberto, a segunda tentativa só clica no botão de exportar (antes, ela podia fechar o log).",
+      "Copiar o mesmo log de novo não gera mais o aviso \"Não consegui copiar\" por engano.",
+      "O modo automático não esquece mais o tamanho dos botões quando a janela do jogo some por um instante."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.13-2\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.13-1",
     "data": "2026-11-13",
     "titulo": "Meus decks: cartas iguais juntas na lista",
