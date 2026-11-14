@@ -421,6 +421,15 @@ assert 1 <= com1["achadas"] <= rl["total"] and all(any(c1 == x["carta"] for x in
 assert cli.get(f"/api/deck/{arq_l}/listas?fonte=todos&com={c1}&com=Carta Que Nao Existe").get_json()["achadas"] == 0
 from tracker import auto_export  # modo automático leve: sem o jogo aberto, não fotografa a tela (2026.11.10-4)
 assert auto_export.estado_do_jogo() in ("fechado", "minimizado", "aberto")
+# D-057: a trava do mouse segura só os SEUS cliques dentro do jogo; os do programa passam; o quadrinho solta (sem gancho real)
+from tracker.trava_mouse import TravaMouse
+tr = TravaMouse((100, 100, 500, 500), livre=(150, 150, 50, 50), maximo=5, instalar=False)
+assert tr.decidir(0x201, 300, 300, False) and tr.decidir(0x202, 300, 300, False)  # seu clique no jogo (e o soltar dele)
+assert not tr.decidir(0x201, 300, 300, True) and not tr.decidir(0x201, 50, 50, False) and not tr.decidir(0x200, 300, 300, False)
+assert not tr.decidir(0x205, 300, 300, False)  # soltar sem ter apertado antes passa
+assert not tr.decidir(0x201, 160, 160, False) and not tr.ativa()  # clicou no quadrinho: soltou
+assert not tr.decidir(0x201, 300, 300, False)
+assert not TravaMouse((0, 0, 10, 10), maximo=0, instalar=False).ativa()  # passou do tempo máximo: solta sozinha
 # D-050: deck cujo atacante principal não está em nenhuma lista de torneio ganha nome provisório (esse Pokémon) e fica "incerto"
 r_nova = {"deck_palpite": {"Bia": "Pokémon Inventado ex"}, "vistas": {"Bia": {"Pokémon Inventado ex": 3, "Rare Candy": 1}}}
 d = decks.palpite_deck_detalhe(r_nova, "Bia")

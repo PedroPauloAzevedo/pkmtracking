@@ -27,6 +27,7 @@ CONFIG_PADRAO = {
     "modo_automatico": False,      # clicar sozinho em "Battle Log" e "Exportar" (experimental)
     "confianca_imagem": 0.85,      # quão parecida a tela precisa estar com as imagens de modelo
     "cobrir_continuar": True,      # modo automático: cobrir o botão Continue enquanto copia o log
+    "travar_mouse": True,          # modo automático: segurar os seus cliques no jogo enquanto copia (até 20 s)
     "escala_modelos": {},          # modo automático: tamanho dos botões no seu monitor (descoberto sozinho)
     "modelos_prontos": [],         # botões que usam as imagens prontas do Full Bench
     "abrir_em": "janela",          # painel numa janela própria ("janela") ou numa aba do navegador ("navegador")

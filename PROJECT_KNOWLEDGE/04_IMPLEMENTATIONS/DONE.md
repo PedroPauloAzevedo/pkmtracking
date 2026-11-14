@@ -6,6 +6,7 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| 2026.11.13-3 | 13/11/2026 | (ver `git log`: "v2026.11.13-3") | Modo automático não se atrapalha quando você mexe no jogo |
 | 2026.11.13-2 | 13/11/2026 | (ver `git log`: "v2026.11.13-2") | Modo automático perde menos partidas |
 | (confirmação) | 13/11/2026 | — | Modo automático confirmado numa partida real (versão 2026.11.11-4) |
 | (Skill) | 06/11/2026 | `d0d0a58` (PR #1) | Skill: hardening, revisão das conclusões, experimentos a7–a11 e p0, base estratégica e ferramentas P1–P7 |
@@ -48,6 +49,16 @@
 ## Modo automático confirmado no jogo real — 13/11/2026 (sem versão nova)
 - Publicado na 2026.11.05-1 (D-015) e testado só em simulação até aqui; em 06/11 falhou porque o jogo não estava na frente.
 - **Jogo real (13/11/2026, versão 2026.11.11-4):** primeira partida real com o modo automático completo. Registro: `[auto] tentativa 1: jogo na frente=True, botão de exportar achado=True (nota 0.96), log chegou=True` → partida #207 gravada às 18:35 com origem `automatico` (conferido no banco, só leitura). Deu certo na primeira tentativa. Evidência em `../03_DECISIONS/EVIDENCE.md`, seção "Modo automático".
+
+## 2026.11.13-3 — 13/11/2026 (pedido do Pedro: cliques avulsos depois do Continue, espera sem fim, travar o mouse; D-057)
+- `tracker/auto_export.py`: `_capturar`/`_tentar_copiar`/`_repetir` trocados por `_comecar`/`_passo`/`_encerrar` (fim de partida passo a
+  passo pelo que está na tela, a cada 0,7 s); `_ver` (busca reduzida + confirmação), `_confirmar` (foto nova em volta do botão antes
+  de clicar), `retangulo_jogo()`; começa também com o log já aberto (2 voltas + X); limites `MAX_BATTLE_LOG` 8, `MAX_EXPORTAR` 3,
+  `LIMITE_TENTATIVAS` 75 s, `PAUSA_MINIMIZADO` 180 s; confere `jogo_na_frente()` logo antes de cada clique.
+- `tracker/trava_mouse.py` (novo): gancho `WH_MOUSE_LL`, segura só cliques físicos dentro do jogo, até 20 s, solta no quadro vermelho.
+  Opção `travar_mouse` (`config.py`, `app.py`, `web/js/programa.js`). `teste_tracker.py` confere `decidir`.
+- Testado: 29 cenários de estresse (jogo falso + pessoa atrapalhando; `EVIDENCE.md`), gancho real no Windows, 4 testes de entrega OK.
+  Falta: jogo real (no jogo falso o log aberto esconde o Battle Log; no real não se sabe).
 
 ## 2026.11.13-2 — 13/11/2026 (pedido do Pedro: "o coletor está dando erro em salvar algumas partidas")
 - Diagnóstico pelo `programa.log` real (só leitura): 43 de 76 primeiras tentativas sem achar o exportar, 2ª tentativa sempre com a

@@ -3,7 +3,9 @@
 > Atualizado em 13/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
 > **Atualize este arquivo no fim de toda sessão.** Sempre pergunte ao Pedro antes de começar algo grande.
 
-0. **Modo automático (2026.11.13-2):** depois de algumas partidas, olhar no `dados/programa.log` as linhas `[auto] nova tentativa`
+0. **Modo automático (2026.11.13-3):** depois de atualizar e jogar, conferir no `programa.log` as linhas `[auto]` (fim de partida
+   detectado, cliques, "log chegou", "trava do mouse segurou", "NÃO copiada") e se o Battle Log continua visível com o log aberto.
+   Item anterior (-2): depois de algumas partidas, olhar no `dados/programa.log` as linhas `[auto] nova tentativa`
    e o brilho do Battle Log nas falhas. Brilho bem abaixo do normal confirma "aviso do jogo por cima"; se as falhas continuarem com
    brilho normal, a causa é outra (ver `../01_MODULES/CAPTURE.md`, "Como investigar").
 1. **Pedro, no GitHub:** proteger a `main`, convidar o segundo desenvolvedor (Write), 2FA, apagar ramos ao juntar, esconder o

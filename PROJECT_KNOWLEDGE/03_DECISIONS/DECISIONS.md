@@ -33,6 +33,12 @@
 - **D-016 · Diagnóstico na máquina do Pedro: imagens só da janela do jogo, só com o jogo na frente; banco real só para leitura**
   (02/11/2026; firme). *Por quê:* um gravador de diagnóstico que fotografava a tela inteira chegou a salvar janelas pessoais
   (apagadas na hora). Imagens de diagnóstico são apagadas ao fim.
+- **D-057 · Fim de partida passo a passo pelo que está na tela, com confirmação antes de cada clique e trava só dos cliques físicos
+  dentro do jogo** (13/11/2026, v2026.11.13-3). *Por quê:* a pessoa também mexe no jogo no fim da partida; a sequência fixa de
+  cliques clicava no vazio depois de um Continue e não reconhecia o log aberto antes. A trava usa o gancho `WH_MOUSE_LL` e deixa
+  passar os cliques marcados como injetados (os do programa), só dentro da janela do jogo, por até 20 s, e solta ao clicar no
+  quadro vermelho. *Descartado:* `BlockInput` (exige administrador e trava teclado e mouse do computador inteiro). Testes de
+  estresse (jogo falso + pessoa atrapalhando, 29 cenários) em `EVIDENCE.md`.
 
 ## Leitura, dono e replay
 - **D-008 · "Você" = quem exportou o log; partida em que o seu nick não joga vai para o amigo** (02/11/2026, v2026.11.02-4).
