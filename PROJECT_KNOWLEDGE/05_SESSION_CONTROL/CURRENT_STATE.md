@@ -5,6 +5,9 @@
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
+- **13/11/2026 (noite): 2026.11.13-3** (ramo `fix/modo-automatico-humano`, D-057): fim de partida passo a passo pelo que está na tela,
+  confirmação antes de cada clique, trava dos cliques físicos no jogo por até 20 s, limites de tempo. 29 cenários de estresse sem
+  clique no vazio. **Falta confirmar no jogo real.** O Coletor do Pedro ainda estava na 2026.11.11-4 (não tinha atualizado para a -2).
 - **13/11/2026 (noite): 2026.11.13-2** (ramo `fix/modo-automatico-captura`): novas tentativas do modo automático enquanto a tela de
   resultado fica aberta, sem fechar log aberto, tamanhos dos botões mantidos; mesmo log copiado de novo conta como chegou. Testado em
   simulação; **falta confirmar no jogo real** (procurar "nova tentativa" e o brilho do Battle Log no `programa.log`).

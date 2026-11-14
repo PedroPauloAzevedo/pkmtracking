@@ -210,7 +210,7 @@ def salvar_config():
     cfg = config.ler_config()
     novo = request.get_json(force=True) or {}
     for chave in ("nick", "modo_automatico", "confianca_imagem", "intervalo_coletor", "coletor_ativo",
-                  "cobrir_continuar", "abrir_em", "guia_visto",
+                  "cobrir_continuar", "travar_mouse", "abrir_em", "guia_visto",
                   "online_ativo", "online_min_jogadores", "online_dias",
                   "sincronizar_auto", "sincronizar_horas", "sincronizar_dias", "listas_top",
                   "github_repo", "github_ramo", "github_token", "pasta_compartilhada", "pasta_auto", "pasta_minutos"):

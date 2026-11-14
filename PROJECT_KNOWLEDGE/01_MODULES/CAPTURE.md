@@ -39,22 +39,33 @@ a janela "Pokemon TCG Live". Fechada ou minimizada: nada de foto da tela, só no
 "esperando o jogo abrir"/"jogo minimizado". Medido em 10/11/2026 no computador do Pedro: cada olhada (foto da tela + redução) custa
 ~120 ms a cada 2 s; a conferência da janela, ~7 ms. Fora do Windows, olha a tela como antes.
 
-**Como captura** (`_capturar`):
-1. Cobre o botão Continue com um quadro vermelho (`cobertura.py`, Win32 puro; clicar nele libera).
-2. **Põe o jogo na frente** se outra janela estiver ativa (tecla Alt + `SetForegroundWindow`): com outra janela ativa o clique
-   caía no lugar errado ou só "acordava" o jogo.
-3. Clica em Battle Log, espera até ~10 s o botão de exportar aparecer e clica nele; espera o log chegar no coletor (até 4 s).
-4. Se não chegou, tenta mais uma vez. Antes de cada tentativa, procura o botão de exportar: se o log já está aberto (a cópia
-   anterior demorou), só clica em exportar. Clicar em Battle Log de novo fecharia o log. Se ainda não chegou: conta como
-   **perdida**, avisa (notificação do Windows) e segura o Continue mais 20 s para a pessoa copiar à mão. Se o log chegar nesse
-   tempo, libera na hora e a partida deixa de contar como perdida (desde 2026.11.10-4).
-5. **Novas tentativas em silêncio:** se falhou e a tela de resultado continua aberta, tenta de novo a cada 5 s (até 12 vezes),
-   só com o jogo na frente (não rouba a janela). Para quando o log chega (inclusive copiado à mão) ou a tela some. Motivo: um
-   aviso do jogo por cima da tela de resultado engole o clique, e a busca dos botões não percebe (ela ignora o brilho).
-6. Depois de tratar uma tela de resultado, só trata a próxima quando a tela some por 12 s.
-Cada tentativa fica no `dados/programa.log`: `[auto] tentativa N` (ou `nova tentativa N`)`: jogo na frente=..., botão de exportar
-achado=... (nota ...), brilho do Battle Log ... (ou "log já estava aberto"), log chegou=...`. Brilho bem mais baixo que o normal
-na hora do clique = algo escurecendo a tela.
+**Como captura** (desde 2026.11.13-3: `_comecar`, `_passo`, `_encerrar`). Não segue mais uma sequência fixa de cliques: a cada
+volta (0,7 s durante um fim de partida) olha a tela e faz **só o passo que falta**. Motivo: a pessoa também mexe no jogo nessa hora
+(abre o Battle Log antes, copia sozinha, fecha o log, clica em Continue) e a sequência fixa clicava onde já não havia botão.
+1. **Começa** quando vê a tela de resultado (Battle Log + Continue). Também começa com o log já aberto por você (botão de exportar
+   em 2 voltas seguidas e, havendo `botao_fechar.png`, com o X junto), porque o ícone de exportar pode existir em outras telas.
+   O log aberto só é procurado perto de um fim de partida.
+2. Cobre o botão Continue com o quadro vermelho (`cobertura.py`) e liga a **trava do mouse** (`trava_mouse.py`, opção
+   `travar_mouse`, padrão ligada): por até 20 s os **seus** cliques dentro da janela do jogo não chegam ao jogo. Os cliques do
+   programa passam (o Windows os marca como "injetados", `LLMHF_INJECTED`). Fora do jogo o mouse funciona; mexer o mouse também.
+   Clicar no quadro vermelho solta tudo. Gancho `WH_MOUSE_LL`, sem administrador; se o programa fechar, o Windows tira o gancho.
+   Por que não "desligar o mouse" do computador inteiro: `BlockInput` exige administrador e trava o teclado junto.
+3. A cada volta, pelo que está na tela **agora**:
+   - o log chegou na área de transferência (por você ou por ele) → pronto: não clica mais nada, solta o mouse, tira o quadro e
+     fecha o log se foi ele quem abriu;
+   - log aberto (exportar na tela) → clica em exportar (no máximo 3 vezes, 5 s entre uma e outra);
+   - tela de resultado com o log fechado → clica em Battle Log (no máximo 8 vezes, 6 s entre uma e outra; um aviso do jogo por
+     cima engole o clique, e a busca dos botões não percebe porque ignora o brilho).
+   **Antes de cada clique**, tira uma foto nova só em volta do botão e confere se ele ainda está ali (`_confirmar`).
+   Só clica com o jogo na frente; puxa o jogo para a frente uma vez só por fim de partida, depois espera você voltar.
+4. **Desiste de clicar** depois dos limites ou de 75 s: avisa (notificação do Windows), solta o mouse e segura o Continue mais 20 s
+   para você copiar à mão. Se o log chegar, conta como capturada.
+5. **Encerra** quando a tela de resultado e o log somem por 12 s (você clicou em Continue, por exemplo). Se o log não veio, conta como
+   **perdida** e avisa. Jogo minimizado no meio: pausa (solta o mouse) e continua quando você voltar, por até 3 minutos.
+   Jogo fechado: encerra.
+Registro em `dados/programa.log`: `[auto] fim de partida detectado`, `clique em Battle Log (Nª vez; brilho do botão ...; nota ...)`,
+`clique em exportar (Nª vez)`, `log chegou (pelo botão de exportar | copiado por você) em N s`, `trava do mouse segurou N clique(s)`,
+`não consegui copiar sozinho (...)`, `partida NÃO copiada: <motivo>`. Brilho bem mais baixo que o normal = algo escurecendo a tela.
 
 **Mesmo log copiado de novo:** o coletor não grava outra vez, mas marca que o log chegou (o contador da área de transferência do
 Windows mudou). Antes, o modo automático achava que a cópia tinha falhado.
@@ -72,6 +83,7 @@ automático" (Ajustes) roda o pip certo e liga o modo sem reiniciar. O instalado
 | 02/11 | Reconhecia a tela, mas "perdia" a partida | Outra janela ativa na hora do clique | Põe o jogo na frente; tentativas no `programa.log` (2026.11.02-5) |
 | 03/11 a 05/11 | "Vigiando a tela" sem nunca reconhecer | Tamanho dos botões preso ao da 1ª partida; jogo mudou de tamanho | Mede a janela do jogo, reaprende, busca ampla de segurança, confirmação em tela inteira (2026.11.05-1) |
 | 02/11 a 13/11 | 43 de 76 partidas: "botão de exportar achado=False", 2ª tentativa com a mesma nota | Clique em Battle Log não abre o log (provável aviso do jogo por cima; a busca ignora o brilho); 2ª tentativa fechava log aberto; tamanhos apagados quando a janela "sumia" | Novas tentativas enquanto a tela fica aberta, confere o log aberto antes de clicar, brilho no registro, guarda o tamanho da janela (ramo `fix/modo-automatico-captura`, 13/11) |
+| 13/11 | Clicava em botões avulsos depois que você clicou em Continue; ficava esperando quando você abria o log antes | Sequência fixa de cliques, sem olhar a tela antes de cada clique; o log aberto não era reconhecido como fim de partida | Passo a passo pelo que está na tela, confirmação antes de cada clique, trava dos seus cliques no jogo, limites de tempo em todos os passos (2026.11.13-3) |
 Medições de cada caso: `../03_DECISIONS/EVIDENCE.md`. Referência real: jogo em janela 1600×900 num monitor 1920×1080 →
 tamanho 0,62; notas Battle Log ~0,87 (reduzida), Continue ~0,94, exportar ~0,95.
 

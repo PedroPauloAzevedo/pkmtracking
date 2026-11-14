@@ -1,6 +1,6 @@
 # Arquitetura
 
-> Atualizado em 06/11/2026. Mapa de onde cada coisa está. O "como" de cada função está na explicação no topo do arquivo de código.
+> Atualizado em 13/11/2026. Mapa de onde cada coisa está. O "como" de cada função está na explicação no topo do arquivo de código.
 
 ## Tecnologia
 - **Python 3.11+** (testado com 3.15) + **Flask** (servidor só em 127.0.0.1) + **SQLite** + painel **HTML/CSS/JS sem frameworks**.
@@ -77,7 +77,7 @@ Contratos entre as camadas, imports em círculo e a lista das rotas `/api`: [`AP
 
 ## Configurações (`dados/config.json`, padrões em `config.CONFIG_PADRAO`)
 Captura (`nick`, `coletor_ativo`, `intervalo_coletor`), modo automático (`modo_automatico`, `confianca_imagem` 0,85,
-`cobrir_continuar`, `escala_modelos`, `modelos_prontos`), painel (`abrir_em`, `guia_visto`, `porta` 8765), torneios
+`cobrir_continuar`, `travar_mouse`, `escala_modelos`, `modelos_prontos`), painel (`abrir_em`, `guia_visto`, `porta` 8765), torneios
 (`sincronizar_auto`, `sincronizar_horas` 6, `sincronizar_dias` 45, `listas_top` 64, `online_ativo`, `online_min_jogadores` 64,
 `online_dias` 21, `online_por_vez` 40), atualização (`github_repo`, `github_ramo`, `github_token`), amigos
 (`pasta_compartilhada`, `pasta_auto`, `pasta_minutos` 30). Nome, Player ID e nascimento da Lista oficial também ficam só ali.

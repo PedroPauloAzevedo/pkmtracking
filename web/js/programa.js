@@ -59,6 +59,7 @@ async function renderAjustes() {
       <div class="row">
         <button id="a-prontas">Usar imagens prontas</button>
         <label class="row" style="gap:6px"><input type="checkbox" id="a-cobrir" ${cfg.cobrir_continuar !== false ? 'checked' : ''}> Cobrir o botão Continue enquanto copia</label>
+        <label class="row" style="gap:6px" title="Por até 20 segundos, os seus cliques dentro do jogo não chegam ao jogo; clique no quadrinho vermelho para soltar."><input type="checkbox" id="a-travar" ${cfg.travar_mouse !== false ? 'checked' : ''}> Segurar meus cliques no jogo enquanto copia</label>
       </div>
       <div class="grid4">${[['battle_log', 'Botão "Battle Log" (obrigatório)'], ['exportar', 'Botão de exportar (obrigatório)'], ['continuar', 'Botão "Continue" (recomendado)'], ['fechar', 'Botão de fechar o log (opcional)']].map(([k, rot]) => `
         <div class="panel" style="padding:12px;gap:8px"><span class="label">${rot}</span>
@@ -122,6 +123,7 @@ async function renderAjustes() {
     render(); };
   $('#a-conf').onchange = e => salvar({ confianca_imagem: Number(e.target.value) });
   $('#a-cobrir').onchange = e => salvar({ cobrir_continuar: e.target.checked });
+  $('#a-travar').onchange = e => salvar({ travar_mouse: e.target.checked });
   $('#a-prontas').onclick = async () => {
     if (!confirm('Baixar as imagens prontas dos botões (projeto Full Bench, licença MIT)? Suas imagens atuais ficam guardadas em modelos/minhas.')) return;
     try { await api('/api/modelos-prontos', { method: 'POST' }); toast('Imagens prontas salvas em modelos/'); }

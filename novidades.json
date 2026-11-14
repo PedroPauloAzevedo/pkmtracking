@@ -1,5 +1,21 @@
 [
   {
+    "versao": "2026.11.13-3",
+    "data": "2026-11-13",
+    "titulo": "Modo automático não se atrapalha quando você mexe no jogo",
+    "mudancas": [
+      "No fim da partida, o modo automático olha a tela e faz só o passo que falta: se você já abriu o Battle Log, ele só clica em exportar; se você já copiou o log, ele não clica em mais nada; se você fechou o log, ele abre de novo.",
+      "Se você clicar em Continue no meio da cópia, ele não clica mais em lugar nenhum (antes clicava em botões soltos na tela seguinte) e avisa que a partida não foi copiada.",
+      "Enquanto copia, por até 20 segundos, os seus cliques dentro do jogo ficam segurados para não atrapalhar. Fora do jogo o mouse funciona normal. Clique no quadrinho vermelho para soltar na hora, ou desligue em Programa > Ajustes e captura > \"Segurar meus cliques no jogo enquanto copia\".",
+      "Ele não fica mais esperando para sempre: cada passo tem limite de tempo. Se o jogo for minimizado no meio, ele continua quando você voltar."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.13-3\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.13-2",
     "data": "2026-11-13",
     "titulo": "Modo automático perde menos partidas",

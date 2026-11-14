@@ -139,6 +139,20 @@ que o log não mostra ligando (habilidades, cartas que aceleram) ou de custos re
 | Janela do jogo some 1 em cada 3 conferências | apagou os tamanhos 4 vezes | manteve os tamanhos |
   O registro agora mostra o brilho do botão Battle Log no clique (na simulação: 55 normal × 22 com o aviso) para confirmar a
   hipótese no jogo real.
+- **Estresse com a pessoa atrapalhando (13/11/2026, D-057):** jogo falso 1600×900 (botões reais, log que abre em 1,5 s ou 9 s, cópia
+  em 0,4 s ou 7 s) e uma "pessoa" que clica, troca de janela e minimiza, com o `_loop` de verdade; a trava do mouse foi testada pela
+  decisão (`decidir`), sem gancho real. 29 cenários, versão publicada 2026.11.13-2 × nova (2026.11.13-3):
+| Medida (29 cenários) | 2026.11.13-2 | 2026.11.13-3 |
+|---|---|---|
+| Cliques do programa onde não havia botão | 9 (em 6 cenários) | 0 (1 antes de conferir a janela de novo logo antes do clique) |
+| Ficou preso num estado | 1 (cliques seguidos por 40 s) | 0 |
+| Seus cliques no jogo segurados pela trava | — | 2 a 27 por cenário de cliques |
+| Partida salva depois de você fechar o log | 55–58 s | 10–22 s |
+| Partida salva com o jogo minimizado e restaurado | 61 s, com clique fora do jogo | 16 s |
+  Perdidas na nova, todas esperadas: Continue antes de a tela ser vista (`continue_cedo`, as duas versões), clicar no quadro
+  vermelho e depois em Continue (a trava foi solta de propósito) e fechar o log toda vez que ele abre (desiste depois de 8 cliques
+  e avisa). Gancho real no Windows (13/11): instala sem administrador, vê os eventos, os do programa chegam marcados como
+  injetados, e solta sozinho no tempo máximo.
 
 ## Auditoria estatística (06/11/2026, código `76a2005`)
 Cópia de teste com os dados do Pedro (33 torneios, 44.651 partidas, 5.695 listas). Scripts em
