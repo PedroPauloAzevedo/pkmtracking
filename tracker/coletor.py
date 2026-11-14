@@ -129,7 +129,11 @@ class Coletor:
                 if v is None or v != ultima_versao:
                     ultima_versao = v
                     texto = ler_area()
-                    if texto and texto != ultimo_texto:
+                    if texto and texto == ultimo_texto and v is not None and leitor.parece_log(texto):
+                        # o mesmo log copiado de novo (o contador do Windows mudou): não grava outra vez, mas conta como
+                        # "chegou"; antes, o modo automático achava que a cópia tinha falhado e mandava o aviso
+                        self.visto_em = time.time()
+                    elif texto and texto != ultimo_texto:
                         ultimo_texto = texto
                         if leitor.parece_log(texto):
                             self.visto_em = time.time()  # o modo automático confere se a cópia chegou

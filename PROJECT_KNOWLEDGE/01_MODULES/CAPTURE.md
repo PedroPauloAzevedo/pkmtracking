@@ -1,6 +1,6 @@
 # Captura de partidas (área de transferência e modo automático)
 
-> Atualizado em 10/11/2026. Código: `tracker/coletor.py`, `tracker/auto_export.py`, `tracker/cobertura.py`, `tracker/avisos.py`,
+> Atualizado em 13/11/2026. Código: `tracker/coletor.py`, `tracker/auto_export.py`, `tracker/cobertura.py`, `tracker/avisos.py`,
 > `tracker/diagnostico.py`. Regras relacionadas: `../02_BUSINESS_RULES/PLAYERS_AND_OWNERSHIP.md`. Decisões: D-005, D-006, D-007, D-014, D-015, D-016.
 
 ## Como uma partida entra no programa
@@ -44,11 +44,22 @@ a janela "Pokemon TCG Live". Fechada ou minimizada: nada de foto da tela, só no
 2. **Põe o jogo na frente** se outra janela estiver ativa (tecla Alt + `SetForegroundWindow`): com outra janela ativa o clique
    caía no lugar errado ou só "acordava" o jogo.
 3. Clica em Battle Log, espera até ~10 s o botão de exportar aparecer e clica nele; espera o log chegar no coletor (até 4 s).
-4. Se não chegou, tenta mais uma vez. Se ainda não chegou: conta como **perdida**, avisa (notificação do Windows) e segura o
-   Continue mais 20 s para a pessoa copiar à mão; se o log chegar nesse tempo, libera na hora e a partida deixa de contar como
-   perdida (desde 2026.11.10-4).
-5. Depois de tratar uma tela de resultado, só trata a próxima quando a tela some por 12 s.
-Cada tentativa fica no `dados/programa.log`: `[auto] tentativa N: jogo na frente=..., botão de exportar achado=... (nota ...), log chegou=...`.
+4. Se não chegou, tenta mais uma vez. Antes de cada tentativa, procura o botão de exportar: se o log já está aberto (a cópia
+   anterior demorou), só clica em exportar. Clicar em Battle Log de novo fecharia o log. Se ainda não chegou: conta como
+   **perdida**, avisa (notificação do Windows) e segura o Continue mais 20 s para a pessoa copiar à mão. Se o log chegar nesse
+   tempo, libera na hora e a partida deixa de contar como perdida (desde 2026.11.10-4).
+5. **Novas tentativas em silêncio:** se falhou e a tela de resultado continua aberta, tenta de novo a cada 5 s (até 12 vezes),
+   só com o jogo na frente (não rouba a janela). Para quando o log chega (inclusive copiado à mão) ou a tela some. Motivo: um
+   aviso do jogo por cima da tela de resultado engole o clique, e a busca dos botões não percebe (ela ignora o brilho).
+6. Depois de tratar uma tela de resultado, só trata a próxima quando a tela some por 12 s.
+Cada tentativa fica no `dados/programa.log`: `[auto] tentativa N` (ou `nova tentativa N`)`: jogo na frente=..., botão de exportar
+achado=... (nota ...), brilho do Battle Log ... (ou "log já estava aberto"), log chegou=...`. Brilho bem mais baixo que o normal
+na hora do clique = algo escurecendo a tela.
+
+**Mesmo log copiado de novo:** o coletor não grava outra vez, mas marca que o log chegou (o contador da área de transferência do
+Windows mudou). Antes, o modo automático achava que a cópia tinha falhado.
+**Janela do jogo que some por um instante:** com a mesma tela, o modo fica com o tamanho de janela já conhecido em vez de apagar
+os tamanhos aprendidos dos botões.
 
 **Instalação das bibliotecas:** precisa de `requirements-auto.txt` **no Python do próprio programa** (pasta `.venv`). Um
 `pip install` num terminal comum instala em outro Python e o modo continua "indisponível". O botão "Instalar o modo
@@ -60,6 +71,7 @@ automático" (Ajustes) roda o pip certo e liga o modo sem reiniciar. O instalado
 | 02/11 | Modo "indisponível" mesmo depois do pip | Bibliotecas instaladas em outro Python | Botão de instalar e mensagem com o comando exato (2026.11.02-4) |
 | 02/11 | Reconhecia a tela, mas "perdia" a partida | Outra janela ativa na hora do clique | Põe o jogo na frente; tentativas no `programa.log` (2026.11.02-5) |
 | 03/11 a 05/11 | "Vigiando a tela" sem nunca reconhecer | Tamanho dos botões preso ao da 1ª partida; jogo mudou de tamanho | Mede a janela do jogo, reaprende, busca ampla de segurança, confirmação em tela inteira (2026.11.05-1) |
+| 02/11 a 13/11 | 43 de 76 partidas: "botão de exportar achado=False", 2ª tentativa com a mesma nota | Clique em Battle Log não abre o log (provável aviso do jogo por cima; a busca ignora o brilho); 2ª tentativa fechava log aberto; tamanhos apagados quando a janela "sumia" | Novas tentativas enquanto a tela fica aberta, confere o log aberto antes de clicar, brilho no registro, guarda o tamanho da janela (ramo `fix/modo-automatico-captura`, 13/11) |
 Medições de cada caso: `../03_DECISIONS/EVIDENCE.md`. Referência real: jogo em janela 1600×900 num monitor 1920×1080 →
 tamanho 0,62; notas Battle Log ~0,87 (reduzida), Continue ~0,94, exportar ~0,95.
 

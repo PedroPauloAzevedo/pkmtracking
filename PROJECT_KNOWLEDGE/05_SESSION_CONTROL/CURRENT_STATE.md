@@ -1,10 +1,13 @@
 # Estado atual do projeto
 
-> Atualizado em 13/11/2026 (versão e CI conferidas no GitHub; modo automático confirmado no jogo real). Antes: 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
+> Atualizado em 13/11/2026 (2026.11.13-2: modo automático perde menos partidas; antes: versão e CI conferidas no GitHub, modo automático confirmado no jogo real). Antes: 11/11/2026 (2026.11.11-3 publicada no PR #26; 2026.11.11-4: vermelho do mapa, "Meganium Hydrapple" e
 > Lopunny Froslass, D-055). **Atualize este arquivo no
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
+- **13/11/2026 (noite): 2026.11.13-2** (ramo `fix/modo-automatico-captura`): novas tentativas do modo automático enquanto a tela de
+  resultado fica aberta, sem fechar log aberto, tamanhos dos botões mantidos; mesmo log copiado de novo conta como chegou. Testado em
+  simulação; **falta confirmar no jogo real** (procurar "nova tentativa" e o brilho do Battle Log no `programa.log`).
 - **13/11/2026 (conferido no GitHub): a `main` está na 2026.11.13-1** (Meus decks junta as reimpressões da mesma carta; PR #30).
   Antes dela entraram a 2026.11.11-2 (PR #25), -3 (PR #26) e -4 (PR #27). Os itens abaixo de 11/11 e 10/11 ficam como histórico:
   "pronta no ramo" e "No GitHub: 2026.11.09-4" já não valem.
