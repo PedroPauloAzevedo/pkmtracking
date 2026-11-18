@@ -153,6 +153,18 @@ que o log não mostra ligando (habilidades, cartas que aceleram) ou de custos re
   vermelho e depois em Continue (a trava foi solta de propósito) e fechar o log toda vez que ele abre (desiste depois de 8 cliques
   e avisa). Gancho real no Windows (13/11): instala sem administrador, vê os eventos, os do programa chegam marcados como
   injetados, e solta sozinho no tempo máximo.
+- **Cópia à mão no jogo real (16/11/2026, versão 2026.11.13-3; registro e banco só para leitura):** 4 partidas (#245, #247, #250,
+  #251) copiadas pelo Pedro foram gravadas, mas o modo automático recomeçou depois (quadro vermelho, clique em Battle Log) e
+  avisou "não foi copiada". A trava segurou 11 e 10 cliques dele. Nas partidas em que o programa copiou, o clique em exportar veio
+  4 a 13 s depois do Battle Log, e numa delas não veio em um minuto com o log aberto. Causa: na 13-3 o exportar passou a ser
+  procurado na cópia reduzida da tela, onde o ícone de 50 px (tamanho 0,62) fica com 16 px. Custo da busca do exportar: tela
+  inteira ~400 ms (3 tamanhos), reduzida ~90 ms; a nova olha só em volta do último lugar visto (~barato) e a tela toda só no fim
+  de partida enquanto não sabe onde fica.
+  Estresse (32 cenários; script fora do repositório) 2026.11.13-3 × 2026.11.18-1: "você copia e fecha
+  o log antes" — 13-3: quadro vermelho e 3 cliques do programa depois da sua cópia; nova: 0 cliques, sem quadro. "O programa não vê
+  o exportar e você copia" — 13-3: trava segura os 2 cliques, partida perdida; nova: o 2º clique passa, salva. Nos 32: 0 cliques
+  no vazio e 0 presos nas duas. Tempo do cenário normal rodando sozinho: 8,7 s (13-3) × 10,1 s (nova, sem o tamanho do exportar
+  guardado; no Coletor do Pedro ele já está guardado).
 
 ## Auditoria estatística (06/11/2026, código `76a2005`)
 Cópia de teste com os dados do Pedro (33 torneios, 44.651 partidas, 5.695 listas). Scripts em

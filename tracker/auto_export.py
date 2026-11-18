@@ -68,6 +68,8 @@ MAX_EXPORTAR = 3            # cliques em exportar por fim de partida, no máximo
 LIMITE_TENTATIVAS = 75.0    # segundos tentando sozinho; depois pede para você copiar à mão
 LIMITE_TRAVA = 20.0         # segundos, no máximo, com os seus cliques no jogo segurados (ver trava_mouse.py)
 SEGURA_CONTINUE = 20.0      # depois do aviso, segundos com o Continue ainda coberto para você copiar à mão
+JA_COPIADO = 120.0          # log copiado há menos que isso (e depois do último fim de partida) = é o desta partida
+ESPERA_PERDIDA = 20.0       # tela de resultado sumiu sem o log: espera isso antes de contar como perdida e avisar
 PAUSA_MINIMIZADO = 180.0    # jogo minimizado no meio da cópia: espera você voltar por até 3 minutos
 
 
@@ -218,6 +220,8 @@ class AutoExport:
         self.ultima_nota = 0.0  # parecença da última busca (0 a 1), para o registro de diagnóstico
         self.ultima_escala = None  # tamanho em que a última busca chegou mais perto
         self._cache = {}
+        self._onde = {}  # onde cada botão foi visto da última vez (os seus cliques ali passam pela trava)
+        self._pendente = None  # fim de partida que terminou sem o log, esperando um pouco antes de contar como perdida
         self._thread = None
         self._parar = threading.Event()
 
@@ -349,21 +353,37 @@ class AutoExport:
             r = self._achar(cv2, tela, k, conf, so_escalas=[e, round(e - 0.01, 3), round(e + 0.01, 3)])
         return r
 
-    def _confirmar(self, pyautogui, np, cv2, k, r, conf):
-        """Foto nova, só em volta do botão, logo antes de clicar: o botão ainda está ali? Evita clicar "no vazio" quando
-        você mudou de tela (clicou em Continue, fechou o log) entre a foto anterior e o clique."""
+    def _perto(self, cv2, tela, k, r, conf, folga=24):
+        """Procura o botão k só em volta da região r (no tamanho já conhecido). Devolve onde achou, ou None. Barato:
+        uma área pequena da tela inteira, em vez da tela toda."""
         e = self.escalas.get(k)
         modelo = self._modelo(cv2, k)
-        if modelo is None or not e:
-            return False
-        tela = self._tela(pyautogui, np, cv2)
+        if modelo is None or not e or not r:
+            return None
         m = cv2.resize(modelo, None, fx=e, fy=e, interpolation=cv2.INTER_AREA if e < 1 else cv2.INTER_LINEAR)
-        folga = 24
         x0, y0 = max(r[0] - folga, 0), max(r[1] - folga, 0)
         recorte = tela[y0:r[1] + r[3] + folga, x0:r[0] + r[2] + folga]
         if recorte.shape[0] < m.shape[0] or recorte.shape[1] < m.shape[1]:
-            return False
-        return cv2.minMaxLoc(cv2.matchTemplate(recorte, m, cv2.TM_CCOEFF_NORMED))[1] >= conf
+            return None
+        _, valor, _, (x, y) = cv2.minMaxLoc(cv2.matchTemplate(recorte, m, cv2.TM_CCOEFF_NORMED))
+        self.ultima_nota = valor
+        return (x0 + x, y0 + y, m.shape[1], m.shape[0]) if valor >= conf else None
+
+    def _achar_exportar(self, cv2, tela, conf, amplo, fim_de_partida):
+        """O botão de exportar procurado na tela INTEIRA: na cópia reduzida o ícone fica com 16 px e quase nunca era
+        reconhecido (registro do Pedro, 16/11/2026: até um minuto com o log aberto sem achar o botão).
+        Já sabe onde ele fica: olha só em volta (barato). Não sabe: a tela toda, só durante um fim de partida (0,4 s)."""
+        r = self._perto(cv2, tela, "exportar", self._onde.get("exportar"), conf, folga=60)
+        if not r and fim_de_partida:
+            r = self._achar(cv2, tela, "exportar", conf, amplo=amplo)
+        if r:
+            self._onde["exportar"] = r
+        return r
+
+    def _confirmar(self, pyautogui, np, cv2, k, r, conf):
+        """Foto nova, só em volta do botão, logo antes de clicar: o botão ainda está ali? Evita clicar "no vazio" quando
+        você mudou de tela (clicou em Continue, fechou o log) entre a foto anterior e o clique."""
+        return self._perto(cv2, self._tela(pyautogui, np, cv2), k, r, conf) is not None
 
     def _loop(self):
         try:
@@ -396,6 +416,7 @@ class AutoExport:
         try:
             while not self._parar.is_set():
                 voltas += 1
+                self._conferir_pendente()
                 cfg = config.ler_config()
                 if not cfg.get("modo_automatico"):
                     self.status = "desligado"
@@ -433,18 +454,18 @@ class AutoExport:
                     # confere na volta seguinte também
                     procurou = bool(ep or resultado or so_log or (voltas % 2 == 0 and time.time() - fim_ultimo > SEM_TELA_PARA_SOLTAR))
                     if procurou:
-                        exp = self._ver(cv2, tela, pequena, "exportar", conf, amplo and (ep or resultado))
+                        exp = self._achar_exportar(cv2, tela, conf, bool(amplo and (ep or resultado)), bool(ep or resultado))
                     if ep is None:
                         if resultado:
-                            ep = self._comecar(cfg, cont, so_log=False)
+                            ep = self._comecar(cfg, cont, so_log=False, fim_ultimo=fim_ultimo)
                             so_log = 0
                         elif exp:
                             # você abriu o Battle Log antes de o modo automático ver a tela de resultado. Só conta se o log
                             # aparece em 2 voltas seguidas e, havendo a imagem do botão de fechar, com ele junto.
-                            fechar_ok = self._modelo(cv2, "fechar") is None or self._ver(cv2, tela, pequena, "fechar", conf, False)
+                            fechar_ok = self._modelo(cv2, "fechar") is None or self._achar(cv2, tela, "fechar", conf, amplo=False)
                             so_log = so_log + 1 if fechar_ok else 0
                             if so_log >= 2:
-                                ep = self._comecar(cfg, None, so_log=True)
+                                ep = self._comecar(cfg, None, so_log=True, fim_ultimo=fim_ultimo)
                                 so_log = 0
                         elif procurou:
                             so_log = 0
@@ -467,12 +488,19 @@ class AutoExport:
         return float(recorte.mean()) if recorte.size else 0.0
 
     # -------------------------------------------------------------- um fim de partida, passo a passo
-    def _comecar(self, cfg, cont, so_log):
+    def _comecar(self, cfg, cont, so_log, fim_ultimo=0.0):
         """Viu a tela de resultado (ou o log já aberto): começa a cuidar deste fim de partida."""
         agora = time.time()
         ep = {"inicio": agora, "visto": agora, "antes": coletor.visto_em, "so_log": so_log, "feito": False,
               "avisado": False, "trouxe": False, "cliques_bl": 0, "cliques_exp": 0, "ultimo": 0.0, "ultimo_exp": 0.0, "capa": None,
               "trava": None, "aviso_em": 0.0}
+        if coletor.visto_em > fim_ultimo and agora - coletor.visto_em < JA_COPIADO:
+            # Você copiou o log desta partida antes de o modo automático ver a tela de resultado (por exemplo: abriu o
+            # Battle Log, copiou e fechou). Nada a fazer: sem quadrinho, sem trava, sem cliques, sem aviso de perda.
+            # Antes (2026.11.13-3) ele recomeçava, clicava em Battle Log e avisava "não foi copiada" (16/11/2026).
+            ep["feito"] = True
+            print("[auto] fim de partida detectado: o log desta partida já tinha sido copiado; nada a fazer")
+            return ep
         self.status = "fim de partida detectado"
         print(f"[auto] fim de partida detectado{' (com o log já aberto por você)' if so_log else ''}")
         if cont and cfg.get("cobrir_continuar", True):
@@ -488,7 +516,8 @@ class AutoExport:
     def _soltar(self, ep):
         if ep["trava"]:
             if ep["trava"].seguradas:
-                print(f"[auto] trava do mouse segurou {ep['trava'].seguradas} clique(s) seu(s) no jogo")
+                print(f"[auto] trava do mouse segurou {ep['trava'].seguradas} clique(s) seu(s) no jogo"
+                      f"{' e soltou quando você clicou de novo' if ep['trava'].insistiu else ''}")
             ep["trava"].soltar()
             ep["trava"] = None
 
@@ -526,7 +555,16 @@ class AutoExport:
             return True
         if ep["feito"]:
             return False
-        if ep["trava"] and not ep["trava"].ativa():
+        if ep["trava"]:
+            # os seus cliques em Battle Log e em exportar ajudam: passam pela trava (16/11/2026: a trava segurava
+            # você tentando copiar enquanto o modo automático não achava o botão)
+            if bl:
+                self._onde["battle_log"] = bl
+            if exp:
+                self._onde["exportar"] = exp
+            # onde o botão está agora ou, se ele não está sendo visto neste instante, onde estava da última vez
+            ep["trava"].permitidos = [r for r in (bl or self._onde.get("battle_log"), exp or self._onde.get("exportar")) if r]
+        if ep["trava"] and not ep["trava"].ativa():  # passou do tempo, ou você clicou de novo
             self._soltar(ep)
         if ep["capa"] and ep["capa"].fechada() and ep["trava"]:
             self._soltar(ep)  # você clicou no quadrinho vermelho: solta o mouse também
@@ -573,6 +611,23 @@ class AutoExport:
             ep["capa"].fechar()
         return False
 
+    def _conferir_pendente(self):
+        """Um fim de partida que terminou sem o log: chegou depois (copiado por você)? Senão, conta como perdida e avisa."""
+        p = self._pendente
+        if not p:
+            return
+        if coletor.visto_em > p["antes"]:
+            self._pendente = None
+            self.erro = ""
+            print("[auto] log chegou depois que a tela de resultado sumiu (copiado por você)")
+        elif time.time() >= p["ate"]:
+            self._pendente = None
+            self.perdidas += 1
+            self.erro = "Não consegui copiar o log da última partida."
+            print(f"[auto] partida NÃO copiada: {p['motivo']}")
+            if not p["avisado"]:
+                avisos.avisar("Esta partida não foi copiada: a tela de resultado fechou antes de copiar o Battle Log.")
+
     def _encerrar(self, ep, motivo):
         """Fim deste fim de partida: solta o mouse, tira o quadrinho e, se o log não veio, conta como perdida e avisa."""
         self._soltar(ep)
@@ -582,11 +637,11 @@ class AutoExport:
             ep["feito"] = True  # chegou na última hora
             self.cliques += 1
         if not ep["feito"]:
-            self.perdidas += 1
-            self.erro = "Não consegui copiar o log da última partida."
-            print(f"[auto] partida NÃO copiada: {motivo}")
-            if not ep["avisado"]:
-                avisos.avisar("Esta partida não foi copiada: a tela de resultado fechou antes de copiar o Battle Log.")
+            # Ainda não conta como perdida: você pode estar copiando à mão (o log abre e a cópia chega uns segundos
+            # depois). Confere de novo em ESPERA_PERDIDA segundos (_conferir_pendente).
+            print(f"[auto] {motivo}; esperando {ESPERA_PERDIDA:.0f} s para ver se o log chega")
+            self._pendente = {"antes": ep["antes"], "ate": time.time() + ESPERA_PERDIDA, "motivo": motivo,
+                              "avisado": ep["avisado"]}
         coletor.origem_proxima = "area_transferencia"
         self.status = "vigiando a tela"
         return None

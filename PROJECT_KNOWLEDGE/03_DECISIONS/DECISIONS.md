@@ -39,6 +39,9 @@
   passar os cliques marcados como injetados (os do programa), só dentro da janela do jogo, por até 20 s, e solta ao clicar no
   quadro vermelho. *Descartado:* `BlockInput` (exige administrador e trava teclado e mouse do computador inteiro). Testes de
   estresse (jogo falso + pessoa atrapalhando, 29 cenários) em `EVIDENCE.md`.
+  *Ajuste (16/11/2026, v2026.11.18-1):* a trava segura só o 1º clique físico (o 2º é intenção e solta) e nunca os cliques em
+  Battle Log/exportar; o log da partida já copiado por você não recomeça a captura. *Por quê:* no jogo real a trava segurou o
+  Pedro tentando copiar (10 e 11 cliques) enquanto o programa não achava o botão de exportar.
 
 ## Leitura, dono e replay
 - **D-008 · "Você" = quem exportou o log; partida em que o seu nick não joga vai para o amigo** (02/11/2026, v2026.11.02-4).
