@@ -5,6 +5,9 @@
 > fim de toda sessão** (o que mudou, o que ficou pendente, o que não foi verificado).
 
 ## Versão
+- **18/11/2026: 2026.11.18-1** (ramo `fix/copia-manual`): cópia à mão respeitada (log já copiado não recomeça a captura, aviso de
+  perda só depois de 20 s), exportar procurado na tela inteira, trava solta no 2º clique e deixa passar Battle Log/exportar.
+  Medido no simulador de estresse; **falta confirmar no jogo real**. O Coletor do Pedro estava na 2026.11.13-3 em 16/11.
 - **13/11/2026 (noite): 2026.11.13-3** (ramo `fix/modo-automatico-humano`, D-057): fim de partida passo a passo pelo que está na tela,
   confirmação antes de cada clique, trava dos cliques físicos no jogo por até 20 s, limites de tempo. 29 cenários de estresse sem
   clique no vazio. **Falta confirmar no jogo real.** O Coletor do Pedro ainda estava na 2026.11.11-4 (não tinha atualizado para a -2).

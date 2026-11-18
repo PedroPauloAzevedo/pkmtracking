@@ -6,6 +6,7 @@
 
 | Versão | Data | Commit | Título |
 |---|---|---|---|
+| 2026.11.18-1 | 18/11/2026 | (ver `git log`: "v2026.11.18-1") | Modo automático respeita quando você mesmo copia o log |
 | 2026.11.13-3 | 13/11/2026 | (ver `git log`: "v2026.11.13-3") | Modo automático não se atrapalha quando você mexe no jogo |
 | 2026.11.13-2 | 13/11/2026 | (ver `git log`: "v2026.11.13-2") | Modo automático perde menos partidas |
 | (confirmação) | 13/11/2026 | — | Modo automático confirmado numa partida real (versão 2026.11.11-4) |
@@ -49,6 +50,18 @@
 ## Modo automático confirmado no jogo real — 13/11/2026 (sem versão nova)
 - Publicado na 2026.11.05-1 (D-015) e testado só em simulação até aqui; em 06/11 falhou porque o jogo não estava na frente.
 - **Jogo real (13/11/2026, versão 2026.11.11-4):** primeira partida real com o modo automático completo. Registro: `[auto] tentativa 1: jogo na frente=True, botão de exportar achado=True (nota 0.96), log chegou=True` → partida #207 gravada às 18:35 com origem `automatico` (conferido no banco, só leitura). Deu certo na primeira tentativa. Evidência em `../03_DECISIONS/EVIDENCE.md`, seção "Modo automático".
+
+## 2026.11.18-1 — 18/11/2026 (pedido do Pedro, 16/11: "quando eu mesmo clico em copiar log, o coletor gera depois o botão vermelho e não está salvando o meu log")
+- Diagnóstico pelo registro e banco reais (só leitura): os logs copiados por ele (#245, #247, #250, #251) estavam gravados; o
+  modo automático recomeçava depois e avisava "não foi copiada"; a trava segurou 10 e 11 cliques dele; o exportar, procurado na
+  cópia reduzida (ícone com 16 px), demorava ou não era achado.
+- `tracker/auto_export.py`: `_achar_exportar` (tela inteira; primeiro só em volta do último lugar visto, `_perto`; tela toda só
+  no fim de partida), `_confirmar` usa `_perto`; `_comecar(..., fim_ultimo)` com `JA_COPIADO` 120 s (log já copiado = nada a
+  fazer); `_onde` (último lugar de cada botão) e `trava.permitidos`; `_encerrar` deixa `_pendente` e `_conferir_pendente` conta
+  a perda só depois de `ESPERA_PERDIDA` 20 s.
+- `tracker/trava_mouse.py`: `INSISTENCIA` 2 (o 2º clique físico solta) e `permitidos`. `teste_tracker.py` confere os dois.
+- Testado: estresse com 32 cenários (2 novos: "copia e fecha antes", "o programa não vê o exportar e você copia"), 13-3 × nova;
+  4 testes de entrega OK. Falta: jogo real.
 
 ## 2026.11.13-3 — 13/11/2026 (pedido do Pedro: cliques avulsos depois do Continue, espera sem fim, travar o mouse; D-057)
 - `tracker/auto_export.py`: `_capturar`/`_tentar_copiar`/`_repetir` trocados por `_comecar`/`_passo`/`_encerrar` (fim de partida passo a

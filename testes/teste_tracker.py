@@ -430,6 +430,12 @@ assert not tr.decidir(0x205, 300, 300, False)  # soltar sem ter apertado antes p
 assert not tr.decidir(0x201, 160, 160, False) and not tr.ativa()  # clicou no quadrinho: soltou
 assert not tr.decidir(0x201, 300, 300, False)
 assert not TravaMouse((0, 0, 10, 10), maximo=0, instalar=False).ativa()  # passou do tempo máximo: solta sozinha
+tr = TravaMouse((100, 100, 500, 500), maximo=5, instalar=False)
+assert tr.decidir(0x201, 300, 300, False) and tr.decidir(0x202, 300, 300, False)  # 1º clique seu: segurado
+assert not tr.decidir(0x201, 310, 310, False) and not tr.ativa() and tr.insistiu  # 2º clique: você quer mexer, solta
+tr = TravaMouse((100, 100, 500, 500), maximo=5, instalar=False)
+tr.permitidos = [(400, 400, 40, 40)]
+assert not tr.decidir(0x201, 410, 410, False) and tr.ativa()  # clique no botão de exportar/Battle Log passa (e não solta)
 # D-050: deck cujo atacante principal não está em nenhuma lista de torneio ganha nome provisório (esse Pokémon) e fica "incerto"
 r_nova = {"deck_palpite": {"Bia": "Pokémon Inventado ex"}, "vistas": {"Bia": {"Pokémon Inventado ex": 3, "Rare Candy": 1}}}
 d = decks.palpite_deck_detalhe(r_nova, "Bia")

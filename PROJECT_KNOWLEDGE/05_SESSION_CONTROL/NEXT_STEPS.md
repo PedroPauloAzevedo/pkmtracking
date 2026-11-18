@@ -3,7 +3,9 @@
 > Atualizado em 13/11/2026. As próximas ações concretas, em ordem. A lista completa de ideias está em `../04_IMPLEMENTATIONS/BACKLOG.md`.
 > **Atualize este arquivo no fim de toda sessão.** Sempre pergunte ao Pedro antes de começar algo grande.
 
-0. **Modo automático (2026.11.13-3):** depois de atualizar e jogar, conferir no `programa.log` as linhas `[auto]` (fim de partida
+0. **Modo automático (2026.11.18-1):** depois de atualizar e jogar (inclusive copiando à mão), conferir no `programa.log`:
+   "já tinha sido copiado; nada a fazer", "log chegou depois", "trava ... soltou quando você clicou de novo", e se o clique em
+   exportar vem logo depois do Battle Log. Itens anteriores (13-3): depois de atualizar e jogar, conferir no `programa.log` as linhas `[auto]` (fim de partida
    detectado, cliques, "log chegou", "trava do mouse segurou", "NÃO copiada") e se o Battle Log continua visível com o log aberto.
    Item anterior (-2): depois de algumas partidas, olhar no `dados/programa.log` as linhas `[auto] nova tentativa`
    e o brilho do Battle Log nas falhas. Brilho bem abaixo do normal confirma "aviso do jogo por cima"; se as falhas continuarem com

@@ -11,7 +11,9 @@ Fora do jogo o mouse funciona normal, e mexer o mouse (sem clicar) também.
 Para nunca prender ninguém:
   - solta sozinha depois de `maximo` segundos (padrão 20);
   - clicar no quadrinho vermelho (área `livre`) solta na hora;
-  - não precisa de administrador; se o programa fechar ou travar, o Windows tira o gancho.
+  - segura só o 1º clique seu no jogo: se você clicar de novo, solta e deixa passar (você quer mexer; desde 2026.11.18-1);
+  - não precisa de administrador; se o programa fechar ou travar, o Windows tira o gancho;
+  - os seus cliques nos botões Battle Log e exportar passam (você copiando à mão ajuda; desde 2026.11.18-1).
 Fora do Windows não faz nada (o modo automático continua sem a trava).
 """
 import sys
@@ -21,6 +23,7 @@ import time
 BOTAO_DESCE = {0x0201: "esq", 0x0204: "dir", 0x0207: "meio", 0x020B: "x"}
 BOTAO_SOBE = {0x0202: "esq", 0x0205: "dir", 0x0208: "meio", 0x020C: "x"}
 INJETADO = 0x01 | 0x02  # LLMHF_INJECTED | LLMHF_LOWER_IL_INJECTED
+INSISTENCIA = 2  # no 2º clique seu dentro do jogo a trava solta: o 1º pode ser sem querer, o 2º é porque você quer mexer
 
 
 def _dentro(r, x, y):
@@ -33,6 +36,8 @@ class TravaMouse:
     def __init__(self, jogo, livre=None, maximo=20.0, ao_liberar=None, instalar=True):
         self.jogo, self.livre, self.ao_liberar = jogo, livre, ao_liberar
         self.seguradas = 0           # cliques seus que a trava segurou (vai para o registro)
+        self.insistiu = False        # você clicou de novo e a trava soltou
+        self.permitidos = []         # áreas onde o seu clique passa mesmo com a trava (os botões Battle Log e exportar)
         self._presos = set()          # botões cujo "apertar" foi segurado: o "soltar" também é segurado
         self._ativa = True
         self._fim = time.time() + maximo
@@ -58,7 +63,14 @@ class TravaMouse:
                 if self.ao_liberar:
                     self.ao_liberar()
                 return False
+            if any(_dentro(r, x, y) for r in list(self.permitidos)):
+                return False  # clique num botão que ajuda a copiar: passa
             if _dentro(self.jogo, x, y):
+                if self.seguradas >= INSISTENCIA - 1:
+                    # você clicou de novo depois de um clique segurado: quer mexer no jogo. Solta e deixa passar.
+                    self.insistiu = True
+                    self.soltar()
+                    return False
                 self._presos.add(BOTAO_DESCE[msg])
                 self.seguradas += 1
                 return True

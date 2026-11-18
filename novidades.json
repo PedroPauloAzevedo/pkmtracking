@@ -1,5 +1,21 @@
 [
   {
+    "versao": "2026.11.18-1",
+    "data": "2026-11-18",
+    "titulo": "Modo automático respeita quando você mesmo copia o log",
+    "mudancas": [
+      "Se você mesmo abrir o Battle Log e copiar, o modo automático não faz mais nada depois: sem quadrinho vermelho, sem cliques e sem o aviso errado de \"partida não copiada\" (o seu log já estava salvo).",
+      "O botão de exportar volta a ser reconhecido na hora (na versão anterior ele às vezes demorava ou nem era achado).",
+      "A trava do mouse ficou mais gentil: segura só o primeiro clique seu no jogo (no segundo ela solta) e nunca segura os seus cliques em Battle Log e no botão de exportar.",
+      "Antes de avisar que uma partida não foi copiada, espera mais 20 segundos, para o caso de você estar copiando à mão."
+    ],
+    "como_atualizar": [
+      "Abra o Coletor.",
+      "Espere o aviso amarelo \"Nova versão disponível\", ou vá em Programa > Ajustes e captura > Atualizações > Verificar agora.",
+      "Clique em \"Atualizar para 2026.11.18-1\" e confirme. O programa reinicia sozinho."
+    ]
+  },
+  {
     "versao": "2026.11.13-3",
     "data": "2026-11-13",
     "titulo": "Modo automático não se atrapalha quando você mexe no jogo",
